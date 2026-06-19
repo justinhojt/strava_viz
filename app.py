@@ -29,7 +29,7 @@ try:
     selected_row = filtered_summary[filtered_summary['Filename'] == target_filename].iloc[0]
     
     col1, col2, col3 = st.columns(3)
-    col1.metric('Distance', f'{selected_row['Distance (km)']:.1f} m')
+    col1.metric('Distance', f'{selected_row['Distance']:.1f} m')
     col2.metric('Moving Time', f'{selected_row['Moving Time'] / 60:.1f} mins')
     if 'Average Heart Rate' in selected_row and pd.notna(selected_row['Average Heart Rate']):
         col3.metric('Avg Heart Rate', f'{int(selected_row["Average Heart Rate"])} bpm')
