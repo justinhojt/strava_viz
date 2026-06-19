@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 import os
 from utils.data_loader import parse_csv, parse_gpx, parse_fit
 
@@ -28,10 +29,10 @@ try:
     selected_row = filtered_summary[filtered_summary['Filename'] == target_filename].iloc[0]
     
     col1, col2, col3 = st.columns(3)
-    col1.metric('Distance', f'{selected_row['Distance (km)']:.1f} m')
-    col2.metric('Moving Time', f'{selected_row['Moving Time'] / 60:.1f} mins')
+    col1.metric('Distance', f'{selected_row["Distance"]:.1f} m')
+    col2.metric('Moving Time', f'{selected_row["Moving Time"] / 60:.1f} mins')
     if 'Average Heart Rate' in selected_row and pd.notna(selected_row['Average Heart Rate']):
-        col3.metric('Avg Heart Rate', f'{int(selected_row['Average Heart Rate'])} bpm')
+        col3.metric('Avg Heart Rate', f'{int(selected_row["Average Heart Rate"])} bpm')
         
     # Load and parse the second-by-second granular details
     with st.spinner('Parsing data...'):
@@ -41,7 +42,6 @@ try:
             time_series_df = parse_fit(target_filename) 
         else:
             st.error('Unsupported file format.')
-        time_series_df = pd.DataFrame()
         
     if not time_series_df.empty:
         st.subheader('Granular Activity Stream')
