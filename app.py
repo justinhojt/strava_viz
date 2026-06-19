@@ -1,6 +1,6 @@
 import streamlit as st
 import os
-from utils.data_loader import parse_csv, parse_gpx
+from utils.data_loader import parse_csv, parse_gpx, parse_fit
 
 st.set_page_config(layout='wide')
 st.title('Strava Archive Analytics Dashboard')
