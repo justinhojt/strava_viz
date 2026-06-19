@@ -36,7 +36,7 @@ try:
         
     # Load and parse the second-by-second granular details
     with st.spinner('Parsing data...'):
-        if target_filename.endswith('.gpx') or target_filename.endswith('.fit.gz'):
+        if target_filename.endswith('.gpx') or target_filename.endswith('.gpx.gz'):
             time_series_df = parse_gpx(target_filename)
         elif target_filename.endswith('.fit') or target_filename.endswith('.fit.gz'):
             time_series_df = parse_fit(target_filename) 
