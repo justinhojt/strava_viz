@@ -30,7 +30,7 @@ def parse_csv():
     return df
 
 def parse_gpx(gpx_filename):
-    gpx_file = os.path.join('data', gpx_filename_path)
+    gpx_file = os.path.join('data', gpx_filename)
     
     if not os.path.exists(gpx_file):
         raise FileNotFoundError(f"File not found: {gpx_file}")
