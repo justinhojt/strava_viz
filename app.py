@@ -3,7 +3,7 @@ import os
 from utils.data_loader import parse_csv, parse_gpx
 
 st.set_page_config(layout='wide')
-st.title('Strava Archive Analytics Engine')
+st.title('Strava Archive Analytics Dashboard')
 
 # Load macro data
 try:
@@ -28,7 +28,7 @@ try:
     selected_row = filtered_summary[filtered_summary['Filename'] == target_filename].iloc[0]
     
     col1, col2, col3 = st.columns(3)
-    col1.metric('Distance', f'{selected_row['Distance (km)']:.2f} km')
+    col1.metric('Distance', f'{selected_row['Distance (km)']:.1f} m')
     col2.metric('Moving Time', f'{selected_row['Moving Time'] / 60:.1f} mins')
     if 'Average Heart Rate' in selected_row and pd.notna(selected_row['Average Heart Rate']):
         col3.metric('Avg Heart Rate', f'{int(selected_row['Average Heart Rate'])} bpm')
