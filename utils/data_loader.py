@@ -1,3 +1,4 @@
+from fitparse import FitFile
 import pandas as pd
 import gpxpy
 import gzip
@@ -35,13 +36,8 @@ def parse_gpx(gpx_filename):
     if not os.path.exists(gpx_file):
         raise FileNotFoundError(f"File not found: {gpx_file}")
         
-    # Open normally if it's raw XML, or use gzip if it's compressed
-    if gpx_file.endswith('.gz'):
-        with gzip.open(gpx_file, 'rt', encoding='utf-8') as f:
-            gpx = gpxpy.parse(f)
-    else:
-        with open(gpx_file, 'r', encoding='utf-8') as f:
-            gpx = gpxpy.parse(f)
+    with open(gpx_file, 'r', encoding='utf-8') as f:
+         gpx = gpxpy.parse(f)
             
     track_data = []
     for track in gpx.tracks:
@@ -61,6 +57,47 @@ def parse_gpx(gpx_filename):
                     'elevation': point.elevation,
                     'heart_rate': hr
                 })
+                
+    df = pd.DataFrame(track_data)
+    if not df.empty:
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+    return df
+
+def parse_fit(fit_filename):
+    fit_file = os.path.join('data', fit_filename)
+    
+    if not os.path.exists(fit_file):
+        raise FileNotFoundError(f"File not found: {fit_file}")
+        
+    with open(fit_file, 'rb') as f:
+        fitfile = FitFile(f.read())
+            
+    track_data = []
+    sc_to_deg = 180.0 / (2**31)  # Factor to convert semicircles to degrees
+    
+    # Iterate over every second-by-second data point message
+    for record in fitfile.get_messages('record'):
+        values = record.get_values()
+        
+        # Extract and convert coordinates if they exist
+        lat = values.get('position_lat')
+        lon = values.get('position_long')
+        if lat is not None: lat = lat * sc_to_deg
+        if lon is not None: lon = lon * sc_to_deg
+        
+        # Garmin devices often use 'enhanced_altitude' for better precision
+        ele = values.get('enhanced_altitude')
+        if ele is None:
+            ele = values.get('altitude')
+            
+        if 'timestamp' in values:
+            track_data.append({
+                'timestamp': values.get('timestamp'),
+                'latitude': lat,
+                'longitude': lon,
+                'elevation': ele,
+                'heart_rate': values.get('heart_rate')
+            })
                 
     df = pd.DataFrame(track_data)
     if not df.empty:
