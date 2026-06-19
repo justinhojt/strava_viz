@@ -3,6 +3,7 @@ import pandas as pd
 import gpxpy
 import gzip
 import os
+import io
 
 csv = os.path.join('data', 'activities.csv')
 
@@ -36,8 +37,12 @@ def parse_gpx(gpx_filename):
     if not os.path.exists(gpx_file):
         raise FileNotFoundError(f"File not found: {gpx_file}")
         
-    with open(gpx_file, 'r', encoding='utf-8') as f:
-         gpx = gpxpy.parse(f)
+    if gpx_file.endswith('.gz'):
+        with gzip.open(gpx_file, 'rt', encoding='utf-8') as f:
+            gpx = gpxpy.parse(f)
+    else:
+        with open(gpx_file, 'r', encoding='utf-8') as f:
+            gpx = gpxpy.parse(f)
             
     track_data = []
     for track in gpx.tracks:
@@ -69,8 +74,12 @@ def parse_fit(fit_filename):
     if not os.path.exists(fit_file):
         raise FileNotFoundError(f"File not found: {fit_file}")
         
-    with open(fit_file, 'rb') as f:
-        fitfile = FitFile(f.read())
+    if fit_file.endswith('.gz'):
+        with gzip.open(fit_file, 'rb') as f:
+            fitfile = FitFile(io.BytesIO(f.read()))
+    else:
+        with open(fit_file, 'rb') as f:
+            fitfile = FitFile(f)
             
     track_data = []
     sc_to_deg = 180.0 / (2**31)  # Factor to convert semicircles to degrees
