@@ -5,7 +5,7 @@ import os
 
 csv = os.path.join('data', 'activities.csv')
 
-def load_summary_data():
+def parse_csv():
     if not os.path.exists(csv):
         raise FileNotFoundError(f'Could not find activities.csv at {csv}')
         
@@ -29,19 +29,18 @@ def load_summary_data():
   
     return df
 
-def parse_raw_gpx(relative_filename_path):
-    """Parses second-by-second streams from a local GPX or GPX.GZ file."""
-    full_path = os.path.join(DATA_DIR, relative_filename_path)
+def parse_gpx(gpx_filename):
+    gpx_file = os.path.join('data', gpx_filename_path)
     
-    if not os.path.exists(full_path):
-        raise FileNotFoundError(f"File not found: {full_path}")
+    if not os.path.exists(gpx_file):
+        raise FileNotFoundError(f"File not found: {gpx_file}")
         
     # Open normally if it's raw XML, or use gzip if it's compressed
-    if full_path.endswith('.gz'):
-        with gzip.open(full_path, 'rt', encoding='utf-8') as f:
+    if gpx_file.endswith('.gz'):
+        with gzip.open(gpx_file, 'rt', encoding='utf-8') as f:
             gpx = gpxpy.parse(f)
     else:
-        with open(full_path, 'r', encoding='utf-8') as f:
+        with open(gpx_file, 'r', encoding='utf-8') as f:
             gpx = gpxpy.parse(f)
             
     track_data = []
@@ -49,7 +48,7 @@ def parse_raw_gpx(relative_filename_path):
         for segment in track.segments:
             for point in segment.points:
                 hr = None
-                # Safely extract heart rate data from XML extensions if available
+                # Extract heart rate data if available
                 if point.extensions:
                     for ext in point.extensions:
                         if 'hr' in ext.tag:
