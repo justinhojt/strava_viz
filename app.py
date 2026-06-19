@@ -36,7 +36,13 @@ try:
         
     # Load and parse the second-by-second granular details
     with st.spinner('Parsing data...'):
-        time_series_df = parse_gpx(target_filename)
+        if target_filename.endswith('.gpx'):
+            time_series_df = parse_gpx(target_filename)
+        elif target_filename.endswith('.fit') or target_filename.endswith('.fit.gz'):
+            time_series_df = parse_fit(target_filename) 
+    else:
+        st.error("Unsupported file format.")
+        time_series_df = pd.DataFrame()
         
     if not time_series_df.empty:
         st.subheader('Granular Activity Stream')
