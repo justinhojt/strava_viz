@@ -81,7 +81,7 @@ try:
                 y=alt.Y('heart_rate:Q', title='Heart Rate (bpm)', scale=alt.Scale(zero=False))
             )
         )
-        st.altair_chart(hr_chart, use_container_width=True)
+        st.altair_chart(hr_chart, width='stretch')
 
     if time_series_df['elevation'].notna().any():
         st.subheader('Elevation')
@@ -93,7 +93,7 @@ try:
                 y=alt.Y('elevation:Q', title='Elevation (m)', scale=alt.Scale(zero=False))
             )
         )
-        st.altair_chart(elevation_chart, use_container_width=True)
+        st.altair_chart(elevation_chart, width='stretch')
 
 except Exception as e:
     st.error(f'Data Pipeline Error: {e}')
