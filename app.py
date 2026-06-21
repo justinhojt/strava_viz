@@ -47,7 +47,7 @@ try:
         st.subheader('Granular Activity Stream')
         # Plot elevation profile or heart rate over time
         st.line_chart(time_series_df.set_index('timestamp')[['elevation']])
-        st.line_chart(time_series_df.set_index('timestamp')[['hr']])
+        st.line_chart(time_series_df.set_index('timestamp')[['heart_rate']])
     else:
         st.warning('This specific activity has a file entry but contains no coordinate data streams.')
 
