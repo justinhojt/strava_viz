@@ -28,11 +28,17 @@ try:
     # Key Performance Indicator Blocks
     selected_row = filtered_summary[filtered_summary['Filename'] == target_filename].iloc[0]
     
-    col1, col2, col3 = st.columns(3)
-    col1.metric('Distance', f'{selected_row['Distance']:.1f} m')
-    col2.metric('Moving Time', f'{selected_row['Moving Time'] // 60:.0f} min {selected_row['Moving Time'] % 60:.0f} sec')
+    col1, col2, col3, col4 = st.columns(4)
+
+    if selected_row['Activity Type'] != 'Workout':
+        col1.metric('Distance', f'{round(selected_row['Distance'])} m')
+        
+    col2.metric('Moving Time', f'{selected_row['Moving Time'] // 60:.0f}m {selected_row['Moving Time'] % 60:.0f}s')
+    
     if 'Average Heart Rate' in selected_row and pd.notna(selected_row['Average Heart Rate']):
         col3.metric('Avg Heart Rate', f'{int(selected_row["Average Heart Rate"])} bpm')
+        
+    col4.metric('Calories Burned', f'{selected_row['Calories']} cal')
         
     # Load and parse the second-by-second granular details
     with st.spinner('Parsing data...'):
@@ -44,10 +50,11 @@ try:
             st.error('Unsupported file format.')
         
     if not time_series_df.empty:
-        st.subheader('Granular Activity Stream')
-        # Plot elevation profile or heart rate over time
-        st.line_chart(time_series_df.set_index('timestamp')[['elevation']])
+        # Plot heart rate and elevation over time
+        st.subheader('Heart Rate')
         st.line_chart(time_series_df.set_index('timestamp')[['heart_rate']])
+        st.subheader('Elevation')
+        st.line_chart(time_series_df.set_index('timestamp')[['elevation']])
     else:
         st.warning('This specific activity has a file entry but contains no coordinate data streams.')
 
