@@ -28,6 +28,10 @@ def parse_csv():
   
     # Standardize date column to datetime data type
     df['Activity Date'] = pd.to_datetime(df['Activity Date'])
+    df['Activity Date'] = (df['Activity Date']
+                           .dt.tz_localize('UTC')
+                           .dt.tz_convert('Asia/Singapore')
+                           .dt.tz_localize(None))
   
     return df
 
