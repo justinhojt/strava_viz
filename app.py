@@ -67,8 +67,11 @@ try:
             time_series_df = parse_fit(target_filename) 
         else:
             st.error('Unsupported file format.')
+
+    if not time_series_df:
+        st.warning('This specific activity has a file entry but contains no coordinate data streams.')
         
-    if not time_series_df.empty:
+    if time_series_df['heart_rate']:
         st.subheader('Heart Rate')
         hr_chart = (
             alt.Chart(time_series_df)
@@ -80,6 +83,7 @@ try:
         )
         st.altair_chart(hr_chart, use_container_width=True)
 
+    if time_series_df['elevation']:
         st.subheader('Elevation')
         elevation_chart = (
             alt.Chart(time_series_df)
@@ -90,8 +94,6 @@ try:
             )
         )
         st.altair_chart(elevation_chart, use_container_width=True)
-    else:
-        st.warning('This specific activity has a file entry but contains no coordinate data streams.')
 
 except Exception as e:
     st.error(f'Data Pipeline Error: {e}')
