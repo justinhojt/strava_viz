@@ -88,17 +88,10 @@ def parse_fit(fit_filename):
             fitfile = FitFile(f)
             
     track_data = []
-    sc_to_deg = 180.0 / (2**31)  # Factor to convert semicircles to degrees
     
     # Iterate over every second-by-second data point message
     for record in fitfile.get_messages('record'):
         values = record.get_values()
-        
-        # Extract and convert coordinates if they exist
-        lat = values.get('position_lat')
-        lon = values.get('position_long')
-        if lat is not None: lat = lat * sc_to_deg
-        if lon is not None: lon = lon * sc_to_deg
         
         # Garmin devices often use 'enhanced_altitude' for better precision
         ele = values.get('enhanced_altitude')
@@ -108,8 +101,6 @@ def parse_fit(fit_filename):
         if 'timestamp' in values:
             track_data.append({
                 'timestamp': values.get('timestamp'),
-                'latitude': lat,
-                'longitude': lon,
                 'elevation': ele,
                 'heart_rate': values.get('heart_rate')
             })
