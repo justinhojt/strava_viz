@@ -40,21 +40,21 @@ try:
     #pace_100m = f'{selected_row['Moving Time']/(selected_row['Distance']/100):.2f} 
 
     if selected_row['Activity Type'] == 'Workout':
-        col1.metric('Activity Time', time)
+        col1.metric('Moving Time', time)
         col2.metric('Average Heart Rate', avg_hr)
         col3.metric('Maximum Heart Rate', max_hr)
         col4.metric('Calories Burned', cal)
         
     elif selected_row['Activity Type'] == 'Swim':
         col1.metric('Distance', dist_m)
-        col2.metric('Activity Time', time)
+        col2.metric('Moving Time', time)
         col3.metric('Average Heart Rate', avg_hr)
         col4.metric('Maximum Heart Rate', max_hr)
         col5.metric('Calories Burned', cal)
 
     else:
         col1.metric('Distance', dist_km)
-        col2.metric('Activity Time', time)
+        col2.metric('Moving Time', time)
         col3.metric('Average Heart Rate', avg_hr)
         col4.metric('Maximum Heart Rate', max_hr)
         col5.metric('Calories Burned', cal)
