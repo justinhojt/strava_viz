@@ -69,11 +69,27 @@ try:
             st.error('Unsupported file format.')
         
     if not time_series_df.empty:
-        # Plot heart rate and elevation over time
         st.subheader('Heart Rate')
-        st.line_chart(time_series_df.set_index('timestamp')[['heart_rate']])
+        hr_chart = (
+            alt.Chart(time_series_df)
+            .mark_line(color='#fc5200')  
+            .encode(
+                x=alt.X('timestamp:T', title='Time'),
+                y=alt.Y('heart_rate:Q', title='Heart Rate (bpm)', scale=alt.Scale(zero=False))
+            )
+        )
+        st.altair_chart(hr_chart, use_container_width=True)
+
         st.subheader('Elevation')
-        st.line_chart(time_series_df.set_index('timestamp')[['elevation']])
+        elevation_chart = (
+            alt.Chart(time_series_df)
+            .mark_line(color='#fc5200')
+            .encode(
+                x=alt.X('timestamp:T', title='Time'),
+                y=alt.Y('elevation:Q', title='Elevation (m)', scale=alt.Scale(zero=False))
+            )
+        )
+        st.altair_chart(elevation_chart, use_container_width=True)
     else:
         st.warning('This specific activity has a file entry but contains no coordinate data streams.')
 
