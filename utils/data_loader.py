@@ -68,10 +68,10 @@ def parse_gpx(gpx_filename):
     df = pd.DataFrame(track_data)
     if not df.empty:
         df['timestamp'] = pd.to_datetime(df['timestamp'])
-    if df['Activity Date'].dt.tz is not None:
-        df['Activity Date'] = (df['Activity Date'].dt.tz_convert('Asia/Singapore').dt.tz_localize(None))
+    if df['timestamp'].dt.tz is not None:
+        df['timestamp'] = (df['timestamp'].dt.tz_convert('Asia/Singapore').dt.tz_localize(None))
     else:
-        df['Activity Date'] = df['Activity Date'] + pd.Timedelta(hours=8)
+        df['timestamp'] = df['timestamp'] + pd.Timedelta(hours=8)
     return df
 
 def parse_fit(fit_filename):
