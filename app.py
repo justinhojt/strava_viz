@@ -71,7 +71,7 @@ try:
     if time_series_df.empty:
         st.warning('This specific activity has a file entry but contains no coordinate data streams.')
         
-    if not time_series_df['heart_rate'].empty:
+    if time_series_df['heart_rate'].notna().any():
         st.subheader('Heart Rate')
         hr_chart = (
             alt.Chart(time_series_df)
@@ -83,7 +83,7 @@ try:
         )
         st.altair_chart(hr_chart, use_container_width=True)
 
-    if not time_series_df['elevation'].empty:
+    if time_series_df['elevation'].notna().any():
         st.subheader('Elevation')
         elevation_chart = (
             alt.Chart(time_series_df)
