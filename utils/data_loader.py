@@ -26,13 +26,9 @@ def parse_csv():
     # Drop duplicated columns
     df = df.drop(columns=[col for col in df.columns if '.1' in col])
   
-    # Standardize date column to datetime data type in SGT
+    # Standardize date column to datetime data type
     df['Activity Date'] = pd.to_datetime(df['Activity Date'])
-    if df['Activity Date'].dt.tz is not None:
-        df['Activity Date'] = (df['Activity Date'].dt.tz_convert('Asia/Singapore').dt.tz_localize(None))
-    else:
-        df['Activity Date'] = df['Activity Date'] + pd.Timedelta(hours=8)
-      
+
     return df
 
 def parse_gpx(gpx_filename):
@@ -108,4 +104,8 @@ def parse_fit(fit_filename):
     df = pd.DataFrame(track_data)
     if not df.empty:
         df['timestamp'] = pd.to_datetime(df['timestamp'])
+    if df['timestamp'].dt.tz is not None:
+        df['timestamp'] = (df['timestamp'].dt.tz_convert('Asia/Singapore').dt.tz_localize(None))
+    else:
+        df['timestamp'] = df['timestamp'] + pd.Timedelta(hours=8)
     return df
