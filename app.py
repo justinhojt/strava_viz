@@ -68,7 +68,7 @@ try:
         else:
             st.error('Unsupported file format.')
 
-    if not time_series_df:
+    if not time_series_df.empty:
         st.warning('This specific activity has a file entry but contains no coordinate data streams.')
         
     if time_series_df['heart_rate']:
