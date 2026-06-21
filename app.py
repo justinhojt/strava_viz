@@ -68,10 +68,10 @@ try:
         else:
             st.error('Unsupported file format.')
 
-    if not time_series_df.empty:
+    if time_series_df.empty:
         st.warning('This specific activity has a file entry but contains no coordinate data streams.')
         
-    if time_series_df['heart_rate']:
+    if not time_series_df['heart_rate'].empty:
         st.subheader('Heart Rate')
         hr_chart = (
             alt.Chart(time_series_df)
@@ -83,7 +83,7 @@ try:
         )
         st.altair_chart(hr_chart, use_container_width=True)
 
-    if time_series_df['elevation']:
+    if not time_series_df['elevation'].empty:
         st.subheader('Elevation')
         elevation_chart = (
             alt.Chart(time_series_df)
