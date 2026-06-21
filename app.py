@@ -1,4 +1,5 @@
 import streamlit as st
+import altair as alt
 import pandas as pd
 import os
 from utils.data_loader import parse_csv, parse_gpx, parse_fit
@@ -28,20 +29,35 @@ try:
     # Key Performance Indicator Blocks
     selected_row = filtered_summary[filtered_summary['Filename'] == target_filename].iloc[0]
     
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
 
-    if selected_row['Activity Type'] != 'Workout':
-        if selected_row['Activity Type'] == 'Swim':
-            col1.metric('Distance', f'{round(selected_row['Distance'])} m')
-        else:
-            col1.metric('Distance', f'{selected_row['Distance']/1000:.2f} km')
+    time = f'{selected_row['Moving Time'] // 60:.0f}m {selected_row['Moving Time'] % 60:.0f}s'
+    dist_m = f'{selected_row['Distance']:.0f} m'
+    dist_km = f'{selected_row['Moving Time'] // 60:.0f}m {selected_row['Moving Time'] % 60:.0f}s'
+    avg_hr = f'{selected_row["Average Heart Rate"]:.0f} bpm'
+    max_hr = f'{selected_row["Max Heart Rate"]:.0f} bpm'
+    cal = f'{selected_row['Calories']:.0f} cal'
+    #pace_100m = f'{selected_row['Moving Time']/(selected_row['Distance']/100):.2f} 
+
+    if selected_row['Activity Type'] == 'Workout':
+        col1.metric('Activity Time', time)
+        col2.metric('Average Heart Rate', avg_hr)
+        col3.metric('Maximum Heart Rate', max_hr)
+        col4.metric('Calories Burned', cal)
         
-    col2.metric('Moving Time', f'{selected_row['Moving Time'] // 60:.0f}m {selected_row['Moving Time'] % 60:.0f}s')
-    
-    if 'Average Heart Rate' in selected_row and pd.notna(selected_row['Average Heart Rate']):
-        col3.metric('Avg Heart Rate', f'{int(selected_row["Average Heart Rate"])} bpm')
-        
-    col4.metric('Calories Burned', f'{int(selected_row['Calories'])} cal')
+    elif selected_row['Activity Type'] == 'Swim':
+        col1.metric('Distance', dist_m)
+        col2.metric('Activity Time', time)
+        col3.metric('Average Heart Rate', avg_hr)
+        col4.metric('Maximum Heart Rate', max_hr)
+        col5.metric('Calories Burned', cal)
+
+    else:
+        col1.metric('Distance', dist_km)
+        col2.metric('Activity Time', time)
+        col3.metric('Average Heart Rate', avg_hr)
+        col4.metric('Maximum Heart Rate', max_hr)
+        col5.metric('Calories Burned', cal)
         
     # Load and parse the second-by-second granular details
     with st.spinner('Parsing data...'):
