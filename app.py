@@ -31,14 +31,17 @@ try:
     col1, col2, col3, col4 = st.columns(4)
 
     if selected_row['Activity Type'] != 'Workout':
-        col1.metric('Distance', f'{round(selected_row['Distance'])} m')
+        if selected_row['Activity Type'] == 'Swim':
+            col1.metric('Distance', f'{round(selected_row['Distance'])} m')
+        else:
+            col1.metric('Distance', f'{selected_row['Distance']/1000:.2f} km')
         
     col2.metric('Moving Time', f'{selected_row['Moving Time'] // 60:.0f}m {selected_row['Moving Time'] % 60:.0f}s')
     
     if 'Average Heart Rate' in selected_row and pd.notna(selected_row['Average Heart Rate']):
         col3.metric('Avg Heart Rate', f'{int(selected_row["Average Heart Rate"])} bpm')
         
-    col4.metric('Calories Burned', f'{selected_row['Calories']} cal')
+    col4.metric('Calories Burned', f'{int(selected_row['Calories'])} cal')
         
     # Load and parse the second-by-second granular details
     with st.spinner('Parsing data...'):
