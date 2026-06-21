@@ -33,7 +33,7 @@ try:
 
     time = f'{selected_row['Moving Time'] // 60:.0f}m {selected_row['Moving Time'] % 60:.0f}s'
     dist_m = f'{selected_row['Distance']:.0f} m'
-    dist_km = f'{selected_row['Moving Time'] // 60:.0f}m {selected_row['Moving Time'] % 60:.0f}s'
+    dist_km = f'{selected_row['Distance']/1000:.2f} km'
     avg_hr = f'{selected_row["Average Heart Rate"]:.0f} bpm'
     max_hr = f'{selected_row["Max Heart Rate"]:.0f} bpm'
     cal = f'{selected_row['Calories']:.0f} cal'
