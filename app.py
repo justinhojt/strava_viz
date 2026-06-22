@@ -172,7 +172,7 @@ try:
                     tooltip=['Activity Date:T', 'aero_ratio:Q']
                 )
             )
-            st.altair_chart(aero_chart, width='stretch')
+            st.altair_chart(aero_chart, use_container_width=True)
 
         else:
             st.warning('No valid rows containing both Heart Rate and Speed data were found to plot.')
