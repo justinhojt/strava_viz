@@ -103,7 +103,5 @@ def parse_fit(fit_filename):
     if not df.empty:
         df['timestamp'] = pd.to_datetime(df['timestamp'])
     if df['timestamp'].dt.tz is not None:
-        df['timestamp'] = (df['timestamp'].dt.tz_convert('Asia/Singapore').dt.tz_localize(None))
-    else:
-        df['timestamp'] = df['timestamp'] + pd.Timedelta(hours=8)
+        df['timestamp'] = df['timestamp'].dt.tz_localize(None)
     return df
