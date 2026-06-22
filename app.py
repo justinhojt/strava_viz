@@ -151,6 +151,7 @@ try:
 
     elif page == 'Aerobic Efficiency Trend':
 
+        steady_runs['Activity Date'] = pd.to_datetime(steady_runs['Activity Date'], errors='coerce')
         steady_runs['Average Heart Rate'] = pd.to_numeric(steady_runs['Average Heart Rate'], errors='coerce')
         steady_runs['Average Speed'] = pd.to_numeric(steady_runs['Average Speed'], errors='coerce')
         
