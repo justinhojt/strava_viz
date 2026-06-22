@@ -153,11 +153,11 @@ try:
         steady_runs['aero_ratio'] = steady_runs['Average Heart Rate']/steady_runs['Average Speed']
 
         st.subheader('Aerobic Efficiency')
-        areo_chart = (
+        aero_chart = (
             alt.Chart(steady_runs)
             .mark_line(color='#fc5200')  
             .encode(
-                x=alt.X('Activity Day:T', title='Date'),
+                x=alt.X('Activity Date:T', title='Date'),
                 y=alt.Y('aero_ratio:Q', title='Ratio of Average HR to Average Speed', scale=alt.Scale(zero=False))
             )
         )
