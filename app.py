@@ -1,11 +1,39 @@
 import streamlit as st
 import altair as alt
 import pandas as pd
+import numpy as np
 import os
 from utils.data_loader import parse_csv, parse_gpx, parse_fit
 
 st.set_page_config(layout='wide')
 st.title('Strava Archive Analytics Dashboard')
+
+# Calculates cumulative Banister TRIMP score from second-by-second time-series data.
+def calc_trimp(df, hr_max=200, hr_rest=80, gender='male'):
+    if df.empty or 'heart_rate' not in df.columns or 'timestamp' not in df.columns:
+        return 0.0
+    
+    # Calculate time delta between points in minutes (handling variable sampling rates)
+    delta_t_minutes = (df['timestamp']).diff().dt.total_seconds().fillna(1.0) / 60.0
+    
+    # Drop rows with missing heart rate data for accurate tracking
+    hr = df['heart_rate'].ffill().bfill() 
+    
+    # Calculate HR Reserve Fraction (clipped between 0 and 1 to prevent data anomalies)
+    delta_hr = (heart_rate - 80) / (max_hr - 80)
+    delta_hr = delta_hr.clip(0.0, 1.0)
+    
+    # Compute the exponential weighting factor
+    if gender.lower() == 'male':
+        y = 0.64 * np.exp(1.92 * delta_hr)
+    else:
+        y = 0.86 * np.exp(1.67 * delta_hr)
+        
+    # Calculate instantaneous TRIMP per row: Time * Intensity * Weight
+    row_trimp = delta_t_minutes * delta_hr * y
+    
+    # Return the cumulative sum of the workout
+    return float(row_trimp.sum())
 
 # Load macro data
 try:
@@ -25,6 +53,18 @@ try:
     
     selected_activity_label = st.sidebar.selectbox('Select Specific Session', list(activity_map.keys()))
     target_filename = activity_map[selected_activity_label]
+
+    # Load and parse the second-by-second granular details
+    with st.spinner('Parsing data...'):
+        if target_filename.endswith('.gpx') or target_filename.endswith('.gpx.gz'):
+            time_series_df = parse_gpx(target_filename)
+        elif target_filename.endswith('.fit') or target_filename.endswith('.fit.gz'):
+            time_series_df = parse_fit(target_filename) 
+        else:
+            st.error('Unsupported file format.')
+
+    if time_series_df.empty:
+        st.warning('This specific activity has a file entry but contains no coordinate data streams.')
     
     # Key Performance Indicator Blocks
     selected_row = filtered_summary[filtered_summary['Filename'] == target_filename].iloc[0]
@@ -37,13 +77,14 @@ try:
     avg_hr = f'{selected_row["Average Heart Rate"]:.0f} bpm'
     max_hr = f'{selected_row["Max Heart Rate"]:.0f} bpm'
     cal = f'{selected_row['Calories']:.0f} cal'
-    #pace_100m = f'{selected_row['Moving Time']/(selected_row['Distance']/100):.2f} 
+    trimp = f'{calc_trimp(time_series_df):.2f}'
 
     if selected_row['Activity Type'] == 'Workout':
         col1.metric('Moving Time', time)
         col2.metric('Average Heart Rate', avg_hr)
         col3.metric('Maximum Heart Rate', max_hr)
         col4.metric('Calories Burned', cal)
+        col5.metric('Training Intensity Score', trimp)
         
     elif selected_row['Activity Type'] == 'Swim':
         col1.metric('Distance', dist_m)
@@ -51,6 +92,7 @@ try:
         col3.metric('Average Heart Rate', avg_hr)
         col4.metric('Maximum Heart Rate', max_hr)
         col5.metric('Calories Burned', cal)
+        col6.metric('Training Intensity Score', trimp)
 
     else:
         col1.metric('Distance', dist_km)
@@ -58,19 +100,9 @@ try:
         col3.metric('Average Heart Rate', avg_hr)
         col4.metric('Maximum Heart Rate', max_hr)
         col5.metric('Calories Burned', cal)
+        col6.metric('Training Intensity Score', trimp)
         
-    # Load and parse the second-by-second granular details
-    with st.spinner('Parsing data...'):
-        if target_filename.endswith('.gpx') or target_filename.endswith('.gpx.gz'):
-            time_series_df = parse_gpx(target_filename)
-        elif target_filename.endswith('.fit') or target_filename.endswith('.fit.gz'):
-            time_series_df = parse_fit(target_filename) 
-        else:
-            st.error('Unsupported file format.')
-
-    if time_series_df.empty:
-        st.warning('This specific activity has a file entry but contains no coordinate data streams.')
-        
+    # PLot heart rate and elevation data 
     if time_series_df['heart_rate'].notna().any():
         st.subheader('Heart Rate')
         hr_chart = (
