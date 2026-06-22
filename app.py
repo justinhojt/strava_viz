@@ -190,7 +190,9 @@ try:
             ).mark_line(color='#fc5200', size=3)
 
             # 4. Layer both charts on top of each other
-            aero_chart = alt.layer(points, trend_line)
+            aero_chart = alt.layer(points, trend_line).properties(
+            height=450  
+            )
 
             st.altair_chart(aero_chart, use_container_width=True)
 
