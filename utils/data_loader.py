@@ -68,7 +68,7 @@ def parse_gpx(gpx_filename):
             df['timestamp'] = df['timestamp'].dt.tz_convert('Asia/Singapore').dt.tz_localize(None)
         else:
             df['timestamp'] = df['timestamp'] + pd.Timedelta(hours=8)
-        df['timestamp'] = df['timestamp'].dt.strftime('%Y-%m-%dT%H:%M:%S')
+        df['graph_timestamp'] = df['timestamp'].dt.strftime('%Y-%m-%dT%H:%M:%S')
         
     return df
 
@@ -110,6 +110,6 @@ def parse_fit(fit_filename):
             df['timestamp'] = df['timestamp'].dt.tz_convert('Asia/Singapore').dt.tz_localize(None)
         else:
             df['timestamp'] = df['timestamp'] + pd.Timedelta(hours=8)
-        df['timestamp'] = df['timestamp'].dt.strftime('%Y-%m-%dT%H:%M:%S')
+        df['graph_timestamp'] = df['timestamp'].dt.strftime('%Y-%m-%dT%H:%M:%S')
         
     return df
