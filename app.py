@@ -156,7 +156,7 @@ try:
         
         # Avoid division by zero
         steady_runs = steady_runs[steady_runs['Average Speed'] > 0]
-        steady_runs['aero_ratio'] = steady_runs['Average Heart Rate'] / steady_runs['Average Speed']
+        steady_runs['aero_ratio'] = steady_runs['Average Speed'] / steady_runs['Average Heart Rate']
 
         # Drop missing data and sort chronologically
         chart_data = (
@@ -173,7 +173,7 @@ try:
                 .mark_line(color='#fc5200', point=True) 
                 .encode(
                     x=alt.X('graph_date:T', title='Date'),
-                    y=alt.Y('aero_ratio:Q', title='Ratio (Heart Rate / Speed)', scale=alt.Scale(zero=False)),
+                    y=alt.Y('aero_ratio:Q', title='Ratio (Speed/HR)', scale=alt.Scale(zero=False)),
                     tooltip=[alt.Tooltip('graph_date:T', title='Date', format='%Y-%m-%d'), 'aero_ratio:Q']
                 )
             )
