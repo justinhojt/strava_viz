@@ -15,6 +15,8 @@ def calc_trimp(df, hr_max=200, hr_rest=80, gender='male'):
     
     # Calculate time delta between points in minutes (handling variable sampling rates)
     delta_t_minutes = (df['timestamp']).diff().dt.total_seconds().fillna(1.0) / 60.0
+
+    hr_numeric = pd.to_numeric(df['heart_rate'], errors='coerce')
     
     # Drop rows with missing heart rate data for accurate tracking
     hr = df['heart_rate'].ffill().bfill()
