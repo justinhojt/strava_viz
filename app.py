@@ -150,6 +150,10 @@ try:
             st.altair_chart(elevation_chart, width='stretch')
 
     elif page == 'Aerobic Efficiency Trend':
+
+        steady_runs['Average Heart Rate'] = pd.to_numeric(steady_runs['Average Heart Rate'], errors='coerce')
+        steady_runs['Average Speed'] = pd.to_numeric(steady_runs['Average Speed'], errors='coerce')
+        
         steady_runs['aero_ratio'] = steady_runs['Average Heart Rate']/steady_runs['Average Speed']
 
         chart_data = (
