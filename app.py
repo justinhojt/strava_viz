@@ -149,19 +149,22 @@ try:
             st.altair_chart(elevation_chart, width='stretch')
 
     elif page == 'Aerobic Efficiency Trend':
+        st.subheader('Aerobic Efficiency')
 
-        steady_runs['Activity Date'] = pd.to_datetime(steady_runs['Activity Date'], errors='coerce')
         steady_runs['Average Heart Rate'] = pd.to_numeric(steady_runs['Average Heart Rate'], errors='coerce')
         steady_runs['Average Speed'] = pd.to_numeric(steady_runs['Average Speed'], errors='coerce')
         
-        steady_runs['aero_ratio'] = steady_runs['Average Heart Rate']/steady_runs['Average Speed']
+        # Avoid division by zero
+        steady_runs = steady_runs[steady_runs['Average Speed'] > 0]
+        steady_runs['aero_ratio'] = steady_runs['Average Heart Rate'] / steady_runs['Average Speed']
 
+        # Drop missing data and sort chronologically
         chart_data = (
-        steady_runs.dropna(subset=['Activity Date', 'aero_ratio'])
-        .sort_values('Activity Date')
+            steady_runs.dropna(subset=['Activity Date', 'aero_ratio'])
+            .sort_values('Activity Date')
+            .copy()
         )
 
-        st.subheader('Aerobic Efficiency')
         if not chart_data.empty:
             chart_data['graph_date'] = chart_data['Activity Date'].dt.strftime('%Y-%m-%dT%H:%M:%S')
 
