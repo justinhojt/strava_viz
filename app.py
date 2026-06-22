@@ -46,7 +46,7 @@ try:
         if pd.isna(row['Average Speed']) or row['Average Speed'] == 0:
             return 'Unknown'
             
-        moving_ratio = row['Moving_Time']/row['Elapsed_Time']
+        moving_ratio = row['Moving Time']/row['Elapsed Time']
         
         if moving_ratio < 0.75:
             return 'Interval'
