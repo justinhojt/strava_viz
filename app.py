@@ -2,7 +2,6 @@ import streamlit as st
 import altair as alt
 import pandas as pd
 import numpy as np
-import os
 from utils.data_loader import parse_csv, parse_gpx, parse_fit
 
 st.set_page_config(layout='wide')
@@ -150,9 +149,20 @@ try:
             )
             st.altair_chart(elevation_chart, width='stretch')
 
-    elif page == 'Aerobic Efficiency Trends':
-            st.title('test')
+    elif page == 'Aerobic Efficiency Trend':
+        steady_runs['aero_ratio'] = steady_runs['Average Heart Rate']/steady_runs['Average Speed']
 
+        st.subheader('Aerobic Efficiency')
+        areo_chart = (
+            alt.Chart(steady_runs)
+            .mark_line(color='#fc5200')  
+            .encode(
+                x=alt.X('Activity Day:T', title='Date'),
+                y=alt.Y('aero_ratio:Q', title='Ratio of Average HR to Average Speed', scale=alt.Scale(zero=False))
+            )
+        )
+        st.altair_chart(aero_chart, width='stretch')
+        
 except Exception as e:
     st.error(f'Data Pipeline Error: {e}')
     st.info('Ensure your extracted Strava data folder is structured correctly in the root directory.')
