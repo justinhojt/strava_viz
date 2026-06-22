@@ -148,7 +148,7 @@ try:
             )
             st.altair_chart(elevation_chart, width='stretch')
 
-    elif page == 'Aerobic Efficiency Trend':
+    elif page == 'Aerobic Efficiency Trends':
         st.subheader('Aerobic Efficiency')
 
         steady_runs['Average Heart Rate'] = pd.to_numeric(steady_runs['Average Heart Rate'], errors='coerce')
