@@ -109,7 +109,7 @@ try:
             alt.Chart(time_series_df)
             .mark_line(color='#fc5200')  
             .encode(
-                x=alt.X('timestamp:T', title='Time'),
+                x=alt.X('graph_timestamp:T', title='Time'),
                 y=alt.Y('heart_rate:Q', title='Heart Rate (bpm)', scale=alt.Scale(zero=False))
             )
         )
@@ -121,7 +121,7 @@ try:
             alt.Chart(time_series_df)
             .mark_line(color='#fc5200')
             .encode(
-                x=alt.X('timestamp:T', title='Time'),
+                x=alt.X('graph_timestamp:T', title='Time'),
                 y=alt.Y('elevation:Q', title='Elevation (m)', scale=alt.Scale(zero=False))
             )
         )
