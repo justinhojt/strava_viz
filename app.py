@@ -17,10 +17,10 @@ def calc_trimp(df, hr_max=200, hr_rest=80, gender='male'):
     delta_t_minutes = (df['timestamp']).diff().dt.total_seconds().fillna(1.0) / 60.0
     
     # Drop rows with missing heart rate data for accurate tracking
-    hr = int(df['heart_rate'].ffill().bfill()) 
+    hr = df['heart_rate'].ffill().bfill()
     
     # Calculate HR Reserve Fraction (clipped between 0 and 1 to prevent data anomalies)
-    delta_hr = (hr - 80) / (max_hr - 80)
+    delta_hr = (hr - hr_rest) / (hr_max - hr_rest)
     delta_hr = delta_hr.clip(0.0, 1.0)
     
     # Compute the exponential weighting factor
