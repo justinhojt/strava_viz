@@ -163,13 +163,15 @@ try:
 
         st.subheader('Aerobic Efficiency')
         if not chart_data.empty:
+            chart_data['graph_date'] = chart_data['Activity Date'].dt.strftime('%Y-%m-%dT%H:%M:%S')
+
             aero_chart = (
                 alt.Chart(chart_data)
                 .mark_line(color='#fc5200', point=True) 
                 .encode(
-                    x=alt.X('Activity Date:T', title='Date'),
+                    x=alt.X('graph_date:T', title='Date'),
                     y=alt.Y('aero_ratio:Q', title='Ratio (Heart Rate / Speed)', scale=alt.Scale(zero=False)),
-                    tooltip=['Activity Date:T', 'aero_ratio:Q']
+                    tooltip=[alt.Tooltip('graph_date:T', title='Date', format='%Y-%m-%d'), 'aero_ratio:Q']
                 )
             )
             st.altair_chart(aero_chart, use_container_width=True)
