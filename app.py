@@ -149,10 +149,10 @@ try:
             st.altair_chart(elevation_chart, width='stretch')
 
     elif page == 'Aerobic Efficiency Trends':
-        st.subheader('Aerobic Efficiency')
+        st.subheader('Aerobic efficiency, estimated by the ratio between Average Speed to Average Heart Rate. A rising trendline mathematically demonstrates cardiovascular adaptation (moving faster at a lower metabolic cost).')
 
-        steady_runs['Average Heart Rate'] = pd.to_numeric(steady_runs['Average Heart Rate'], errors='coerce')
         steady_runs['Average Speed'] = pd.to_numeric(steady_runs['Average Speed'], errors='coerce')
+        steady_runs['Average Heart Rate'] = pd.to_numeric(steady_runs['Average Heart Rate'], errors='coerce')
         
         # Avoid division by zero
         steady_runs = steady_runs[steady_runs['Average Speed'] > 0]
@@ -191,7 +191,7 @@ try:
 
             # 4. Layer both charts on top of each other
             aero_chart = alt.layer(points, trend_line).properties(
-            height=450  
+            height=500  
             )
 
             st.altair_chart(aero_chart, use_container_width=True)
