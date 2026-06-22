@@ -16,8 +16,7 @@ def calc_trimp(df, hr_max=200, hr_rest=80, gender='male'):
     delta_t_minutes = (df['timestamp']).diff().dt.total_seconds().fillna(1.0) / 60.0
     
     # Clean heart rate data
-    hr = df['heart_rate'].ffill().bfill()
-    hr = pd.to_numeric(df['heart_rate'], errors='coerce')
+    hr = pd.to_numeric(df['heart_rate'], errors='coerce').ffill().bfill()
     
     # Calculate HR Reserve Fraction (clipped between 0 and 1 to prevent data anomalies)
     delta_hr = (hr - hr_rest) / (hr_max - hr_rest)
@@ -54,7 +53,7 @@ try:
     
     runs_df = summary_df[summary_df['Activity Type'] == 'Run'].copy()
     runs_df['Workout Style'] = runs_df.apply(classify_workout_style, axis=1)
-    steady_runs = runs_df[runs_df['Workout Style'] == 'Steady State']
+    steady_runs = runs_df[runs_df['Workout Style'] == 'Steady State'].copy()
 
     # Page Navigation Router
     st.sidebar.title('Navigation')
