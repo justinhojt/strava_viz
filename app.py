@@ -168,15 +168,30 @@ try:
         if not chart_data.empty:
             chart_data['graph_date'] = chart_data['Activity Date'].dt.strftime('%Y-%m-%dT%H:%M:%S')
 
-            aero_chart = (
-                alt.Chart(chart_data)
-                .mark_line(color='#fc5200', point=True) 
-                .encode(
-                    x=alt.X('graph_date:T', title='Date'),
-                    y=alt.Y('aero_ratio:Q', title='Ratio (Speed/HR)', scale=alt.Scale(zero=False)),
-                    tooltip=[alt.Tooltip('graph_date:T', title='Date', format='%Y-%m-%d'), 'aero_ratio:Q']
-                )
+            base = alt.Chart(chart_data).encode(
+                x=alt.X('graph_date:T', title='Date'),
+                y=alt.Y('aero_ratio:Q', title='Ratio (Heart Rate / Speed)', scale=alt.Scale(zero=False))
             )
+
+            # 2. White scatter points layer with orange stroke edges
+            points = base.mark_circle(
+                size=60, 
+                fill='white', 
+                stroke='#fc5200', 
+                strokeWidth=1.5, 
+                opacity=0.8
+            ).encode(
+                tooltip=[alt.Tooltip('graph_date:T', title='Date', format='%Y-%m-%d'), 'aero_ratio:Q']
+            )
+
+            # 3. Orange Trend Line layer mapping trajectory over time
+            trend_line = base.transform_regression(
+                'graph_date', 'aero_ratio'
+            ).mark_line(color='#fc5200', size=3)
+
+            # 4. Layer both charts on top of each other
+            aero_chart = alt.layer(points, trend_line)
+
             st.altair_chart(aero_chart, use_container_width=True)
 
         else:
