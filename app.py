@@ -152,16 +152,24 @@ try:
     elif page == 'Aerobic Efficiency Trend':
         steady_runs['aero_ratio'] = steady_runs['Average Heart Rate']/steady_runs['Average Speed']
 
-        st.subheader('Aerobic Efficiency')
-        aero_chart = (
-            alt.Chart(steady_runs)
-            .mark_line(color='#fc5200')  
-            .encode(
-                x=alt.X('Activity Date:T', title='Date'),
-                y=alt.Y('aero_ratio:Q', title='Ratio of Average HR to Average Speed', scale=alt.Scale(zero=False))
-            )
+        chart_data = (
+        steady_runs.dropna(subset=['Activity Date', 'aero_ratio'])
+        .sort_values('Activity Date')
         )
-        st.altair_chart(aero_chart, width='stretch')
+
+        st.subheader('Aerobic Efficiency')
+        if not chart_data.empty:
+            aero_chart = (
+                alt.Chart(chart_data)
+                .mark_line(color='#fc5200', point=True) 
+                .encode(
+                    x=alt.X('Activity Date:T', title='Date'),
+                    y=alt.Y('aero_ratio:Q', title='Ratio (Heart Rate / Speed)', scale=alt.Scale(zero=False)),
+                    tooltip=['Activity Date:T', 'aero_ratio:Q']
+                )
+            )
+        else:
+            st.warning('No valid rows containing both Heart Rate and Speed data were found to plot.')
         
 except Exception as e:
     st.error(f'Data Pipeline Error: {e}')
