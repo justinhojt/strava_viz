@@ -36,26 +36,26 @@ def calc_trimp(df, hr_max=200, hr_rest=80, gender='male'):
     # Return the cumulative sum of the workout
     return float(row_trimp.sum())
 
-# Filters out interval training
-def classify_workout_style(row):
-    # Prevent division by zero
-    if pd.isna(row['Average Speed']) or row['Average Speed'] == 0:
-        return 'Unknown'
-        
-    moving_ratio = row['Moving_Time']/row['Elapsed_Time']
-    
-    if moving_ratio < 0.75:
-        return 'Interval'
-    else:
-        return 'Steady State'
-
-runs_df = summary_df[summary_df['Activity Type'] == 'Run'].copy()
-runs_df['Workout Style'] = runs_df.apply(classify_workout_style, axis=1)
-steady_runs = runs_df[runs_df['Workout Style'] == 'Steady State']
-
 # Load macro data
 try:
     summary_df = parse_csv()
+
+    # Filters out interval training
+    def classify_workout_style(row):
+        # Prevent division by zero
+        if pd.isna(row['Average Speed']) or row['Average Speed'] == 0:
+            return 'Unknown'
+            
+        moving_ratio = row['Moving_Time']/row['Elapsed_Time']
+        
+        if moving_ratio < 0.75:
+            return 'Interval'
+        else:
+            return 'Steady State'
+    
+    runs_df = summary_df[summary_df['Activity Type'] == 'Run'].copy()
+    runs_df['Workout Style'] = runs_df.apply(classify_workout_style, axis=1)
+    steady_runs = runs_df[runs_df['Workout Style'] == 'Steady State']
 
     # Page Navigation Router
     st.sidebar.title('Navigation')
