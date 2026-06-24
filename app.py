@@ -126,7 +126,7 @@ try:
         steady_runs = runs[runs['Workout Style'] == 'Steady State'].copy()
 
         # Avoid division by zero
-        steady_runs = steady_runs[steady_runs['Average Grade Adjusted Pace'] > 0]
+        steady_runs = steady_runs[(steady_runs['Average Grade Adjusted Pace']) > 0 & (runs['Distance'] >= 1000)]
         steady_runs['aero_ratio'] = steady_runs['Average Grade Adjusted Pace'] / steady_runs['Average Heart Rate']
 
         # Drop missing data and sort chronologically
@@ -170,8 +170,8 @@ try:
 
         walks = summary_df[summary_df['Activity Type'] == 'Walk'].copy()
         
-        # Avoid division by zero
-        walks = walks[walks['Average Grade Adjusted Pace'] > 0]
+        # Avoid division by zero and exclude short distances
+        walks = walks[(walks['Average Grade Adjusted Pace'] > 0) & (walks['Distance'] >= 1000)]
         walks['aero_ratio'] = walks['Average Grade Adjusted Pace'] / walks['Average Heart Rate']
 
         # Drop missing data and sort chronologically
