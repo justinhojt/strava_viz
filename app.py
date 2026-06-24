@@ -3,7 +3,7 @@ import altair as alt
 import pandas as pd
 import numpy as np
 from utils.data_loader import parse_csv, parse_gpx, parse_fit
-from utils.functions import calc_trimps, classify_workout_style
+from utils.functions import parse_granular, calc_trimps, classify_workout_style
 
 st.set_page_config(layout='wide')
 st.title('Strava Archive Analytics Dashboard')
@@ -225,7 +225,7 @@ try:
         """)
 
         trimps = summary_df.copy()
-        trimps['trimps'] = trimps.apply(calc_trimps, axis=1)
+        trimps = parse_granular(trimps)
 
 
 except Exception as e:
