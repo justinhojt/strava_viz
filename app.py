@@ -11,10 +11,6 @@ st.title('Strava Archive Analytics Dashboard')
 # Load macro data
 try:
     summary_df = parse_csv()
-    
-    runs_df = summary_df[summary_df['Activity Type'] == 'Run'].copy()
-    runs_df['Workout Style'] = runs_df.apply(classify_workout_style, axis=1)
-    steady_runs = runs_df[runs_df['Workout Style'] == 'Steady State'].copy()
 
     # Page Navigation Router
     st.sidebar.title('Navigation')
@@ -124,6 +120,10 @@ try:
     elif page == 'Aerobic Efficiency Trends':
         st.subheader('Aerobic efficiency') 
         st.write('A rising trendline mathematically demonstrates cardiovascular adaptation (moving faster at a lower metabolic cost).')
+
+        runs_df = summary_df[summary_df['Activity Type'] == 'Run'].copy()
+        runs_df['Workout Style'] = runs_df.apply(classify_workout_style, axis=1)
+        steady_runs = runs_df[runs_df['Workout Style'] == 'Steady State'].copy()
 
         steady_runs['Average Speed'] = pd.to_numeric(steady_runs['Average Speed'], errors='coerce')
         steady_runs['Average Heart Rate'] = pd.to_numeric(steady_runs['Average Heart Rate'], errors='coerce')
