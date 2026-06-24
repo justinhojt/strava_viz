@@ -56,7 +56,6 @@ def parse_granular(csv):
             continue 
             
         try:
-            # 3. Route to your existing parsing functions based on extension
             if target_filename.endswith('.gpx') or target_filename.endswith('.gpx.gz'):
                 time_series_df = parse_gpx(target_filename)
             elif target_filename.endswith('.fit') or target_filename.endswith('.fit.gz'):
