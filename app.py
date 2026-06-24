@@ -168,6 +168,52 @@ try:
             height=500  
             )
 
+            st.subheader('Running') 
+            st.altair_chart(aero_chart, width='stretch')
+
+        walks_df = summary_df[summary_df['Activity Type'] == 'Walk'].copy()
+        
+        # Avoid division by zero
+        walks = walks[walks['Average Speed'] > 0]
+        walks['aero_ratio'] = walks['Average Speed'] / walks['Average Heart Rate']
+
+        # Drop missing data and sort chronologically
+        chart_data = (
+            walks.dropna(subset=['Activity Date', 'aero_ratio'])
+            .sort_values('Activity Date')
+            .copy()
+        )
+
+        if not chart_data.empty:
+            chart_data['graph_date'] = chart_data['Activity Date'].dt.strftime('%Y-%m-%dT%H:%M:%S')
+
+            base = alt.Chart(chart_data).encode(
+                x=alt.X('graph_date:T', title='Date'),
+                y=alt.Y('aero_ratio:Q', title='Ratio (Speed/Heart Rate)', scale=alt.Scale(zero=False))
+            )
+
+            # 2. White scatter points layer with orange stroke edges
+            points = base.mark_circle(
+                size=60, 
+                fill='white', 
+                stroke='#fc5200', 
+                strokeWidth=1.5, 
+                opacity=0.8
+            ).encode(
+                tooltip=[alt.Tooltip('graph_date:T', title='Date', format='%Y-%m-%d'), 'aero_ratio:Q']
+            )
+
+            # 3. Orange Trend Line layer mapping trajectory over time
+            trend_line = base.transform_regression(
+                'graph_date', 'aero_ratio'
+            ).mark_line(color='#fc5200', size=3)
+
+            # 4. Layer both charts on top of each other
+            aero_chart = alt.layer(points, trend_line).properties(
+            height=500  
+            )
+
+            st.subheader('Walking') 
             st.altair_chart(aero_chart, width='stretch')
 
         else:
