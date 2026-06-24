@@ -121,16 +121,13 @@ try:
         st.subheader('Aerobic efficiency') 
         st.write('A rising trendline mathematically demonstrates cardiovascular adaptation (moving faster at a lower metabolic cost).')
 
-        runs_df = summary_df[summary_df['Activity Type'] == 'Run'].copy()
-        runs_df['Workout Style'] = runs_df.apply(classify_workout_style, axis=1)
+        runs = summary_df[summary_df['Activity Type'] == 'Run'].copy()
+        runs['Workout Style'] = runs.apply(classify_workout_style, axis=1)
         steady_runs = runs_df[runs_df['Workout Style'] == 'Steady State'].copy()
 
-        steady_runs['Average Speed'] = pd.to_numeric(steady_runs['Average Speed'], errors='coerce')
-        steady_runs['Average Heart Rate'] = pd.to_numeric(steady_runs['Average Heart Rate'], errors='coerce')
-        
         # Avoid division by zero
-        steady_runs = steady_runs[steady_runs['Average Speed'] > 0]
-        steady_runs['aero_ratio'] = steady_runs['Average Speed'] / steady_runs['Average Heart Rate']
+        steady_runs = steady_runs[steady_runs['Average Grade Adjusted Pace'] > 0]
+        steady_runs['aero_ratio'] = steady_runs['Average Grade Adjusted Pace'] / steady_runs['Average Heart Rate']
 
         # Drop missing data and sort chronologically
         chart_data = (
@@ -174,8 +171,8 @@ try:
         walks = summary_df[summary_df['Activity Type'] == 'Walk'].copy()
         
         # Avoid division by zero
-        walks = walks[walks['Average Speed'] > 0]
-        walks['aero_ratio'] = walks['Average Speed'] / walks['Average Heart Rate']
+        walks = walks[walks['Average Grade Adjusted Pace'] > 0]
+        walks['aero_ratio'] = walks['Average Grade Adjusted Pace'] / walks['Average Heart Rate']
 
         # Drop missing data and sort chronologically
         chart_data = (
