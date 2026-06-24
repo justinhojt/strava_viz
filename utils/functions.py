@@ -24,3 +24,16 @@ def calc_trimp(df, hr_max=200, hr_rest=80, gender='male'):
     
     # Return the cumulative sum of the workout
     return float(row_trimp.sum())
+
+# Filters out interval training
+def classify_workout_style(row):
+    # Prevent division by zero
+    if pd.isna(row['Average Speed']) or row['Average Speed'] == 0:
+        return 'Unknown'
+            
+    moving_ratio = row['Moving Time']/row['Elapsed Time']
+        
+    if moving_ratio < 0.75:
+        return 'Interval'
+    else:
+        return 'Steady State'
