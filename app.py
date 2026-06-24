@@ -66,7 +66,7 @@ try:
         pace_km = f'{seconds_km // 60:.0f}m {seconds_km % 60:.0f}s/km'
        
         if selected_row['Activity Type'] == 'Workout':
-            r1_col1, r1_col2, r1_col3, r1_col4 = st.columns(3)
+            r1_col1, r1_col2, r1_col3 = st.columns(3)
             r1_col1.metric('Moving Time', time)
             r1_col2.metric('Average Heart Rate', avg_hr)
             r1_col3.metric('Maximum Heart Rate', max_hr)
@@ -86,7 +86,7 @@ try:
             r2_col3.metric('Training Intensity Score', trimp)
     
         else:
-            r1_col1, r1_col2, r1_col3, r1_col4 = st.columns(3)
+            r1_col1, r1_col2, r1_col3 = st.columns(3)
             r1_col1.metric('Distance', dist_km)
             r1_col2.metric('Moving Time', time)
             r1_col3.metric('Pace', pace_km)
