@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 # Calculates cumulative Banister TRIMP score from second-by-second time-series data.
-def calc_trimp(df, hr_max=200, hr_rest=80, gender='male'):
+def calc_trimps(df, hr_max=200, hr_rest=75, gender='male'):
     if df.empty or 'heart_rate' not in df.columns or 'timestamp' not in df.columns:
         return 0.0
     
