@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from utils.data_loader import parse_gpx, parse_fit
 
 # Calculates cumulative Banister TRIMP score from second-by-second time-series data.
 def calc_trimps(df, hr_max=200, hr_rest=75, gender='male'):
@@ -40,3 +41,36 @@ def classify_workout_style(row):
         return 'Interval'
     else:
         return 'Steady State'
+
+# Parses all granular data
+def parse_granular(csv):
+    index_df = pd.read_csv(csv)
+    all_activity_frames = []
+
+    for index, row in index_df.iterrows():
+ 
+        target_filename = row.get('Filename') 
+        activity_id = row.get('Activity ID')
+        
+        if pd.isna(target_filename):
+            continue 
+            
+        try:
+            # 3. Route to your existing parsing functions based on extension
+            if target_filename.endswith('.gpx') or target_filename.endswith('.gpx.gz'):
+                time_series_df = parse_gpx(target_filename)
+            elif target_filename.endswith('.fit') or target_filename.endswith('.fit.gz'):
+                time_series_df = parse_fit(target_filename)
+            else:
+                continue
+                
+            time_series_df['Activity ID'] = activity_id
+            all_activity_frames.append(time_series_df)
+            
+        except Exception as e:
+            print(f"Error parsing file {target_filename}: {e}")
+            continue
+
+    if all_activity_frames:
+        return pd.concat(all_activity_frames, ignore_index=True)
+    return pd.DataFrame()
