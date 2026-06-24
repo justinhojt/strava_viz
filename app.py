@@ -226,7 +226,23 @@ try:
 
         trimps = summary_df.copy()
         trimps = parse_granular(trimps)
+        trimps['trimps'] = trimps.apply(calc_trimps, axis=1)
+        daily_stress = trimps.groupby('Date')['trimps'].sum().reset_index()
 
+        # Create a continuous daily index from first workout to today
+        daily_stress = daily_stress.set_index('Date')
+        full_range = pd.date_range(start=daily_stress.index.min(), end=pd.to_datetime('today'), freq='D')
+        
+        # Reindex and fill days with no workouts with 0
+        trimps = daily_stress.reindex(full_range, fill_value=0).reset_index()
+        trimps.rename(columns={'index': 'Date'}, inplace=True)
+
+        trimps['CTL'] = trimps['trimps'].ewm(alpha=1/42, adjust=False).mean()
+        trimps['ATL'] = trimps['trimps'].ewm(alpha=1/7, adjust=False).mean()
+        
+        # Form (TSB) is mathematically lagging by 1 day (yesterday's balance impacts today)
+        daily_df['TSB'] = daily_df['CTL'].shift(1) - daily_df['ATL'].shift(1)
+        daily_df['TSB'] = daily_df['TSB'].fillna(0)
 
 except Exception as e:
     st.error(f'Data Pipeline Error: {e}')
