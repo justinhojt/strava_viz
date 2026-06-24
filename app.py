@@ -125,8 +125,8 @@ try:
         runs['Workout Style'] = runs.apply(classify_workout_style, axis=1)
         steady_runs = runs[runs['Workout Style'] == 'Steady State'].copy()
 
-        # Avoid division by zero
-        steady_runs = steady_runs[(steady_runs['Average Grade Adjusted Pace']) > 0 & (runs['Distance'] >= 1000)]
+        # Avoid division by zero and short distances
+        steady_runs = steady_runs[(steady_runs['Average Grade Adjusted Pace'] > 0) & (runs['Distance'] >= 1000)]
         steady_runs['aero_ratio'] = steady_runs['Average Grade Adjusted Pace'] / steady_runs['Average Heart Rate']
 
         # Drop missing data and sort chronologically
