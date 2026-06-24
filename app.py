@@ -170,7 +170,7 @@ try:
             height=500  
             )
 
-            st.altair_chart(aero_chart, use_container_width=True)
+            st.altair_chart(aero_chart, width='stretch')
 
         else:
             st.warning('No valid rows containing both Heart Rate and Speed data were found to plot.')
