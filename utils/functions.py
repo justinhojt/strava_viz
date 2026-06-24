@@ -75,3 +75,51 @@ def parse_granular(df):
         return final_df
         
     return pd.DataFrame()
+
+# Fitness and Fatigue graph
+def plot_form_fitness(df):
+    fig = go.Figure()
+
+    # Add Fatigue (ATL) Line
+    fig.add_trace(go.Scatter(
+        x=df['Date'], y=df['ATL'],
+        name='Fatigue (7-day ATL)',
+        line=dict(color='#ff4b4b', width=1.5),
+        opacity=0.5
+    ))
+
+    # Add Fitness (CTL) Line filled to area
+    fig.add_trace(go.Scatter(
+        x=df['Date'], y=df['CTL'],
+        name='Fitness (42-day CTL)',
+        line=dict(color='#00f2fe', width=3),
+        fill='tozeroy',
+        fillcolor='rgba(0, 242, 254, 0.1)'
+    ))
+
+    # Add Form (TSB) Line
+    fig.add_trace(go.Scatter(
+        x=df['Date'], y=df['TSB'],
+        name='Form (TSB)',
+        line=dict(color='#ffb300', width=2),
+    ))
+
+    # Add a baseline threshold line at 0 for TSB
+    fig.add_hline(y=0, line_dash="dash", line_color="gray", opacity=0.5)
+
+    # Styling for Dark Mode Dashboard compatibility
+    fig.update_layout(
+        title="Training Load Trends (Form & Fitness)",
+        template="plotly_dark",
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        xaxis=dict(showgrid=False, title="Date"),
+        yaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.1)', title="Stress Score / Load"),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        hovermode="x unified"
+    )
+    
+    return fig
+
+# Display in Streamlit under your 'Aerobic Efficiency Trends' tab
+st.plotly_chart(plot_form_fitness(daily_df), use_container_width=True)
