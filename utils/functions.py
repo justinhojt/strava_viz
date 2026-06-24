@@ -78,7 +78,7 @@ def parse_granular(df):
     return pd.DataFrame()
 
 # Form and Fitness graph
-def plot_form_fitness_altair(df):
+def plot_form_fitness(df):
     # 1. Base configuration with universal X-axis and tooltips
     base = alt.Chart(df).encode(
         x=alt.X('Date:T', title='Date'),
