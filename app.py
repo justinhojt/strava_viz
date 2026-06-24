@@ -53,7 +53,7 @@ try:
         avg_hr = f'{selected_row["Average Heart Rate"]:.0f} bpm'
         max_hr = f'{selected_row["Max Heart Rate"]:.0f} bpm'
         cal = f'{selected_row['Calories']:.0f} cal'
-        trimp = f'{calc_trimp(time_series_df):.2f}'
+        trimp = f'{calc_trimps(time_series_df):.2f}'
 
         seconds_100m = selected_row['Moving Time'] / (selected_row['Distance'] / 100)
         pace_100m = f'{seconds_100m // 60:.0f}m {seconds_100m % 60:.0f}s/100m'
