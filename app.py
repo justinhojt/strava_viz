@@ -66,13 +66,12 @@ try:
         pace_km = f'{seconds_km // 60:.0f}m {seconds_km % 60:.0f}s/km'
        
         if selected_row['Activity Type'] == 'Workout':
-            r1_col1, r1_col2, r1_col3, r1_col4 = st.columns(4)
+            r1_col1, r1_col2, r1_col3, r1_col4 = st.columns(3)
             r1_col1.metric('Moving Time', time)
             r1_col2.metric('Average Heart Rate', avg_hr)
             r1_col3.metric('Maximum Heart Rate', max_hr)
-            r1_col4.metric('Calories Burned', cal)
             
-            r2_col1 = st.columns(4)
+            r2_col1 = st.columns(3)
             r1_col1.metric('Training Intensity Score', trimp)
             
         elif selected_row['Activity Type'] == 'Swim':
@@ -84,19 +83,18 @@ try:
             r2_col1, r2_col2, r2_col3 = st.columns(3)
             r2_col1.metric('Average Heart Rate', avg_hr)
             r2_col2.metric('Maximum Heart Rate', max_hr)
-            r2_col3.metric('Calories Burned', cal)
+            r2_col3.metric('Training Intensity Score', trimp)
     
         else:
-            r1_col1, r1_col2, r1_col3, r1_col4 = st.columns(4)
+            r1_col1, r1_col2, r1_col3, r1_col4 = st.columns(3)
             r1_col1.metric('Distance', dist_km)
             r1_col2.metric('Moving Time', time)
             r1_col3.metric('Pace', pace_km)
-            r1_col4.metric('Training Intensity Score', trimp)
             
             r2_col1, r2_col2, r2_col3 = st.columns(3)
             r2_col1.metric('Average Heart Rate', avg_hr)
             r2_col2.metric('Maximum Heart Rate', max_hr)
-            r2_col3.metric('Calories Burned', cal)
+            r2_col3.metric('Training Intensity Score', trimp)
             
         # PLot heart rate and elevation data 
         if time_series_df['heart_rate'].notna().any():
