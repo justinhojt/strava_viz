@@ -72,7 +72,7 @@ def parse_granular(df):
 
     if all_activity_frames:
         time_series_master = pd.concat(all_activity_frames, ignore_index=True)
-        final_df = pd.merge(time_series_master, index_df, on='Activity ID', how='left')
+        final_df = pd.merge(time_series_master, df, on='Activity ID', how='left')
         return final_df
         
     return pd.DataFrame()
