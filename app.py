@@ -90,16 +90,22 @@ try:
         # Key Performance Indicator Blocks
         selected_row = filtered_summary[filtered_summary['Filename'] == target_filename].iloc[0]
         
-        col1, col2, col3, col4, col5, col6 = st.columns(6)
+        col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
     
         time = f'{selected_row['Moving Time'] // 60:.0f}m {selected_row['Moving Time'] % 60:.0f}s'
         dist_m = f'{selected_row['Distance']:.0f} m'
-        dist_km = f'{selected_row['Distance']/1000:.2f} km'
+        dist_km = f'{selected_row['Distance'] / 1000:.2f} km'
         avg_hr = f'{selected_row["Average Heart Rate"]:.0f} bpm'
         max_hr = f'{selected_row["Max Heart Rate"]:.0f} bpm'
         cal = f'{selected_row['Calories']:.0f} cal'
         trimp = f'{calc_trimp(time_series_df):.2f}'
-    
+
+        seconds_100m = selected_row['Moving Time'] / (selected_row['Distance'] / 100)
+        pace_100m = f'{seconds_100m // 60:.0f}m {seconds_100m % 60:.0f}s/100m'
+
+        seconds_km = selected_row['Moving Time'] / (selected_row['Distance'] / 1000)
+        pace_km = f'{seconds_km // 60:.0f}m {seconds_km % 60:.0f}s/km'
+       
         if selected_row['Activity Type'] == 'Workout':
             col1.metric('Moving Time', time)
             col2.metric('Average Heart Rate', avg_hr)
@@ -114,6 +120,7 @@ try:
             col4.metric('Maximum Heart Rate', max_hr)
             col5.metric('Calories Burned', cal)
             col6.metric('Training Intensity Score', trimp)
+            col7.metric('Pace', pace_100m)
     
         else:
             col1.metric('Distance', dist_km)
@@ -122,6 +129,7 @@ try:
             col4.metric('Maximum Heart Rate', max_hr)
             col5.metric('Calories Burned', cal)
             col6.metric('Training Intensity Score', trimp)
+            col7.metric('Pace', pace_km)
             
         # PLot heart rate and elevation data 
         if time_series_df['heart_rate'].notna().any():
@@ -171,7 +179,7 @@ try:
 
             base = alt.Chart(chart_data).encode(
                 x=alt.X('graph_date:T', title='Date'),
-                y=alt.Y('aero_ratio:Q', title='Ratio (Heart Rate / Speed)', scale=alt.Scale(zero=False))
+                y=alt.Y('aero_ratio:Q', title='Ratio (Speed/Heart Rate)', scale=alt.Scale(zero=False))
             )
 
             # 2. White scatter points layer with orange stroke edges
