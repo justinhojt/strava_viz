@@ -76,50 +76,47 @@ def parse_granular(df):
         
     return pd.DataFrame()
 
-# Fitness and Fatigue graph
-def plot_form_fitness(df):
-    fig = go.Figure()
-
-    # Add Fatigue (ATL) Line
-    fig.add_trace(go.Scatter(
-        x=df['Date'], y=df['ATL'],
-        name='Fatigue (7-day ATL)',
-        line=dict(color='#ff4b4b', width=1.5),
-        opacity=0.5
-    ))
-
-    # Add Fitness (CTL) Line filled to area
-    fig.add_trace(go.Scatter(
-        x=df['Date'], y=df['CTL'],
-        name='Fitness (42-day CTL)',
-        line=dict(color='#00f2fe', width=3),
-        fill='tozeroy',
-        fillcolor='rgba(0, 242, 254, 0.1)'
-    ))
-
-    # Add Form (TSB) Line
-    fig.add_trace(go.Scatter(
-        x=df['Date'], y=df['TSB'],
-        name='Form (TSB)',
-        line=dict(color='#ffb300', width=2),
-    ))
-
-    # Add a baseline threshold line at 0 for TSB
-    fig.add_hline(y=0, line_dash="dash", line_color="gray", opacity=0.5)
-
-    # Styling for Dark Mode Dashboard compatibility
-    fig.update_layout(
-        title="Training Load Trends (Form & Fitness)",
-        template="plotly_dark",
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)',
-        xaxis=dict(showgrid=False, title="Date"),
-        yaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.1)', title="Stress Score / Load"),
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        hovermode="x unified"
+# Form and Fitness graph
+def plot_form_fitness_altair(df):
+    # 1. Base configuration with universal X-axis and tooltips
+    base = alt.Chart(df).encode(
+        x=alt.X('Date:T', title='Date'),
+        tooltip=[
+            alt.Tooltip('Date:T', title='Date', format='%Y-%m-%d'),
+            alt.Tooltip('CTL:Q', title='🏋️ Fitness (CTL)', format='.1f'),
+            alt.Tooltip('ATL:Q', title='🔥 Fatigue (ATL)', format='.1f'),
+            alt.Tooltip('TSB:Q', title='📈 Form (TSB)', format='.1f')
+        ]
     )
-    
-    return fig
 
-# Display in Streamlit under your 'Aerobic Efficiency Trends' tab
-st.plotly_chart(plot_form_fitness(daily_df), use_container_width=True)
+    # 2. Fitness (CTL) - Neon Blue Area + Solid Line
+    ctl_area = base.mark_area(color='#00f2fe', opacity=0.08).encode(
+        y=alt.Y('CTL:Q', title='Stress Units / Load')
+    )
+    ctl_line = base.mark_line(color='#00f2fe', strokeWidth=2.5).encode(y='CTL:Q')
+
+    # 3. Fatigue (ATL) - Red Muted Line
+    atl_line = base.mark_line(color='#ff4b4b', strokeWidth=1.5, opacity=0.6).encode(y='ATL:Q')
+
+    # 4. Form (TSB) - Amber High-Contrast Line
+    tsb_line = base.mark_line(color='#ffb300', strokeWidth=2).encode(y='TSB:Q')
+
+    # 5. Static Dashed Baseline at 0 Balance
+    baseline = alt.Chart(df).mark_rule(
+        color='rgba(255, 255, 255, 0.25)', 
+        strokeDash=[4, 4]
+    ).encode(
+        y=alt.datum(0)
+    )
+
+    # 6. Combine layers, apply titles, and make it interactive (pan/zoom)
+    chart = alt.layer(
+        ctl_area, ctl_line, atl_line, tsb_line, baseline
+    ).properties(
+        title="Training Load Trends (Form & Fitness)",
+        height=400
+    ).interactive(
+        bind_y=False  # Only lock zoom/pan to the X-axis (Timeline)
+    )
+
+    return chart
