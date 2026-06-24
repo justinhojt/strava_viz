@@ -171,7 +171,7 @@ try:
             st.subheader('Running') 
             st.altair_chart(aero_chart, width='stretch')
 
-        walks_df = summary_df[summary_df['Activity Type'] == 'Walk'].copy()
+        walks = summary_df[summary_df['Activity Type'] == 'Walk'].copy()
         
         # Avoid division by zero
         walks = walks[walks['Average Speed'] > 0]
