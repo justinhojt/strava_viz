@@ -3,7 +3,7 @@ import altair as alt
 import pandas as pd
 import numpy as np
 from utils.data_loader import parse_csv, parse_gpx, parse_fit
-from utils.functions import calc_trimp,
+from utils.functions import calc_trimp, classify_workout_style
 
 st.set_page_config(layout='wide')
 st.title('Strava Archive Analytics Dashboard')
@@ -11,19 +11,6 @@ st.title('Strava Archive Analytics Dashboard')
 # Load macro data
 try:
     summary_df = parse_csv()
-
-    # Filters out interval training
-    def classify_workout_style(row):
-        # Prevent division by zero
-        if pd.isna(row['Average Speed']) or row['Average Speed'] == 0:
-            return 'Unknown'
-            
-        moving_ratio = row['Moving Time']/row['Elapsed Time']
-        
-        if moving_ratio < 0.75:
-            return 'Interval'
-        else:
-            return 'Steady State'
     
     runs_df = summary_df[summary_df['Activity Type'] == 'Run'].copy()
     runs_df['Workout Style'] = runs_df.apply(classify_workout_style, axis=1)
