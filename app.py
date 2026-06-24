@@ -3,7 +3,7 @@ import altair as alt
 import pandas as pd
 import numpy as np
 from utils.data_loader import parse_csv, parse_gpx, parse_fit
-from utils.functions import parse_granular, calc_trimps, classify_workout_style
+from utils.functions import parse_granular, calc_trimps, classify_workout_style, plot_form_fitness
 
 st.set_page_config(layout='wide')
 st.title('Strava Archive Analytics Dashboard')
@@ -14,7 +14,7 @@ try:
 
     # Page Navigation Router
     st.sidebar.title('Navigation')
-    page = st.sidebar.radio("Go to", ['Activity Viewer', 'Aerobic Efficiency Trends', 'Fitness and Fatigue'])
+    page = st.sidebar.radio("Go to", ['Activity Viewer', 'Aerobic Efficiency Trends', 'Form and Fitness'])
     
     if page == 'Activity Viewer':
         # Sidebar navigation/filtering
@@ -216,7 +216,7 @@ try:
         else:
             st.warning('No valid rows containing both Heart Rate and Speed data were found to plot.')
 
-    elif page == 'Fitness and Fatigue':
+    elif page == 'Form and Fitness':
         st.markdown("""
         ### 📊 Training Stress Balance (TSB) Guide
         * **🟢 More than 0 | Freshness:** Minimal fatigue; peak state for racing or testing.
@@ -241,8 +241,10 @@ try:
         trimps['ATL'] = trimps['trimps'].ewm(alpha=1/7, adjust=False).mean()
         
         # Form (TSB) is mathematically lagging by 1 day (yesterday's balance impacts today)
-        daily_df['TSB'] = daily_df['CTL'].shift(1) - daily_df['ATL'].shift(1)
-        daily_df['TSB'] = daily_df['TSB'].fillna(0)
+        trimps['TSB'] = trimps['CTL'].shift(1) - trimps['ATL'].shift(1)
+        trimps['TSB'] = trimps['TSB'].fillna(0)
+
+        st.altair_chart(plot_form_fitness(trimps), width='stretch')
 
 except Exception as e:
     st.error(f'Data Pipeline Error: {e}')
