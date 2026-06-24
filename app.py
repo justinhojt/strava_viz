@@ -87,10 +87,8 @@ try:
         if time_series_df.empty:
             st.warning('This specific activity has a file entry but contains no coordinate data streams.')
         
-        # Key Performance Indicator Blocks
+        # Key Performance Indicators
         selected_row = filtered_summary[filtered_summary['Filename'] == target_filename].iloc[0]
-        
-        col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
     
         time = f'{selected_row['Moving Time'] // 60:.0f}m {selected_row['Moving Time'] % 60:.0f}s'
         dist_m = f'{selected_row['Distance']:.0f} m'
@@ -107,29 +105,37 @@ try:
         pace_km = f'{seconds_km // 60:.0f}m {seconds_km % 60:.0f}s/km'
        
         if selected_row['Activity Type'] == 'Workout':
-            col1.metric('Moving Time', time)
-            col2.metric('Average Heart Rate', avg_hr)
-            col3.metric('Maximum Heart Rate', max_hr)
-            col4.metric('Calories Burned', cal)
-            col5.metric('Training Intensity Score', trimp)
+            r1_col1, r1_col2, r1_col3 = st.columns(3)
+            r1_col1.metric('Moving Time', time)
+            r1_col2.metric('Calories Burned', cal)
+            r1_col3.metric('Training Intensity Score', trimp)
+            
+            r2_col1, r2_col2 = st.columns(2)
+            r2_col1.metric('Average Heart Rate', avg_hr)
+            r2_col2.metric('Maximum Heart Rate', max_hr)
             
         elif selected_row['Activity Type'] == 'Swim':
-            col1.metric('Distance', dist_m)
-            col2.metric('Moving Time', time)
-            col3.metric('Average Heart Rate', avg_hr)
-            col4.metric('Maximum Heart Rate', max_hr)
-            col5.metric('Calories Burned', cal)
-            col6.metric('Training Intensity Score', trimp)
-            col7.metric('Pace', pace_100m)
+            r1_col1, r1_col2, r1_col3 = st.columns(3)
+            r1_col1.metric('Distance', dist_m)
+            r1_col2.metric('Moving Time', time)
+            r1_col3.metric('Pace', pace_100m)
+            
+            r2_col1, r2_col2, r2_col3 = st.columns(3)
+            r2_col1.metric('Average Heart Rate', avg_hr)
+            r2_col2.metric('Maximum Heart Rate', max_hr)
+            r2_col3.metric('Calories Burned', cal)
     
         else:
-            col1.metric('Distance', dist_km)
-            col2.metric('Moving Time', time)
-            col3.metric('Average Heart Rate', avg_hr)
-            col4.metric('Maximum Heart Rate', max_hr)
-            col5.metric('Calories Burned', cal)
-            col6.metric('Training Intensity Score', trimp)
-            col7.metric('Pace', pace_km)
+            r1_col1, r1_col2, r1_col3, r1_col4 = st.columns(4)
+            r1_col1.metric('Distance', dist_km)
+            r1_col2.metric('Moving Time', time)
+            r1_col3.metric('Pace', pace_km)
+            r1_col4.metric('Training Intensity Score', trimp)
+            
+            r2_col1, r2_col2, r2_col3 = st.columns(3)
+            r2_col1.metric('Average Heart Rate', avg_hr)
+            r2_col2.metric('Maximum Heart Rate', max_hr)
+            r2_col3.metric('Calories Burned', cal)
             
         # PLot heart rate and elevation data 
         if time_series_df['heart_rate'].notna().any():
