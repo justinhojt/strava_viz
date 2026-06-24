@@ -171,8 +171,8 @@ try:
         walks = summary_df[summary_df['Activity Type'] == 'Walk'].copy()
         
         # Avoid division by zero and exclude short distances
-        walks = walks[(walks['Average Grade Adjusted Pace'] > 0) & (walks['Distance'] >= 1000)]
-        walks['aero_ratio'] = walks['Average Grade Adjusted Pace'] / walks['Average Heart Rate']
+        walks = walks[(walks['Average Speed'] > 0) & (walks['Distance'] >= 1000)]
+        walks['aero_ratio'] = walks['Average Speed'] / walks['Average Heart Rate']
 
         # Drop missing data and sort chronologically
         chart_data = (
