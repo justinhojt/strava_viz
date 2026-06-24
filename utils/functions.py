@@ -43,11 +43,10 @@ def classify_workout_style(row):
         return 'Steady State'
 
 # Parses all granular data
-def parse_granular(csv):
-    index_df = pd.read_csv(csv)
+def parse_granular(df):
     all_activity_frames = []
 
-    for index, row in index_df.iterrows():
+    for index, row in df.iterrows():
  
         target_filename = row.get('Filename') 
         activity_id = row.get('Activity ID')
