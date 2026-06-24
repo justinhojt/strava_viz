@@ -3,7 +3,7 @@ import altair as alt
 import pandas as pd
 import numpy as np
 from utils.data_loader import parse_csv, parse_gpx, parse_fit
-from utils.functions import calc_trimp, classify_workout_style
+from utils.functions import calc_trimps, classify_workout_style
 
 st.set_page_config(layout='wide')
 st.title('Strava Archive Analytics Dashboard')
@@ -223,7 +223,11 @@ try:
         * **🟠 -10 to -30 | Optimal Training:** Productive training stress with managed fatigue.
         * **🔴 Below -30 | Overtraining:** High risk of injury, illness, or burnout.
         """)
-        
+
+        trimps = summary_df.copy()
+        trimps['trimps'] = trimps.apply(calc_trimps, axis=1)
+
+
 except Exception as e:
     st.error(f'Data Pipeline Error: {e}')
     st.info('Ensure your extracted Strava data folder is structured correctly in the root directory.')
