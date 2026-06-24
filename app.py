@@ -123,7 +123,7 @@ try:
 
         runs = summary_df[summary_df['Activity Type'] == 'Run'].copy()
         runs['Workout Style'] = runs.apply(classify_workout_style, axis=1)
-        steady_runs = runs_df[runs_df['Workout Style'] == 'Steady State'].copy()
+        steady_runs = runs[runs['Workout Style'] == 'Steady State'].copy()
 
         # Avoid division by zero
         steady_runs = steady_runs[steady_runs['Average Grade Adjusted Pace'] > 0]
