@@ -215,6 +215,14 @@ try:
 
         else:
             st.warning('No valid rows containing both Heart Rate and Speed data were found to plot.')
+
+    elif page == 'Fitness and Fatigue':
+        st.markdown("""
+        ### 📊 Training Stress Balance (TSB) Guide
+        * **🟢 More than 0 | Freshness:** Minimal fatigue; peak state for racing or testing.
+        * **🟠 -10 to -30 | Optimal Training:** Productive training stress with managed fatigue.
+        * **🔴 Below -30 | Overtraining:** High risk of injury, illness, or burnout.
+        """)
         
 except Exception as e:
     st.error(f'Data Pipeline Error: {e}')
