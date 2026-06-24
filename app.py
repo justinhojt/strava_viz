@@ -14,7 +14,7 @@ try:
 
     # Page Navigation Router
     st.sidebar.title('Navigation')
-    page = st.sidebar.radio("Go to", ['Activity Viewer', 'Aerobic Efficiency Trends'])
+    page = st.sidebar.radio("Go to", ['Activity Viewer', 'Aerobic Efficiency Trends', 'Fitness and Fatigue'])
     
     if page == 'Activity Viewer':
         # Sidebar navigation/filtering
