@@ -3,7 +3,8 @@ import altair as alt
 import pandas as pd
 import numpy as np
 from utils.data_loader import parse_csv, parse_gpx, parse_fit
-from utils.functions import parse_granular, calc_trimps, classify_workout_style, plot_form_fitness
+from utils.functions import parse_granular, calc_trimps, classify_workout_style
+from utils.plots import plot_form_fitness
 
 st.set_page_config(layout='wide')
 st.title('Strava Archive Analytics Dashboard')
