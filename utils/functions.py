@@ -88,7 +88,12 @@ def parse_granular(df):
     daily_stress = summary_df.groupby('Date')['trimps'].sum().reset_index()
     daily_stress.set_index('Date', inplace=True)
     
-    start_date = daily_stress.index.min()
+    active_days = daily_stress[daily_stress['trimps'] > 0]
+    if not active_days.empty:
+        start_date = active_days.index.min()
+    else:
+        start_date = daily_stress.index.min()
+        
     if pd.isna(start_date):
         return pd.DataFrame(columns=['Date', 'trimps', 'CTL', 'ATL', 'TSB'])
         
