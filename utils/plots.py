@@ -39,7 +39,7 @@ def plot_form_fitness(df):
 
     lines = base.mark_line(strokeWidth=1.5).encode(
         y=alt.Y('Value:Q'),
-        color=alt.Color('Metric_Label:N', scale=metrics_scale, title='Metrics'),
+        color=alt.Color('Metric_Label:N', scale=metrics_scale, title='Legend'),
         tooltip=[
             alt.Tooltip('Date:T', title='Date', format='%Y-%m-%d'),
             alt.Tooltip('CTL:Q', title='Fitness (CTL)', format='.1f'),
