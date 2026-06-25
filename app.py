@@ -14,9 +14,26 @@ st.markdown(
         visibility: hidden;
         display: none !important;
     }
-    
+
     div[data-testid="stSpinner"] > div {
-        border-top-color: #fc5200 !important;
+        border: none !important;
+        background: transparent !important;
+        animation: none !important; 
+        width: 30px !important;
+        height: 30px !important;
+    }
+
+
+    div[data-testid="stSpinner"] > div::before {
+        content: "🏃"; 
+        font-size: 28px;
+        display: block;
+        animation: run-bounce 0.4s alternate infinite ease-in-out;
+    }
+
+    @keyframes run-bounce {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(-8px); }
     }
     </style>
     """,
