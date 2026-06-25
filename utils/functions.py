@@ -5,7 +5,7 @@ from utils.data_loader import parse_gpx, parse_fit
 
 # Calculates cumulative Banister TRIMP score from second-by-second time-series data.
 def calc_trimps(df, hr_max=200, hr_rest=75, gender='male'):
-    if df.empty or 'heart_rate' not in df.columns or 'timestamp' not in df.columns:
+    if df.empty or 'heart_rate' not in df or 'timestamp' not in df:
         return 0.0
     
     # Calculate time delta between points in minutes (handling variable sampling rates)
