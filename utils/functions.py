@@ -49,7 +49,7 @@ def parse_granular(df):
 
     for index, row in df.iterrows():
         target_filename = row.get('Filename') 
-        activity_date = row.get('Date')       
+        activity_date = row.get('Activity Date')       
         
         if pd.isna(target_filename): 
             continue
