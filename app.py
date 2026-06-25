@@ -1,7 +1,5 @@
 import streamlit as st
 import altair as alt
-import pandas as pd
-import numpy as np
 from utils.data_loader import parse_csv, parse_gpx, parse_fit
 from utils.functions import parse_granular, calc_trimps, classify_workout_style
 from utils.plots import plot_form_fitness
@@ -10,23 +8,17 @@ st.set_page_config(layout='wide')
 st.markdown(
     """
     <style>
-    div[data-testid="stStatusWidget"] {
-        visibility: hidden;
-        display: none !important;
-    }
-
-    div[data-testid="stSpinner"] > div {
+    div[data-testid="stStatusWidget"] [data-testid="stSpinner"] > div {
         border: none !important;
         background: transparent !important;
-        animation: none !important; 
-        width: 30px !important;
-        height: 30px !important;
+        animation: none !important;
+        width: 24px !important;
+        height: 24px !important;
     }
 
-
-    div[data-testid="stSpinner"] > div::before {
-        content: "🏃"; 
-        font-size: 28px;
+    div[data-testid="stStatusWidget"] [data-testid="stSpinner"] > div::before {
+        content: "🏃";
+        font-size: 20px;
         display: block;
         animation: run-bounce 0.4s alternate infinite ease-in-out;
     }
