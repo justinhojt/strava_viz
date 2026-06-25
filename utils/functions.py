@@ -83,12 +83,18 @@ def parse_granular(df):
         return pd.DataFrame(columns=['Date', 'trimps', 'CTL', 'ATL', 'TSB'])
         
     summary_df = pd.DataFrame(workout_records)
+    summary_df['Date'] = pd.to_datetime(summary_df['Date']).dt.normalize()
+    
     daily_stress = summary_df.groupby('Date')['trimps'].sum().reset_index()
-
-    daily_stress['Date'] = pd.to_datetime(daily_stress['Date'])
     daily_stress.set_index('Date', inplace=True)
     
-    full_range = pd.date_range(start=daily_stress.index.min(), end=pd.to_datetime('today'), freq='D')
+    start_date = daily_stress.index.min()
+    if pd.isna(start_date):
+        return pd.DataFrame(columns=['Date', 'trimps', 'CTL', 'ATL', 'TSB'])
+        
+    end_date = pd.to_datetime('today').normalize()
+    full_range = pd.date_range(start=start_date, end=end_date, freq='D')
+    
     trimps = daily_stress.reindex(full_range, fill_value=0).reset_index()
     trimps.rename(columns={'index': 'Date'}, inplace=True)
     
