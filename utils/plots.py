@@ -1,46 +1,70 @@
 import altair as alt
+import pandas as pd
 
 # Form and Fitness graph
 def plot_form_fitness(df):
-    # 1. Base configuration with universal X-axis and tooltips
+    if df.empty:
+        return alt.Chart(df).mark_blank()
+
+    # Calculate dynamic boundaries so the background zones don't blow out the Y-axis scale
+    max_tsb = float(max(df['TSB'].max(), 15) + 10)
+    min_tsb = float(min(df['TSB'].min(), -35) - 10)
+
+    # Define the 4 discrete training zones based on your TSB guide
+    zone_data = pd.DataFrame([
+        {"y1": 0, "y2": max_tsb, "color": "#2ecc71", "name": "Freshness"},        # Green (> 0)
+        {"y1": -10, "y2": 0, "color": "#95a5a6", "name": "Transition"},        # Grey (-10 to 0)
+        {"y1": -30, "y2": -10, "color": "#f39c12", "name": "Optimal Training"}, # Amber (-30 to -10)
+        {"y1": min_tsb, "y2": -30, "color": "#e74c3c", "name": "Overtraining"}   # Red (< -30)
+    ])
+
+    # 1. Background Zones Layer (Low opacity ensures line visibility)
+    background_zones = alt.Chart(zone_data).mark_rect(opacity=0.07).encode(
+        y=alt.Y('y1:Q', title='Stress Units / Load'),
+        y2='y2:Q',
+        color=alt.Color('color:N', scale=None)
+    )
+
+    # 2. Universal Base line mapping date and interactive tooltips
     base = alt.Chart(df).encode(
         x=alt.X('Date:T', title='Date'),
         tooltip=[
             alt.Tooltip('Date:T', title='Date', format='%Y-%m-%d'),
-            alt.Tooltip('CTL:Q', title='🏋️ Fitness (CTL)', format='.1f'),
+            alt.Tooltip('CTL:Q', title='🏋️‍♂️ Fitness (CTL)', format='.1f'),
             alt.Tooltip('ATL:Q', title='🔥 Fatigue (ATL)', format='.1f'),
             alt.Tooltip('TSB:Q', title='📈 Form (TSB)', format='.1f')
         ]
     )
 
-    # 2. Fitness (CTL) - Neon Blue Area + Solid Line
-    ctl_area = base.mark_area(color='#00f2fe', opacity=0.08).encode(
-        y=alt.Y('CTL:Q', title='Stress Units / Load')
-    )
+    # 3. Fitness (CTL) - Neon Blue Area Layer
+    ctl_area = base.mark_area(color='#00f2fe', opacity=0.05).encode(y='CTL:Q')
     ctl_line = base.mark_line(color='#00f2fe', strokeWidth=2.5).encode(y='CTL:Q')
 
-    # 3. Fatigue (ATL) - Red Muted Line
-    atl_line = base.mark_line(color='#ff4b4b', strokeWidth=1.5, opacity=0.6).encode(y='ATL:Q')
+    # 4. Fatigue (ATL) - Red Muted Trend Line
+    atl_line = base.mark_line(color='#ff4b4b', strokeWidth=1.5, opacity=0.4).encode(y='ATL:Q')
 
-    # 4. Form (TSB) - Amber High-Contrast Line
-    tsb_line = base.mark_line(color='#ffb300', strokeWidth=2).encode(y='TSB:Q')
+    # 5. Form (TSB) - Thick Amber Trend Line
+    tsb_line = base.mark_line(color='#f39c12', strokeWidth=3.0).encode(y='TSB:Q')
 
-    # 5. Static Dashed Baseline at 0 Balance
-    baseline = alt.Chart(df).mark_rule(
-        color='rgba(255, 255, 255, 0.25)', 
+    # 6. Sharp Solid Baseline at Exactly 0 Balance
+    baseline = alt.Chart(pd.DataFrame([{'y': 0}])).mark_rule(
+        color='#7f8c8d', 
+        strokeWidth=1.5, 
         strokeDash=[4, 4]
-    ).encode(
-        y=alt.datum(0)
-    )
+    ).encode(y='y:Q')
 
-    # 6. Combine layers, apply titles, and make it interactive (pan/zoom)
+    # Layer items sequentially: Background zones must render first to avoid masking line values
     chart = alt.layer(
-        ctl_area, ctl_line, atl_line, tsb_line, baseline
+        background_zones, 
+        ctl_area, 
+        ctl_line, 
+        atl_line, 
+        tsb_line, 
+        baseline
     ).properties(
-        title="Training Load Trends (Form & Fitness)",
-        height=400
+        height=450
     ).interactive(
-        bind_y=False  # Only lock zoom/pan to the X-axis (Timeline)
+        bind_y=False # Locks vertical tracking so the structured bands remain stable
     )
 
     return chart
