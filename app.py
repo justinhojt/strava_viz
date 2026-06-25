@@ -7,6 +7,21 @@ from utils.functions import parse_granular, calc_trimps, classify_workout_style
 from utils.plots import plot_form_fitness
 
 st.set_page_config(layout='wide')
+st.markdown(
+    """
+    <style>
+    div[data-testid="stStatusWidget"] {
+        visibility: hidden;
+        display: none !important;
+    }
+    
+    div[data-testid="stSpinner"] > div {
+        border-top-color: #fc5200 !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 st.title('Strava Archive Analytics Dashboard')
 
 # Load macro data
