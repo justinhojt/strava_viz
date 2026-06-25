@@ -22,8 +22,8 @@ def plot_form_fitness(df):
     background_zones = alt.Chart(zone_data).mark_rect(opacity=0.3).encode(
         y=alt.Y('y1:Q', title='Stress Units / Load'),
         y2='y2:Q',
-        color=alt.Color('color:N', scale=None)
-        tooltip=alt.value(None)
+        color=alt.Color('color:N', scale=None),
+        tooltip=alt.value(None) 
     )
 
     # 2. Universal Base line mapping date and interactive tooltips
@@ -37,14 +37,29 @@ def plot_form_fitness(df):
         ]
     )
 
+    # NEW: Shared color scale mapping names to your specific hex codes
+    metrics_scale = alt.Scale(
+        domain=['Fitness (CTL)', 'Fatigue (ATL)', 'Form (TSB)'],
+        range=['#00f2fe', '#ff4b4b', '#ffffff']
+    )
+
     # 3. Fitness (CTL) - Neon Blue Trend Line
-    ctl_line = base.mark_line(color='#00f2fe', strokeWidth=1.5, opacity=0.5).encode(y='CTL:Q')
+    ctl_line = base.mark_line(strokeWidth=1.5, opacity=0.5).encode(
+        y='CTL:Q',
+        color=alt.Color(datum='Fitness (CTL)', scale=metrics_scale, title='Metrics')
+    )
 
     # 4. Fatigue (ATL) - Red Muted Trend Line
-    atl_line = base.mark_line(color='#ff4b4b', strokeWidth=1.5, opacity=0.5).encode(y='ATL:Q')
+    atl_line = base.mark_line(strokeWidth=1.5, opacity=0.5).encode(
+        y='ATL:Q',
+        color=alt.Color(datum='Fatigue (ATL)', scale=metrics_scale)
+    )
 
     # 5. Form (TSB) - Thick White Trend Line
-    tsb_line = base.mark_line(color='#ffffff', strokeWidth=3.0).encode(y='TSB:Q')
+    tsb_line = base.mark_line(strokeWidth=3.0).encode(
+        y='TSB:Q',
+        color=alt.Color(datum='Form (TSB)', scale=metrics_scale)
+    )
 
     # 6. Sharp Solid Baseline at Exactly 0 Balance
     baseline = alt.Chart(pd.DataFrame([{'y': 0}])).mark_rule(
@@ -53,7 +68,7 @@ def plot_form_fitness(df):
         strokeDash=[4, 4]
     ).encode(y='y:Q')
 
-    # Layer items sequentially: Background zones must render first to avoid masking line values
+    # Layer items sequentially
     chart = alt.layer(
         background_zones, 
         ctl_line, 
@@ -63,7 +78,7 @@ def plot_form_fitness(df):
     ).properties(
         height=500
     ).interactive(
-        bind_y=False # Locks vertical tracking so the structured bands remain stable
+        bind_y=False 
     )
 
     return chart
