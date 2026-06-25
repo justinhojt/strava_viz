@@ -226,7 +226,7 @@ try:
         """)
 
         trimps = parse_granular(summary_df.copy())
-        st.altair_chart(plot_form_fitness(trimps), use_container_width=True)
+        st.altair_chart(plot_form_fitness(trimps), width='stretch')
         
 except Exception as e:
     st.error(f'Data Pipeline Error: {e}')
