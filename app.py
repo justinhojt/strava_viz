@@ -225,28 +225,9 @@ try:
         * **🔴 Below -30 | Overtraining:** High risk of injury, illness, or burnout.
         """)
 
-        trimps = summary_df.copy()
-        trimps = parse_granular(trimps)
-        trimps['trimps'] = trimps.apply(calc_trimps, axis=1)
-        daily_stress = trimps.groupby('Date')['trimps'].sum().reset_index()
-
-        # Create a continuous daily index from first workout to today
-        daily_stress = daily_stress.set_index('Date')
-        full_range = pd.date_range(start=daily_stress.index.min(), end=pd.to_datetime('today'), freq='D')
+        trimps = parse_granular(summary_df.copy())
+        st.altair_chart(plot_form_fitness(trimps), use_container_width=True)
         
-        # Reindex and fill days with no workouts with 0
-        trimps = daily_stress.reindex(full_range, fill_value=0).reset_index()
-        trimps.rename(columns={'index': 'Date'}, inplace=True)
-
-        trimps['CTL'] = trimps['trimps'].ewm(alpha=1/42, adjust=False).mean()
-        trimps['ATL'] = trimps['trimps'].ewm(alpha=1/7, adjust=False).mean()
-        
-        # Form (TSB) is mathematically lagging by 1 day (yesterday's balance impacts today)
-        trimps['TSB'] = trimps['CTL'].shift(1) - trimps['ATL'].shift(1)
-        trimps['TSB'] = trimps['TSB'].fillna(0)
-
-        st.altair_chart(plot_form_fitness(trimps), width='stretch')
-
 except Exception as e:
     st.error(f'Data Pipeline Error: {e}')
     st.info('Ensure your extracted Strava data folder is structured correctly in the root directory.')
