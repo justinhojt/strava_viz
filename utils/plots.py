@@ -55,7 +55,6 @@ def plot_form_fitness(df):
     # Layer items sequentially: Background zones must render first to avoid masking line values
     chart = alt.layer(
         background_zones, 
-        ctl_area, 
         ctl_line, 
         atl_line, 
         tsb_line, 
