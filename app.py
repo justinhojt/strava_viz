@@ -8,7 +8,7 @@ st.set_page_config(layout='wide')
 st.markdown(
     """
     <style>
-    div[data-testid="stStatusWidget"] [data-testid="stSpinner"] > div {
+    div[data-testid='stStatusWidget'] [data-testid='stSpinner'] > div {
         border: none !important;
         background: transparent !important;
         animation: none !important;
@@ -16,7 +16,7 @@ st.markdown(
         height: 24px !important;
     }
 
-    div[data-testid="stStatusWidget"] [data-testid="stSpinner"] > div::before {
+    div[data-testid='stStatusWidget'] [data-testid="stSpinner'] > div::before {
         content: "🏃";
         font-size: 20px;
         display: block;
