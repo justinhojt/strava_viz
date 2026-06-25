@@ -15,7 +15,6 @@ def plot_form_fitness(df):
         {'y1': min_tsb, 'y2': -30, 'color': '#f44e65', 'name': 'Overtraining'}     
     ])
 
-    # Shared scale for your metrics
     metrics_scale = alt.Scale(
         domain=['Fitness (CTL)', 'Fatigue (ATL)', 'Form (TSB)'],
         range=['#00f2fe', '#ff4b4b', '#ffffff']
@@ -28,17 +27,16 @@ def plot_form_fitness(df):
         tooltip=alt.value(None)
     )
 
-    # Use 'transform_calculate' to assign labels to each row for the legend
+    # Assign labels to each row for the legend
     base = alt.Chart(df).transform_fold(
         ['CTL', 'ATL', 'TSB'],
-        as_=['Metric', 'Value']
+        as_=['Legend', 'Value']
     ).transform_calculate(
         Metric_Label="datum.Metric == 'CTL' ? 'Fitness (CTL)' : (datum.Metric == 'ATL' ? 'Fatigue (ATL)' : 'Form (TSB)')"
     ).encode(
         x=alt.X('Date:T', title='Date')
     )
 
-    # Now the lines use the encoding 'color' linked to our scale
     lines = base.mark_line(strokeWidth=1.5).encode(
         y=alt.Y('Value:Q'),
         color=alt.Color('Metric_Label:N', scale=metrics_scale, title='Metrics'),
