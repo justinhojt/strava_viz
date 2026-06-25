@@ -13,7 +13,6 @@ def plot_form_fitness(df):
     # Define the 4 discrete training zones based on your TSB guide
     zone_data = pd.DataFrame([
         {"y1": 0, "y2": max_tsb, "color": "#2ecc71", "name": "Freshness"},        # Green (> 0)
-        {"y1": -10, "y2": 0, "color": "#95a5a6", "name": "Transition"},        # Grey (-10 to 0)
         {"y1": -30, "y2": -10, "color": "#f39c12", "name": "Optimal Training"}, # Amber (-30 to -10)
         {"y1": min_tsb, "y2": -30, "color": "#e74c3c", "name": "Overtraining"}   # Red (< -30)
     ])
