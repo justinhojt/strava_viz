@@ -253,6 +253,7 @@ try:
         st.markdown("""
         ### 📊 Training Stress Balance (TSB) Guide
         * **🟢 More than 0 | Freshness:** Minimal fatigue; peak state for racing or testing.
+        * **⚫ 0 to -10 | Maintenance:** Neutral zone; fitness is maintained but not actively building.
         * **🟠 -10 to -30 | Optimal Training:** Productive training stress with managed fatigue.
         * **🔴 Below -30 | Overtraining:** High risk of injury, illness, or burnout.
         """)
