@@ -19,7 +19,7 @@ def plot_form_fitness(df):
     ])
 
     # 1. Background Zones Layer (Low opacity ensures line visibility)
-    background_zones = alt.Chart(zone_data).mark_rect(opacity=0.07).encode(
+    background_zones = alt.Chart(zone_data).mark_rect(opacity=0.15).encode(
         y=alt.Y('y1:Q', title='Stress Units / Load'),
         y2='y2:Q',
         color=alt.Color('color:N', scale=None)
@@ -36,15 +36,14 @@ def plot_form_fitness(df):
         ]
     )
 
-    # 3. Fitness (CTL) - Neon Blue Area Layer
-    ctl_area = base.mark_area(color='#00f2fe', opacity=0.05).encode(y='CTL:Q')
-    ctl_line = base.mark_line(color='#00f2fe', strokeWidth=2.5).encode(y='CTL:Q')
+    # 3. Fitness (CTL) - Neon Blue Trend Line
+    ctl_line = base.mark_line(color='#00f2fe', strokeWidth=1.5, opacity=0.5).encode(y='CTL:Q')
 
     # 4. Fatigue (ATL) - Red Muted Trend Line
-    atl_line = base.mark_line(color='#ff4b4b', strokeWidth=1.5, opacity=0.4).encode(y='ATL:Q')
+    atl_line = base.mark_line(color='#ff4b4b', strokeWidth=1.5, opacity=0.5).encode(y='ATL:Q')
 
-    # 5. Form (TSB) - Thick Amber Trend Line
-    tsb_line = base.mark_line(color='#f39c12', strokeWidth=3.0).encode(y='TSB:Q')
+    # 5. Form (TSB) - Thick White Trend Line
+    tsb_line = base.mark_line(color='#ffffff', strokeWidth=3.0).encode(y='TSB:Q')
 
     # 6. Sharp Solid Baseline at Exactly 0 Balance
     baseline = alt.Chart(pd.DataFrame([{'y': 0}])).mark_rule(
@@ -62,7 +61,7 @@ def plot_form_fitness(df):
         tsb_line, 
         baseline
     ).properties(
-        height=450
+        height=500
     ).interactive(
         bind_y=False # Locks vertical tracking so the structured bands remain stable
     )
