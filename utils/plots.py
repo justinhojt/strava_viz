@@ -23,6 +23,7 @@ def plot_form_fitness(df):
         y=alt.Y('y1:Q', title='Stress Units / Load'),
         y2='y2:Q',
         color=alt.Color('color:N', scale=None)
+        tooltip=alt.value(None)
     )
 
     # 2. Universal Base line mapping date and interactive tooltips
