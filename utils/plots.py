@@ -30,7 +30,7 @@ def plot_form_fitness(df):
     # Assign labels to each row for the legend
     base = alt.Chart(df).transform_fold(
         ['CTL', 'ATL', 'TSB'],
-        as_=['Legend', 'Value']
+        as_=['Metric', 'Value']
     ).transform_calculate(
         Metric_Label="datum.Metric == 'CTL' ? 'Fitness (CTL)' : (datum.Metric == 'ATL' ? 'Fatigue (ATL)' : 'Form (TSB)')"
     ).encode(
