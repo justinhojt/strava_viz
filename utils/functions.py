@@ -5,16 +5,17 @@ from utils.data_loader import parse_gpx, parse_fit
 
 # Calculates cumulative Banister TRIMP score from second-by-second time-series data.
 def calc_trimps(df, hr_max=200, hr_rest=75, gender='male'):
+    # Safety check: ensure both columns exist before proceeding
     if df.empty or 'heart_rate' not in df or 'timestamp' not in df:
         return 0.0
     
-    # Calculate time delta between points in minutes (handling variable sampling rates)
-    delta_t_minutes = (df['timestamp']).diff().dt.total_seconds().fillna(1.0) / 60.0
+    # Calculate time delta using the native Pandas timestamp column
+    delta_t_minutes = pd.to_datetime(df['timestamp']).diff().dt.total_seconds().fillna(1.0) / 60.0
     
     # Clean heart rate data
     hr = pd.to_numeric(df['heart_rate'], errors='coerce').ffill().bfill()
     
-    # Calculate HR Reserve Fraction (clipped between 0 and 1 to prevent data anomalies)
+    # Calculate HR Reserve Fraction
     delta_hr = (hr - hr_rest) / (hr_max - hr_rest)
     delta_hr = delta_hr.clip(0.0, 1.0)
     
@@ -24,11 +25,12 @@ def calc_trimps(df, hr_max=200, hr_rest=75, gender='male'):
     else:
         y = 0.86 * np.exp(1.67 * delta_hr)
         
-    # Calculate instantaneous TRIMP per row: Time * Intensity * Weight
+    # Calculate instantaneous TRIMP per row
     row_trimp = delta_t_minutes * delta_hr * y
     
-    # Return the cumulative sum of the workout
+    # Return the cumulative sum
     return float(row_trimp.sum())
+
 
 # Filters out interval training
 def classify_workout_style(row):
@@ -42,6 +44,7 @@ def classify_workout_style(row):
         return 'Interval'
     else:
         return 'Steady State'
+
 
 # Parses all granular data
 def parse_granular(df):
