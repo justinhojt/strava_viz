@@ -12,13 +12,14 @@ def plot_form_fitness(df):
 
     # Define the 4 discrete training zones based on your TSB guide
     zone_data = pd.DataFrame([
-        {"y1": 0, "y2": max_tsb, "color": "#2ecc71", "name": "Freshness"},        # Green (> 0)
-        {"y1": -30, "y2": -10, "color": "#f39c12", "name": "Optimal Training"}, # Amber (-30 to -10)
-        {"y1": min_tsb, "y2": -30, "color": "#e74c3c", "name": "Overtraining"}   # Red (< -30)
+        {'y1': 0, 'y2': max_tsb, 'color': '#6cf7a1', 'name': 'Freshness'},        
+        {'y1': -10, 'y2': 0, 'color': '#808080', 'name': 'Grey Zone'},        
+        {'y1': -30, 'y2': -10, 'color': '#ff9955', 'name': 'Optimal Training'},   
+        {'y1': min_tsb, 'y2': -30, 'color': '#f44e65', 'name': 'Overtraining'}     
     ])
 
     # 1. Background Zones Layer (Low opacity ensures line visibility)
-    background_zones = alt.Chart(zone_data).mark_rect(opacity=0.15).encode(
+    background_zones = alt.Chart(zone_data).mark_rect(opacity=0.3).encode(
         y=alt.Y('y1:Q', title='Stress Units / Load'),
         y2='y2:Q',
         color=alt.Color('color:N', scale=None)
