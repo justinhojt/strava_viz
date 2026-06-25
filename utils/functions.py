@@ -45,34 +45,53 @@ def classify_workout_style(row):
 
 # Parses all granular data
 def parse_granular(df):
-    all_activity_frames = []
+    workout_records = []
 
     for index, row in df.iterrows():
- 
         target_filename = row.get('Filename') 
-        activity_id = row.get('Activity ID')
+        activity_date = row.get('Date')       
         
-        if pd.isna(target_filename):
-            continue 
+        if pd.isna(target_filename): 
+            continue
             
         try:
             if target_filename.endswith('.gpx') or target_filename.endswith('.gpx.gz'):
                 time_series_df = parse_gpx(target_filename)
             elif target_filename.endswith('.fit') or target_filename.endswith('.fit.gz'):
                 time_series_df = parse_fit(target_filename)
-            else:
+            else: 
                 continue
+ 
+            if not time_series_df.empty:
+                trimp_score = calc_trimps(time_series_df)  
+            else:
+                trimp_score = 0
                 
-            time_series_df['Activity ID'] = activity_id
-            all_activity_frames.append(time_series_df)
+            workout_records.append({
+                'Date': activity_date,
+                'trimps': trimp_score
+            })
             
         except Exception as e:
-            print(f"Error parsing file {target_filename}: {e}")
+            print(f"Skipping {target_filename} due to error: {e}")
             continue
 
-    if all_activity_frames:
-        time_series_master = pd.concat(all_activity_frames, ignore_index=True)
-        final_df = pd.merge(time_series_master, df, on='Activity ID', how='left')
-        return final_df
+    if not workout_records:
+        return pd.DataFrame(columns=['Date', 'trimps', 'CTL', 'ATL', 'TSB'])
         
-    return pd.DataFrame()
+    summary_df = pd.DataFrame(workout_records)
+    daily_stress = summary_df.groupby('Date')['trimps'].sum().reset_index()
+
+    daily_stress['Date'] = pd.to_datetime(daily_stress['Date'])
+    daily_stress.set_index('Date', inplace=True)
+    
+    full_range = pd.date_range(start=daily_stress.index.min(), end=pd.to_datetime('today'), freq='D')
+    trimps = daily_stress.reindex(full_range, fill_value=0).reset_index()
+    trimps.rename(columns={'index': 'Date'}, inplace=True)
+    
+    trimps['CTL'] = trimps['trimps'].ewm(alpha=1/42, adjust=False).mean()
+    trimps['ATL'] = trimps['trimps'].ewm(alpha=1/7, adjust=False).mean()
+    trimps['TSB'] = trimps['CTL'].shift(1) - trimps['ATL'].shift(1)
+    trimps['TSB'] = trimps['TSB'].fillna(0)
+    
+    return trimps
