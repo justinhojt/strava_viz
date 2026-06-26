@@ -3,6 +3,7 @@ import numpy as np
 import altair as alt
 from utils.data_loader import parse_gpx, parse_fit
 
+# Reduces redundant loading time
 @st.cache_data
 
 # Calculates cumulative Banister TRIMP score from second-by-second time-series data.
