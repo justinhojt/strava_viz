@@ -5,7 +5,7 @@ import streamlit as st
 from utils.data_loader import parse_gpx, parse_fit
 
 
-# Calculates cumulative Banister TRIMP score from second-by-second time-series data.
+# Calculates cumulative Banister TRIMP score from second-by-second time-series data
 def calc_trimps(df, hr_max=200, hr_rest=75, gender='male'):
     # Safety check: ensure both columns exist before proceeding
     if df.empty or 'heart_rate' not in df or 'timestamp' not in df:
@@ -56,32 +56,44 @@ def parse_granular(df):
     for index, row in df.iterrows():
         target_filename = row.get('Filename') 
         activity_date = row.get('Activity Date')       
+        activity_type = row.get('Activity Type') # Extract the activity type from the macro CSV
         
-        if pd.isna(target_filename): 
-            continue
-            
-        try:
-            if target_filename.endswith('.gpx') or target_filename.endswith('.gpx.gz'):
-                time_series_df = parse_gpx(target_filename)
-            elif target_filename.endswith('.fit') or target_filename.endswith('.fit.gz'):
-                time_series_df = parse_fit(target_filename)
-            else: 
-                continue
- 
-            if not time_series_df.empty:
-                trimp_score = calc_trimps(time_series_df)  
-            else:
-                trimp_score = 0
+        # Determine base TRIMP if file exists
+        trimp_score = 0
+        file_parsed_successfully = False
+        
+        if not pd.isna(target_filename): 
+            try:
+                if target_filename.endswith('.gpx') or target_filename.endswith('.gpx.gz'):
+                    time_series_df = parse_gpx(target_filename)
+                    file_parsed_successfully = True
+                elif target_filename.endswith('.fit') or target_filename.endswith('.fit.gz'):
+                    time_series_df = parse_fit(target_filename)
+                    file_parsed_successfully = True
                 
+                if file_parsed_successfully and not time_series_df.empty:
+                    trimp_score = calc_trimps(time_series_df)  
+                
+            except Exception as e:
+                print(f"Skipping file parse for {target_filename} due to error: {e}")
+                # Don't break completely; allow fallback strategy to attempt processing
+
+
+        # TRIMPS modifier for gym sessions 
+        if activity_type in ['Weight Training', 'Workout']:
+            if trimp_score > 0:
+                trimp_score = trimp_score * 2.0
+            else:
+                moving_time_mins = row.get('Moving Time', 0) / 60.0
+                
+                trimp_score = moving_time_mins * 0.833
+
+        if trimp_score > 0 or file_parsed_successfully:
             workout_records.append({
                 'Date': activity_date,
                 'trimps': trimp_score
             })
             
-        except Exception as e:
-            print(f"Skipping {target_filename} due to error: {e}")
-            continue
-
     if not workout_records:
         return pd.DataFrame(columns=['Date', 'trimps', 'CTL', 'ATL', 'TSB'])
         
