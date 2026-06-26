@@ -4,6 +4,7 @@ import altair as alt
 import streamlit as st
 from utils.data_loader import parse_gpx, parse_fit
 
+
 # Calculates cumulative Banister TRIMP score from second-by-second time-series data.
 def calc_trimps(df, hr_max=200, hr_rest=75, gender='male'):
     # Safety check: ensure both columns exist before proceeding
