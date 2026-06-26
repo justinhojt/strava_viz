@@ -1,4 +1,5 @@
 from fitparse import FitFile
+import streamlit as st
 import pandas as pd
 import gpxpy
 import gzip
