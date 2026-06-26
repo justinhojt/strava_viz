@@ -252,9 +252,10 @@ try:
         
         * **When TSB > 0 (Freshness):** You have shed the fatigue of recent training, and your fitness is unmasked. This is your ideal state for a race or performance test.
         * **When TSB < 0 (Overreaching):** You are accumulating training stress. A negative number isn't bad—it's required to stimulate adaptation and build fitness. However, staying deeply negative for too long risks injury or burnout.
-        
-        ---
-        
+        """)
+        st.altair_chart(plot_fitness_fatigue(trimps), width='stretch')
+
+        st.markdown("""
         ### 🚦 Reading the Training Zones
         The colored backgrounds on the Form chart provide a quick decision-support framework to manage your training:
         
@@ -263,7 +264,6 @@ try:
         * **🟠 Optimal Training (-10 to -30):** Productive training stress with managed fatigue. The "sweet spot" for building fitness safely.
         * **🔴 Overtraining (Below -30):** High risk of injury, illness, or chronic fatigue. Time to prioritize active recovery.
         """)
-        st.altair_chart(plot_fitness_fatigue(trimps), width='stretch')
         st.altair_chart(plot_tsb_zones(trimps), width='stretch')
         
 except Exception as e:
