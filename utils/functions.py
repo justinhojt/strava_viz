@@ -3,9 +3,6 @@ import numpy as np
 import altair as alt
 from utils.data_loader import parse_gpx, parse_fit
 
-# Reduces redundant loading time
-@st.cache_data
-
 # Calculates cumulative Banister TRIMP score from second-by-second time-series data.
 def calc_trimps(df, hr_max=200, hr_rest=75, gender='male'):
     # Safety check: ensure both columns exist before proceeding
@@ -50,6 +47,7 @@ def classify_workout_style(row):
 
 
 # Parses all granular data
+@st.cache_data
 def parse_granular(df):
     workout_records = []
 
