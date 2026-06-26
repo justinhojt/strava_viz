@@ -33,6 +33,8 @@ def parse_csv():
 
     return df
 
+
+@st.cache_data
 def parse_gpx(gpx_filename):
     gpx_file = os.path.join('data', gpx_filename)
     
@@ -74,6 +76,8 @@ def parse_gpx(gpx_filename):
         
     return df
 
+
+@st.cache_data
 def parse_fit(fit_filename):
     fit_file = os.path.join('data', fit_filename)
     
