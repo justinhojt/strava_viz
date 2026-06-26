@@ -15,34 +15,38 @@ def plot_form_fitness(df):
         {'y1': min_tsb, 'y2': -30, 'color': '#f44e65', 'name': 'Overtraining'}     
     ])
 
+    df_melted = df.melt(
+        id_vars=['Date', 'CTL', 'ATL', 'TSB'],
+        value_vars=['CTL', 'ATL', 'TSB'],
+        var_name='Metric',
+        value_name='Value'
+    )
+    
+    label_map = {
+        'CTL': 'Fitness (CTL)',
+        'ATL': 'Fatigue (ATL)',
+        'TSB': 'Form (TSB)'
+    }
+    df_melted['Metric_Label'] = df_melted['Metric'].map(label_map)
+
     metrics_scale = alt.Scale(
         domain=['Fitness (CTL)', 'Fatigue (ATL)', 'Form (TSB)'],
         range=['#00f2fe', '#ff4b4b', '#ffffff']
     )
 
-    background_zones = alt.Chart(zone_data).mark_rect(opacity=0.25).encode(
-        y=alt.Y('y1:Q', title='Stress Units'),
+    background_zones = alt.Chart(zone_data).mark_rect(opacity=0.3).encode(
+        y=alt.Y('y1:Q', title='Stress Units / Load'),
         y2='y2:Q',
         color=alt.Color('color:N', scale=None),
         tooltip=alt.value(None)
     )
 
-    # 1. Update legend selection to target the explicit field
     legend_selection = alt.selection_point(fields=['Metric_Label'], bind='legend')
-    zoom_pan_x = alt.selection_interval(bind='scales', encodings=['x'])
 
-    base = alt.Chart(df).transform_fold(
-        ['CTL', 'ATL', 'TSB'],
-        as_=['Metric', 'Value']
-    ).transform_calculate(
-        Metric_Label="datum.Metric == 'CTL' ? 'Fitness (CTL)' : (datum.Metric == 'ATL' ? 'Fatigue (ATL)' : 'Form (TSB)')"
-    ).encode(
-        x=alt.X('Date:T', title='Date')
-    )
-
-    # 2. Add legend_selection directly to the lines layer
-    lines = base.mark_line(strokeWidth=1.5).encode(
-        y=alt.Y('Value:Q'),
+    # FIX: Add interactive() HERE. The lines get pan/zoom, but the legend stays clickable.
+    lines = alt.Chart(df_melted).mark_line(strokeWidth=1.5).encode(
+        x=alt.X('Date:T', title='Date'),
+        y=alt.Y('Value:Q', title='Stress Units / Load'),
         color=alt.Color('Metric_Label:N', scale=metrics_scale, title='Legend'),
         opacity=alt.condition(legend_selection, alt.value(1), alt.value(0.1)),
         tooltip=[
@@ -53,21 +57,11 @@ def plot_form_fitness(df):
         ]
     ).add_params(
         legend_selection
-    )
+    ).interactive(bind_y=False)
 
     baseline = alt.Chart(pd.DataFrame([{'y': 0}])).mark_rule(
         color='#7f8c8d', strokeWidth=1.5, strokeDash=[4, 4]
     ).encode(y='y:Q')
 
-    # 3. Keep the zoom/pan behavior at the top level
-    final_chart = alt.layer(
-        background_zones, 
-        lines, 
-        baseline
-    ).properties(
-        height=500
-    ).add_params(
-        zoom_pan_x
-    )
-
-    return final_chart
+    # FIX: The top layer is now just a dumb container. No interactive() shield blocking clicks.
+    return alt.layer(background_zones, lines, baseline).properties(height=500)
