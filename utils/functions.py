@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import altair as alt
+import streamlit as st
 from utils.data_loader import parse_gpx, parse_fit
 
 # Calculates cumulative Banister TRIMP score from second-by-second time-series data.
