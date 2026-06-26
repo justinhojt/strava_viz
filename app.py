@@ -244,8 +244,8 @@ try:
             
             # Dynamic KPI cards
             col1, col2, col3 = st.columns(3)
-            col1.metric('Fitness (CTL)', f'{ctl:.2f} pts')
-            col2.metric('Fatigue (ATL)', f'{atl:.2f} pts')
+            col1.metric('Fitness (CTL)', f'{ctl:.2f}')
+            col2.metric('Fatigue (ATL)', f'{atl:.2f}')
             
             if tsb < -30:
                 status, color = 'Overtraining Risk', 'inverse'
@@ -256,7 +256,7 @@ try:
             else:
                 status, color = 'Fresh / Recovery', 'normal'
                 
-            col3.metric('Form (TSB)', f'{tsb:.2f} pts', delta=status, delta_color=color)
+            col3.metric('Form (TSB)', f'{tsb:.2f}', delta=status, delta_color=color)
 
         st.markdown('---')
 
