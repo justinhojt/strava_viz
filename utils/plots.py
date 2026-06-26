@@ -15,7 +15,6 @@ def plot_form_fitness(df):
         {'y1': min_tsb, 'y2': -30, 'color': '#f44e65', 'name': 'Overtraining'}     
     ])
 
-    # Ensure your dataframe is prepared properly
     df_melted = df.melt(
         id_vars=['Date', 'CTL', 'ATL', 'TSB'],
         value_vars=['CTL', 'ATL', 'TSB'],
@@ -36,18 +35,18 @@ def plot_form_fitness(df):
     )
 
     background_zones = alt.Chart(zone_data).mark_rect(opacity=0.3).encode(
-        y=alt.Y('y1:Q', title='Stress Units'),
+        y=alt.Y('y1:Q', title='Stress Units / Load'),
         y2='y2:Q',
         color=alt.Color('color:N', scale=None),
         tooltip=alt.value(None)
     )
 
-    # FIX: Use selection_multi for Altair v4
-    legend_selection = alt.selection_multi(fields=['Metric_Label'], bind='legend')
+    legend_selection = alt.selection_point(fields=['Metric_Label'], bind='legend')
 
+    # FIX: Add interactive() HERE. The lines get pan/zoom, but the legend stays clickable.
     lines = alt.Chart(df_melted).mark_line(strokeWidth=1.5).encode(
         x=alt.X('Date:T', title='Date'),
-        y=alt.Y('Value:Q', title='Stress Units'),
+        y=alt.Y('Value:Q', title='Stress Units / Load'),
         color=alt.Color('Metric_Label:N', scale=metrics_scale, title='Legend'),
         opacity=alt.condition(legend_selection, alt.value(1), alt.value(0.1)),
         tooltip=[
@@ -56,7 +55,7 @@ def plot_form_fitness(df):
             alt.Tooltip('ATL:Q', title='Fatigue (ATL)', format='.1f'),
             alt.Tooltip('TSB:Q', title='Form (TSB)', format='.1f')
         ]
-    ).add_selection( # FIX: Use .add_selection instead of .add_params
+    ).add_params(
         legend_selection
     ).interactive(bind_y=False)
 
@@ -64,4 +63,5 @@ def plot_form_fitness(df):
         color='#7f8c8d', strokeWidth=1.5, strokeDash=[4, 4]
     ).encode(y='y:Q')
 
+    # FIX: The top layer is now just a dumb container. No interactive() shield blocking clicks.
     return alt.layer(background_zones, lines, baseline).properties(height=500)
