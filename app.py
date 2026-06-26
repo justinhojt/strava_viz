@@ -245,6 +245,10 @@ try:
         #### 2. Fatigue (ATL)
         ATL is highly volatile. Representing a short 7-day window, it reacts immediately to hard workouts or back-to-back training days. If your ATL line climbs sharply above your CTL, you are accumulating fatigue rapidly.
         
+        """)
+        st.altair_chart(plot_fitness_fatigue(trimps), width='stretch')
+
+        st.markdown("""
         #### 3. Form (TSB)
         Form is the mathematical difference between your fitness and your current fatigue:
         
@@ -252,10 +256,7 @@ try:
         
         * **When TSB > 0 (Freshness):** You have shed the fatigue of recent training, and your fitness is unmasked. This is your ideal state for a race or performance test.
         * **When TSB < 0 (Overreaching):** You are accumulating training stress. A negative number isn't bad—it's required to stimulate adaptation and build fitness. However, staying deeply negative for too long risks injury or burnout.
-        """)
-        st.altair_chart(plot_fitness_fatigue(trimps), width='stretch')
-
-        st.markdown("""
+        
         ### 🚦 Reading the Training Zones
         The colored backgrounds on the Form chart provide a quick decision-support framework to manage your training:
         
@@ -263,6 +264,7 @@ try:
         * **⚫ Grey Zone (0 to -10):** Neutral zone; fitness is maintained but not actively building.
         * **🟠 Optimal Training (-10 to -30):** Productive training stress with managed fatigue. The "sweet spot" for building fitness safely.
         * **🔴 Overtraining (Below -30):** High risk of injury, illness, or chronic fatigue. Time to prioritize active recovery.
+        
         """)
         st.altair_chart(plot_tsb_zones(trimps), width='stretch')
         
