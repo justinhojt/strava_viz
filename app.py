@@ -13,7 +13,7 @@ try:
 
     # Page Navigation Router
     st.sidebar.title('Navigation')
-    page = st.sidebar.radio("Go to", ['Activity Viewer', 'Aerobic Efficiency Trends', 'Form and Fitness'])
+    page = st.sidebar.radio("Go to", ['Activity Viewer', 'Aerobic Efficiency Trends', 'Form, Fitness and Fatigue'])
     
     if page == 'Activity Viewer':
         # Sidebar navigation/filtering
@@ -215,7 +215,7 @@ try:
         else:
             st.warning('No valid rows containing both Heart Rate and Speed data were found to plot.')
 
-    elif page == 'Form and Fitness':
+    elif page == 'Form, Fitness and Fatigue':
         trimps = parse_granular(summary_df.copy())
 
         st.markdown("""
