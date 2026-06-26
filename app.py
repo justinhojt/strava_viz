@@ -216,16 +216,55 @@ try:
             st.warning('No valid rows containing both Heart Rate and Speed data were found to plot.')
 
     elif page == 'Form and Fitness':
-        st.markdown("""
-        ### 📊 Training Stress Balance (TSB) Guide
-        * **🟢 More than 0 | Freshness:** Minimal fatigue; peak state for racing or testing.
-        * **⚫ 0 to -10 | Maintenance:** Neutral zone; fitness is maintained but not actively building.
-        * **🟠 -10 to -30 | Optimal Training:** Productive training stress with managed fatigue.
-        * **🔴 Below -30 | Overtraining:** High risk of injury, illness, or burnout.
-        """)
-
         trimps = parse_granular(summary_df.copy())
-        st.altair_chart(plot_form_fitness(trimps), width='stretch')
+
+        st.markdown("""
+        ## 📊 Understanding Your Fitness, Fatigue, and Form
+
+        Training effectively requires balancing hard work with structured recovery. These metrics—derived from the Banister Impulse-Response model—transform raw workout data into a predictive view of your physiology.
+        
+        ---
+        
+        ### 📈 The Core Metrics
+        At the heart of the graphs are three primary metrics that track your training load:
+        
+        | Metric | Full Name | Time Horizon | What it tells you |
+        | :--- | :--- | :--- | :--- |
+        | **CTL** | Chronic Training Load | ~42 Days | Your **Fitness** (long-term adaptation) |
+        | **ATL** | Acute Training Load | ~7 Days | Your **Fatigue** (short-term exhaustion) |
+        | **TSB** | Training Stress Balance | Daily | Your **Form** (readiness to perform) |
+        
+        ---
+        
+        ### 🔄 How They Interact
+        The charts visualize the continuous tug-of-war between fitness and fatigue:
+        
+        #### 1. Fitness (CTL)
+        CTL represents the long-term trend of your training volume and intensity. Because it is calculated as a 42-day moving average, it changes slowly. It won't drop significantly if you take a few days off, reflecting the reality that your aerobic engine doesn't vanish overnight.
+        
+        #### 2. Fatigue (ATL)
+        ATL is highly volatile. Representing a short 7-day window, it reacts immediately to hard workouts or back-to-back training days. If your ATL line climbs sharply above your CTL, you are accumulating fatigue rapidly.
+        
+        #### 3. Form (TSB)
+        Form is the mathematical difference between your fitness and your current fatigue:
+        
+        $$TSB = CTL - ATL$$
+        
+        * **When TSB > 0 (Freshness):** You have shed the fatigue of recent training, and your fitness is unmasked. This is your ideal state for a race or performance test.
+        * **When TSB < 0 (Overreaching):** You are accumulating training stress. A negative number isn't bad—it's required to stimulate adaptation and build fitness. However, staying deeply negative for too long risks injury or burnout.
+        
+        ---
+        
+        ### 🚦 Reading the Training Zones
+        The colored backgrounds on the Form chart provide a quick decision-support framework to manage your training:
+        
+        * **🟢 Freshness (Above 0):** Minimal fatigue; peak state for racing or performance testing.
+        * **⚫ Grey Zone (0 to -10):** Neutral zone; fitness is maintained but not actively building.
+        * **🟠 Optimal Training (-10 to -30):** Productive training stress with managed fatigue. The "sweet spot" for building fitness safely.
+        * **🔴 Overtraining (Below -30):** High risk of injury, illness, or chronic fatigue. Time to prioritize active recovery.
+        """)
+        st.altair_chart(plot_fitness_fatigue(trimps), width='stretch')
+        st.altair_chart(plot_tsb_zones(trimps), width='stretch')
         
 except Exception as e:
     st.error(f'Data Pipeline Error: {e}')
