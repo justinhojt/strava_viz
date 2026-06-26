@@ -80,11 +80,11 @@ def parse_granular(df):
         # TRIMPS modifier for gym sessions 
         if activity_type in ['Weight Training', 'Workout']:
             if trimp_score > 0:
-                trimp_score = trimp_score * 2.0
+                trimp_score = trimp_score * 1.75 # Standardized with app.py mapping
             else:
                 moving_time_mins = row.get('Moving Time', 0) / 60.0
                 
-                trimp_score = moving_time_mins * 0.833
+                trimp_score = moving_time_mins * (40 / 60) # 40 TRIMPs per hour
 
         if trimp_score > 0 or file_parsed_successfully:
             workout_records.append({
