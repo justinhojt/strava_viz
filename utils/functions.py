@@ -76,8 +76,6 @@ def parse_granular(df):
                 
             except Exception as e:
                 print(f"Skipping file parse for {target_filename} due to error: {e}")
-                # Don't break completely; allow fallback strategy to attempt processing
-
 
         # TRIMPS modifier for gym sessions 
         if activity_type in ['Weight Training', 'Workout']:
