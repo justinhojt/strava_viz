@@ -27,10 +27,8 @@ def plot_form_fitness(df):
         tooltip=alt.value(None)
     )
 
-    # 1. Define both interaction behaviors explicitly
-    # Binds directly to the color channel's legend
-    legend_selection = alt.selection_point(encodings=['color'], bind='legend')
-    # Replicates .interactive(bind_y=False) safely without clobbering other selections
+    # 1. Update legend selection to target the explicit field
+    legend_selection = alt.selection_point(fields=['Metric_Label'], bind='legend')
     zoom_pan_x = alt.selection_interval(bind='scales', encodings=['x'])
 
     base = alt.Chart(df).transform_fold(
@@ -42,10 +40,10 @@ def plot_form_fitness(df):
         x=alt.X('Date:T', title='Date')
     )
 
+    # 2. Add legend_selection directly to the lines layer
     lines = base.mark_line(strokeWidth=1.5).encode(
         y=alt.Y('Value:Q'),
         color=alt.Color('Metric_Label:N', scale=metrics_scale, title='Legend'),
-        # Set conditional opacity based on selection
         opacity=alt.condition(legend_selection, alt.value(1), alt.value(0.1)),
         tooltip=[
             alt.Tooltip('Date:T', title='Date', format='%Y-%m-%d'),
@@ -53,13 +51,15 @@ def plot_form_fitness(df):
             alt.Tooltip('ATL:Q', title='Fatigue (ATL)', format='.1f'),
             alt.Tooltip('TSB:Q', title='Form (TSB)', format='.1f')
         ]
+    ).add_params(
+        legend_selection
     )
 
     baseline = alt.Chart(pd.DataFrame([{'y': 0}])).mark_rule(
         color='#7f8c8d', strokeWidth=1.5, strokeDash=[4, 4]
     ).encode(y='y:Q')
 
-    # 2. Combine layers and register both parameters to the TOP-level chart object
+    # 3. Keep the zoom/pan behavior at the top level
     final_chart = alt.layer(
         background_zones, 
         lines, 
@@ -67,7 +67,6 @@ def plot_form_fitness(df):
     ).properties(
         height=500
     ).add_params(
-        legend_selection,
         zoom_pan_x
     )
 
