@@ -45,30 +45,46 @@ try:
             st.warning('This specific activity has a file entry but contains no coordinate data streams.')
         
         # Key Performance Indicators
+# Key Performance Indicators
         selected_row = filtered_summary[filtered_summary['Filename'] == target_filename].iloc[0]
     
         time = f'{selected_row['Moving Time'] // 60:.0f}m {selected_row['Moving Time'] % 60:.0f}s'
         dist_m = f'{selected_row['Distance']:.0f} m'
         dist_km = f'{selected_row['Distance'] / 1000:.2f} km'
-        avg_hr = f'{selected_row['Average Heart Rate']:.0f} bpm'
-        max_hr = f'{selected_row['Max Heart Rate']:.0f} bpm'
+        avg_hr = f'{selected_row["Average Heart Rate"]:.0f} bpm'
+        max_hr = f'{selected_row["Max Heart Rate"]:.0f} bpm'
         cal = f'{selected_row['Calories']:.0f} cal'
-        trimp = f'{calc_trimps(time_series_df):.2f}'
+        
+        # --- CALCULATE ADJ TRIMP FOR SINGLE VIEW ---
+        base_trimp = calc_trimps(time_series_df)
+        if selected_row['Activity Type'] in ['Workout', 'Weight Training']:
+            if base_trimp > 0:
+                adjusted_trimp = base_trimp * 1.75  # Boost lifting HR score
+            else:
+                # Fallback to duration calculation if no file/HR data stream present
+                moving_time_mins = selected_row.get('Moving Time', 0) / 60.0
+                if moving_time_mins == 0:
+                    moving_time_mins = selected_row.get('Elapsed Time', 0) / 60.0
+                adjusted_trimp = moving_time_mins * 0.833
+        else:
+            adjusted_trimp = base_trimp
 
-        seconds_100m = selected_row['Moving Time'] / (selected_row['Distance'] / 100)
+        trimp = f'{adjusted_trimp:.2f}'
+
+        seconds_100m = selected_row['Moving Time'] / (selected_row['Distance'] / 100) if selected_row['Distance'] > 0 else 0
         pace_100m = f'{seconds_100m // 60:.0f}m {seconds_100m % 60:.0f}s/100m'
 
-        seconds_km = selected_row['Moving Time'] / (selected_row['Distance'] / 1000)
+        seconds_km = selected_row['Moving Time'] / (selected_row['Distance'] / 1000) if selected_row['Distance'] > 0 else 0
         pace_km = f'{seconds_km // 60:.0f}m {seconds_km % 60:.0f}s/km'
        
-        if selected_row['Activity Type'] == 'Workout':
+        if selected_row['Activity Type'] in ['Workout', 'Weight Training']:
             r1_col1, r1_col2, r1_col3 = st.columns(3)
             r1_col1.metric('Moving Time', time)
             r1_col2.metric('Average Heart Rate', avg_hr)
             r1_col3.metric('Maximum Heart Rate', max_hr)
             
-            r2_col1 = st.columns(3)
-            r1_col1.metric('Training Intensity Score', trimp)
+            r2_col1, r2_col2, r2_col3 = st.columns(3)
+            r2_col1.metric('Training Intensity Score', trimp)
             
         elif selected_row['Activity Type'] == 'Swim':
             r1_col1, r1_col2, r1_col3 = st.columns(3)
