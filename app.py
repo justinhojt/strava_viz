@@ -2,7 +2,7 @@ import streamlit as st
 import altair as alt
 from utils.data_loader import parse_csv, parse_gpx, parse_fit
 from utils.functions import parse_granular, calc_trimps, classify_workout_style
-from utils.plots import plot_form_fitness
+from utils.plots import plot_fitness_fatigue, plot_tsb_zones
 
 st.set_page_config(layout='wide')
 st.title('Strava Archive Analytics Dashboard')
