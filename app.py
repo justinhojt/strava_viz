@@ -8,6 +8,31 @@ from utils.plots import plot_fitness_fatigue, plot_tsb_zones
 st.set_page_config(layout='wide')
 st.title('Strava Archive Analytics Dashboard')
 
+# Helper function to eliminate redundant plotting code
+def create_aero_chart(chart_data):
+    chart_data['graph_date'] = chart_data['Activity Date'].dt.strftime('%Y-%m-%dT%H:%M:%S')
+
+    base = alt.Chart(chart_data).encode(
+        x=alt.X('graph_date:T', title='Date'),
+        y=alt.Y('aero_ratio:Q', title='Ratio (Speed/Heart Rate)', scale=alt.Scale(zero=False))
+    )
+
+    points = base.mark_circle(
+        size=60, 
+        fill='white', 
+        stroke='#fc5200', 
+        strokeWidth=1.5, 
+        opacity=0.8
+    ).encode(
+        tooltip=[alt.Tooltip('graph_date:T', title='Date', format='%Y-%m-%d'), 'aero_ratio:Q']
+    )
+
+    trend_line = base.transform_regression(
+        'graph_date', 'aero_ratio'
+    ).mark_line(color='#fc5200', size=3)
+
+    return alt.layer(points, trend_line).properties(height=500)
+
 # Load macro data
 try:
     summary_df = parse_csv()
@@ -26,7 +51,7 @@ try:
         filtered_summary = summary_df[summary_df['Activity Type'] == selected_type]
         
         # Create an activity selector dropdown
-        activity_map = {f'{row['Activity Date'].strftime('%Y-%m-%d')} - {row['Activity Name']}': row['Filename'] 
+        activity_map = {f"{row['Activity Date'].strftime('%Y-%m-%d')} - {row['Activity Name']}": row['Filename'] 
                         for _, row in filtered_summary.iterrows()}
         
         selected_activity_label = st.sidebar.selectbox('Select Specific Session', list(activity_map.keys()))
@@ -45,27 +70,20 @@ try:
             st.warning('This specific activity has a file entry but contains no coordinate data streams.')
         
         # Key Performance Indicators
-# Key Performance Indicators
         selected_row = filtered_summary[filtered_summary['Filename'] == target_filename].iloc[0]
     
-        time = f'{selected_row['Moving Time'] // 60:.0f}m {selected_row['Moving Time'] % 60:.0f}s'
-        dist_m = f'{selected_row['Distance']:.0f} m'
-        dist_km = f'{selected_row['Distance'] / 1000:.2f} km'
+        time = f'{selected_row["Moving Time"] // 60:.0f}m {selected_row["Moving Time"] % 60:.0f}s'
+        dist_m = f'{selected_row["Distance"]:.0f} m'
+        dist_km = f'{selected_row["Distance"] / 1000:.2f} km'
         avg_hr = f'{selected_row["Average Heart Rate"]:.0f} bpm'
         max_hr = f'{selected_row["Max Heart Rate"]:.0f} bpm'
-        cal = f'{selected_row['Calories']:.0f} cal'
+        cal = f'{selected_row["Calories"]:.0f} cal'
         
-        # --- CALCULATE ADJ TRIMP FOR SINGLE VIEW ---
+        # Adjust TRIMP score calculation for weightlifting
         base_trimp = calc_trimps(time_series_df)
         if selected_row['Activity Type'] in ['Workout', 'Weight Training']:
-            if base_trimp > 0:
-                adjusted_trimp = base_trimp * 1.75  # Boost lifting HR score
-            else:
-                # Fallback to duration calculation if no file/HR data stream present
-                moving_time_mins = selected_row.get('Moving Time', 0) / 60.0
-                if moving_time_mins == 0:
-                    moving_time_mins = selected_row.get('Elapsed Time', 0) / 60.0
-                adjusted_trimp = moving_time_mins * 0.833
+            moving_time_mins = selected_row.get('Moving Time', 0) / 60.0
+            adjusted_trimp = moving_time_mins * (40 / 60) # 40 per hour
         else:
             adjusted_trimp = base_trimp
 
@@ -108,7 +126,7 @@ try:
             r2_col2.metric('Maximum Heart Rate', max_hr)
             r2_col3.metric('Training Intensity Score', trimp)
             
-        # PLot heart rate and elevation data 
+        # Plot heart rate and elevation data 
         if time_series_df['heart_rate'].notna().any():
             st.subheader('Heart Rate')
             hr_chart = (
@@ -137,6 +155,7 @@ try:
         st.subheader('Aerobic efficiency') 
         st.write('A rising trendline mathematically demonstrates cardiovascular adaptation (moving faster at a lower metabolic cost).')
 
+        # --- RUNNING DATA ---
         runs = summary_df[summary_df['Activity Type'] == 'Run'].copy()
         runs['Workout Style'] = runs.apply(classify_workout_style, axis=1)
         steady_runs = runs[runs['Workout Style'] == 'Steady State'].copy()
@@ -145,91 +164,31 @@ try:
         steady_runs = steady_runs[(steady_runs['Average Grade Adjusted Pace'] > 0) & (runs['Distance'] >= 1000)]
         steady_runs['aero_ratio'] = steady_runs['Average Grade Adjusted Pace'] / steady_runs['Average Heart Rate']
 
-        # Drop missing data and sort chronologically
-        chart_data = (
+        run_chart_data = (
             steady_runs.dropna(subset=['Activity Date', 'aero_ratio'])
             .sort_values('Activity Date')
             .copy()
         )
 
-        if not chart_data.empty:
-            chart_data['graph_date'] = chart_data['Activity Date'].dt.strftime('%Y-%m-%dT%H:%M:%S')
-
-            base = alt.Chart(chart_data).encode(
-                x=alt.X('graph_date:T', title='Date'),
-                y=alt.Y('aero_ratio:Q', title='Ratio (Speed/Heart Rate)', scale=alt.Scale(zero=False))
-            )
-
-            # 2. White scatter points layer with orange stroke edges
-            points = base.mark_circle(
-                size=60, 
-                fill='white', 
-                stroke='#fc5200', 
-                strokeWidth=1.5, 
-                opacity=0.8
-            ).encode(
-                tooltip=[alt.Tooltip('graph_date:T', title='Date', format='%Y-%m-%d'), 'aero_ratio:Q']
-            )
-
-            # 3. Orange Trend Line layer mapping trajectory over time
-            trend_line = base.transform_regression(
-                'graph_date', 'aero_ratio'
-            ).mark_line(color='#fc5200', size=3)
-
-            # 4. Layer both charts on top of each other
-            aero_chart = alt.layer(points, trend_line).properties(
-            height=500  
-            )
-
+        if not run_chart_data.empty:
             st.subheader('Running') 
-            st.altair_chart(aero_chart, width='stretch')
+            st.altair_chart(create_aero_chart(run_chart_data), width='stretch')
 
+        # --- WALKING DATA ---
         walks = summary_df[summary_df['Activity Type'] == 'Walk'].copy()
-        
-        # Avoid division by zero and exclude short distances
         walks = walks[(walks['Average Speed'] > 0) & (walks['Distance'] >= 1000)]
         walks['aero_ratio'] = walks['Average Speed'] / walks['Average Heart Rate']
 
-        # Drop missing data and sort chronologically
-        chart_data = (
+        walk_chart_data = (
             walks.dropna(subset=['Activity Date', 'aero_ratio'])
             .sort_values('Activity Date')
             .copy()
         )
 
-        if not chart_data.empty:
-            chart_data['graph_date'] = chart_data['Activity Date'].dt.strftime('%Y-%m-%dT%H:%M:%S')
-
-            base = alt.Chart(chart_data).encode(
-                x=alt.X('graph_date:T', title='Date'),
-                y=alt.Y('aero_ratio:Q', title='Ratio (Speed/Heart Rate)', scale=alt.Scale(zero=False))
-            )
-
-            # 2. White scatter points layer with orange stroke edges
-            points = base.mark_circle(
-                size=60, 
-                fill='white', 
-                stroke='#fc5200', 
-                strokeWidth=1.5, 
-                opacity=0.8
-            ).encode(
-                tooltip=[alt.Tooltip('graph_date:T', title='Date', format='%Y-%m-%d'), 'aero_ratio:Q']
-            )
-
-            # 3. Orange Trend Line layer mapping trajectory over time
-            trend_line = base.transform_regression(
-                'graph_date', 'aero_ratio'
-            ).mark_line(color='#fc5200', size=3)
-
-            # 4. Layer both charts on top of each other
-            aero_chart = alt.layer(points, trend_line).properties(
-            height=500  
-            )
-
+        if not walk_chart_data.empty:
             st.subheader('Walking') 
-            st.altair_chart(aero_chart, width='stretch')
-
-        else:
+            st.altair_chart(create_aero_chart(walk_chart_data), width='stretch')
+        elif run_chart_data.empty and walk_chart_data.empty:
             st.warning('No valid rows containing both Heart Rate and Speed data were found to plot.')
 
     elif page == 'Fitness, Fatigue and Form':
