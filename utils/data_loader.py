@@ -7,9 +7,6 @@ import io
 
 csv = os.path.join('data', 'activities.csv')
 
-# Reduces redundant loading time
-@st.cache_data
-
 def parse_csv():
     if not os.path.exists(csv):
         raise FileNotFoundError(f'Could not find activities.csv at {csv}')
