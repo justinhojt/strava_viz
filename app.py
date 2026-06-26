@@ -1,5 +1,6 @@
 import streamlit as st
 import altair as alt
+import pandas as pd
 from utils.data_loader import parse_csv, parse_gpx, parse_fit
 from utils.functions import parse_granular, calc_trimps, classify_workout_style
 from utils.plots import plot_fitness_fatigue, plot_tsb_zones
