@@ -27,7 +27,9 @@ def plot_form_fitness(df):
         tooltip=alt.value(None)
     )
 
-    # Assign labels to each row for the legend
+    # 1. Define the interactive selection linked to the legend
+    legend_selection = alt.selection_point(fields=['Metric_Label'], bind='legend')
+
     base = alt.Chart(df).transform_fold(
         ['CTL', 'ATL', 'TSB'],
         as_=['Metric', 'Value']
@@ -40,12 +42,17 @@ def plot_form_fitness(df):
     lines = base.mark_line(strokeWidth=1.5).encode(
         y=alt.Y('Value:Q'),
         color=alt.Color('Metric_Label:N', scale=metrics_scale, title='Legend'),
+        # 2. Toggle opacity based on the legend selection
+        opacity=alt.condition(legend_selection, alt.value(1), alt.value(0.1)),
         tooltip=[
             alt.Tooltip('Date:T', title='Date', format='%Y-%m-%d'),
             alt.Tooltip('CTL:Q', title='Fitness (CTL)', format='.1f'),
             alt.Tooltip('ATL:Q', title='Fatigue (ATL)', format='.1f'),
             alt.Tooltip('TSB:Q', title='Form (TSB)', format='.1f')
         ]
+    ).add_params(
+        # 3. Add the selection parameter to the line chart
+        legend_selection
     )
 
     baseline = alt.Chart(pd.DataFrame([{'y': 0}])).mark_rule(
