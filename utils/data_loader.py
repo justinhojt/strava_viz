@@ -8,6 +8,17 @@ import io
 
 csv = os.path.join('data', 'activities.csv')
 
+# Helper function to avoid timestamp timezone conversion redundancies
+def process_timestamps(df):
+    if not df.empty:
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        if df['timestamp'].dt.tz is not None:
+            df['timestamp'] = df['timestamp'].dt.tz_convert('Asia/Singapore').dt.tz_localize(None)
+        else:
+            df['timestamp'] = df['timestamp'] + pd.Timedelta(hours=8)
+        df['graph_timestamp'] = df['timestamp'].dt.strftime('%Y-%m-%dT%H:%M:%S')
+    return df
+
 @st.cache_data
 def parse_csv():
     if not os.path.exists(csv):
@@ -32,7 +43,6 @@ def parse_csv():
     df['Activity Date'] = pd.to_datetime(df['Activity Date'])
 
     return df
-
 
 @st.cache_data
 def parse_gpx(gpx_filename):
@@ -65,17 +75,7 @@ def parse_gpx(gpx_filename):
                     'heart_rate': hr
                 })
                 
-    df = pd.DataFrame(track_data)
-    if not df.empty:
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-        if df['timestamp'].dt.tz is not None:
-            df['timestamp'] = df['timestamp'].dt.tz_convert('Asia/Singapore').dt.tz_localize(None)
-        else:
-            df['timestamp'] = df['timestamp'] + pd.Timedelta(hours=8)
-        df['graph_timestamp'] = df['timestamp'].dt.strftime('%Y-%m-%dT%H:%M:%S')
-        
-    return df
-
+    return process_timestamps(pd.DataFrame(track_data))
 
 @st.cache_data
 def parse_fit(fit_filename):
@@ -109,13 +109,4 @@ def parse_fit(fit_filename):
                 'heart_rate': values.get('heart_rate')
             })
                 
-    df = pd.DataFrame(track_data)
-    if not df.empty:
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-        if df['timestamp'].dt.tz is not None:
-            df['timestamp'] = df['timestamp'].dt.tz_convert('Asia/Singapore').dt.tz_localize(None)
-        else:
-            df['timestamp'] = df['timestamp'] + pd.Timedelta(hours=8)
-        df['graph_timestamp'] = df['timestamp'].dt.strftime('%Y-%m-%dT%H:%M:%S')
-        
-    return df
+    return process_timestamps(pd.DataFrame(track_data))
