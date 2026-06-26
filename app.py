@@ -297,10 +297,6 @@ try:
             #### 2. Fatigue (ATL)
             ATL is highly volatile. Representing a short 7-day window, it reacts immediately to hard workouts or back-to-back training days. If your ATL line climbs sharply above your CTL, you are accumulating fatigue rapidly.
             
-            """)
-            st.altair_chart(plot_fitness_fatigue(trimps), width='stretch')
-    
-            st.markdown("""
             #### 3. Form (TSB)
             Form is the mathematical difference between your fitness and your current fatigue:
             
@@ -319,8 +315,6 @@ try:
             
             """)
             
-        st.altair_chart(plot_tsb_zones(trimps), width='stretch')
-        
 except Exception as e:
     st.error(f'Data Pipeline Error: {e}')
     st.info('Ensure your extracted Strava data folder is structured correctly in the root directory.')
