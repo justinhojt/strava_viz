@@ -4,20 +4,15 @@ import altair as alt
 import streamlit as st
 from utils.data_loader import parse_gpx, parse_fit
 
-
 # Calculates cumulative Banister TRIMP score from second-by-second time-series data
 def calc_trimps(df, hr_max=200, hr_rest=75, gender='male'):
-    # Safety check: ensure both columns exist before proceeding
     if df.empty or 'heart_rate' not in df or 'timestamp' not in df:
         return 0.0
     
-    # Calculate time delta using the native Pandas timestamp column
     delta_t_minutes = pd.to_datetime(df['timestamp']).diff().dt.total_seconds().fillna(1.0) / 60.0
     
-    # Clean heart rate data
     hr = pd.to_numeric(df['heart_rate'], errors='coerce').ffill().bfill()
     
-    # Calculate HR Reserve Fraction
     delta_hr = (hr - hr_rest) / (hr_max - hr_rest)
     delta_hr = delta_hr.clip(0.0, 1.0)
     
@@ -27,13 +22,11 @@ def calc_trimps(df, hr_max=200, hr_rest=75, gender='male'):
     else:
         y = 0.86 * np.exp(1.67 * delta_hr)
         
-    # Calculate instantaneous TRIMP per row
     row_trimp = delta_t_minutes * delta_hr * y
     
-    # Return the cumulative sum
     return float(row_trimp.sum())
 
-
+# TRIMP score fetcher, adjusts for workout
 def get_trimp_for_row(row, time_series_df=None):
     trimp = 0.0
     
@@ -46,20 +39,15 @@ def get_trimp_for_row(row, time_series_df=None):
             
     return trimp
 
-
 # Filters out interval training
 def classify_workout_style(row):
-    # Prevent division by zero
     if pd.isna(row['Average Speed']) or row['Average Speed'] == 0:
         return 'Unknown'
-            
-    moving_ratio = row['Moving Time']/row['Elapsed Time']
-        
-    if moving_ratio < 0.75:
+
+    if row['Moving Time']/row['Elapsed Time'] < 0.75:
         return 'Interval'
     else:
         return 'Steady State'
-
 
 # Parses all granular data
 @st.cache_data
@@ -84,7 +72,6 @@ def parse_granular(df):
                 trimp_score = get_trimp_for_row(row, time_series_df)
                 
             except Exception as e:
-                # Fallback if file parsing fails
                 trimp_score = get_trimp_for_row(row, None)
 
         if trimp_score > 0 or file_parsed_successfully:
