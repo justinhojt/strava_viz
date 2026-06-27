@@ -216,7 +216,7 @@ try:
             st.markdown("""
             ## 📊 Understanding Fitness, Fatigue, and Form
     
-            Training effectively requires balancing hard work with structured recovery. These metrics, derived from the Banister Impulse-Response model, transform raw workout data into a predictive view of physiology.
+            Training effectively requires balancing hard work with structured recovery. These metrics, derived from the Banister Impulse-Response model, transform raw workout data into a predictive view of an individual's physiology.
             
             ---
             
