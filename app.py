@@ -235,10 +235,10 @@ try:
             The charts visualize the continuous tug-of-war between fitness and fatigue, with form informing us of the current dominating side.
             
             #### 1. Fitness (CTL)
-            CTL represents the long-term trend of training volume and intensity. Because it is calculated as a 42-day moving average, it changes slowly.
+            CTL represents the long-term trend of training volume and intensity. Because it is calculated as a 42-day exponentially weighted moving average (EWMA), it changes slowly.
             
             #### 2. Fatigue (ATL)
-            ATL is highly volatile. Representing a short 7-day window, it reacts immediately to hard workouts or back-to-back training days. If ATL climbs sharply above CTL, fatigue is accumulating rapidly.
+            ATL is highly volatile. Representing a short 7-day EWMA, it reacts immediately to hard workouts or back-to-back training days. If ATL climbs sharply above CTL, fatigue is accumulating rapidly.
             
             #### 3. Form (TSB)
             Form is the mathematical difference between current fitness and current fatigue:
