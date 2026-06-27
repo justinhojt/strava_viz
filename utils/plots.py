@@ -1,6 +1,31 @@
 import altair as alt
 import pandas as pd
 
+# Plots aerobic efficiency chart
+def plot_aero_chart(chart_data):
+    chart_data['graph_date'] = chart_data['Activity Date'].dt.strftime('%Y-%m-%dT%H:%M:%S')
+
+    base = alt.Chart(chart_data).encode(
+        x=alt.X('graph_date:T', title='Date'),
+        y=alt.Y('aero_ratio:Q', title='Ratio (Speed/Heart Rate)', scale=alt.Scale(zero=False))
+    )
+
+    points = base.mark_circle(
+        size=60, 
+        fill='white', 
+        stroke='#fc5200', 
+        strokeWidth=1.5, 
+        opacity=0.8
+    ).encode(
+        tooltip=[alt.Tooltip('graph_date:T', title='Date', format='%Y-%m-%d'), 'aero_ratio:Q']
+    )
+
+    trend_line = base.transform_regression(
+        'graph_date', 'aero_ratio'
+    ).mark_line(color='#fc5200', size=3)
+
+    return alt.layer(points, trend_line).properties(height=500)
+    
 # Plots Fitness (Chronic Training Load) and Fatigue (Acute Training Load)
 def plot_fitness_fatigue(df):
     base = df.melt(id_vars=['Date'], value_vars=['CTL', 'ATL'], 
