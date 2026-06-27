@@ -75,17 +75,17 @@ def parse_granular(df):
         file_parsed_successfully = False
         
         if not pd.isna(target_filename): 
-        try:
-            if target_filename.endswith('.gpx') or target_filename.endswith('.gpx.gz'):
-                time_series_df = parse_gpx(target_filename)
-            elif target_filename.endswith('.fit') or target_filename.endswith('.fit.gz'):
-                time_series_df = parse_fit(target_filename)
-            
-            trimp_score = get_trimp_for_row(row, time_series_df)
-            
-        except Exception as e:
-            # Fallback if file parsing fails
-            trimp_score = get_trimp_for_row(row, None)
+            try:
+                if target_filename.endswith('.gpx') or target_filename.endswith('.gpx.gz'):
+                    time_series_df = parse_gpx(target_filename)
+                elif target_filename.endswith('.fit') or target_filename.endswith('.fit.gz'):
+                    time_series_df = parse_fit(target_filename)
+                
+                trimp_score = get_trimp_for_row(row, time_series_df)
+                
+            except Exception as e:
+                # Fallback if file parsing fails
+                trimp_score = get_trimp_for_row(row, None)
 
         if trimp_score > 0 or file_parsed_successfully:
             workout_records.append({
