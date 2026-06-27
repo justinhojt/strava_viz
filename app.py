@@ -123,7 +123,6 @@ try:
         st.subheader('Aerobic efficiency') 
         st.write('A rising trendline mathematically demonstrates cardiovascular adaptation (moving faster at a lower metabolic cost).')
 
-        # --- RUNNING DATA ---
         runs = summary_df[summary_df['Activity Type'] == 'Run'].copy()
         runs['Workout Style'] = runs.apply(classify_workout_style, axis=1)
         steady_runs = runs[runs['Workout Style'] == 'Steady State'].copy()
@@ -142,8 +141,9 @@ try:
             st.subheader('Running') 
             st.altair_chart(plot_aero(run_chart_data), width='stretch')
 
-        # --- WALKING DATA ---
         walks = summary_df[summary_df['Activity Type'] == 'Walk'].copy()
+        
+        # Avoid division by zero and short distances
         walks = walks[(walks['Average Speed'] > 0) & (walks['Distance'] >= 1000)]
         walks['aero_ratio'] = walks['Average Speed'] / walks['Average Heart Rate']
 
@@ -169,7 +169,7 @@ try:
         max_date = summary_df['Activity Date'].max().to_pydatetime()
         
         selected_date = st.slider(
-            '📅 Scrub through training history to view stats for that day:',
+            '📅 Use the slider to view stats for that day:',
             min_value=min_date,
             max_value=max_date,
             value=max_date,  
@@ -214,28 +214,28 @@ try:
             
         with st.expander('🔬 View Physiological Model Methodology'):
             st.markdown("""
-            ## 📊 Understanding Your Fitness, Fatigue, and Form
+            ## 📊 Understanding Fitness, Fatigue, and Form
     
-            Training effectively requires balancing hard work with structured recovery. These metrics—derived from the Banister Impulse-Response model—transform raw workout data into a predictive view of your physiology.
+            Training effectively requires balancing hard work with structured recovery. These metrics, derived from the Banister Impulse-Response model, transform raw workout data into a predictive view of physiology.
             
             ---
             
             ### 📈 The Core Metrics
-            At the heart of the graphs are three primary metrics that track your training load:
+            At the heart of the graphs are three primary metrics that track training load:
             
-            | Metric | Full Name | Time Horizon | What it tells you |
+            | Metric | Full Name | Time Horizon | What it means |
             | :--- | :--- | :--- | :--- |
-            | **CTL** | Chronic Training Load | ~42 Days | Your **Fitness** (long-term adaptation) |
-            | **ATL** | Acute Training Load | ~7 Days | Your **Fatigue** (short-term exhaustion) |
-            | **TSB** | Training Stress Balance | Daily | Your **Form** (readiness to perform) |
+            | **CTL** | Chronic Training Load | ~42 Days | Fitness (long-term adaptation) |
+            | **ATL** | Acute Training Load | ~7 Days | Fatigue (short-term exhaustion) |
+            | **TSB** | Training Stress Balance | Daily | Form (readiness to perform) |
             
             ---
             
             ### 🔄 How They Interact
-            The charts visualize the continuous tug-of-war between fitness and fatigue:
+            The charts visualize the continuous tug-of-war between fitness and fatigue, with form informing us of the current dominating side.
             
             #### 1. Fitness (CTL)
-            CTL represents the long-term trend of your training volume and intensity. Because it is calculated as a 42-day moving average, it changes slowly. It won't drop significantly if you take a few days off, reflecting the reality that your aerobic engine doesn't vanish overnight.
+            CTL represents the long-term trend of your training volume and intensity. Because it is calculated as a 42-day moving average, it changes slowly.
             
             #### 2. Fatigue (ATL)
             ATL is highly volatile. Representing a short 7-day window, it reacts immediately to hard workouts or back-to-back training days. If your ATL line climbs sharply above your CTL, you are accumulating fatigue rapidly.
@@ -246,7 +246,7 @@ try:
             $$TSB = CTL - ATL$$
             
             * **When TSB > 0 (Freshness):** You have shed the fatigue of recent training, and your fitness is unmasked. This is your ideal state for a race or performance test.
-            * **When TSB < 0 (Overreaching):** You are accumulating training stress. A negative number isn't bad—it's required to stimulate adaptation and build fitness. However, staying deeply negative for too long risks injury or burnout.
+            * **When TSB < 0 (Overreaching):** You are accumulating training stress. While a negative number is required to stimulate adaptation and build fitness, staying deeply negative for too long risks injury or burnout.
             
             ### 🚦 Reading the Training Zones
             The colored backgrounds on the Form chart provide a quick decision-support framework to manage your training:
