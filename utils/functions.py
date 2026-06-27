@@ -69,35 +69,23 @@ def parse_granular(df):
     for index, row in df.iterrows():
         target_filename = row.get('Filename') 
         activity_date = row.get('Activity Date')       
-        activity_type = row.get('Activity Type') # Extract the activity type from the macro CSV
+        activity_type = row.get('Activity Type') 
         
-        # Determine base TRIMP if file exists
         trimp_score = 0
         file_parsed_successfully = False
         
         if not pd.isna(target_filename): 
-            try:
-                if target_filename.endswith('.gpx') or target_filename.endswith('.gpx.gz'):
-                    time_series_df = parse_gpx(target_filename)
-                    file_parsed_successfully = True
-                elif target_filename.endswith('.fit') or target_filename.endswith('.fit.gz'):
-                    time_series_df = parse_fit(target_filename)
-                    file_parsed_successfully = True
-                
-                if file_parsed_successfully and not time_series_df.empty:
-                    trimp_score = calc_trimps(time_series_df)  
-                
-            except Exception as e:
-                print(f"Skipping file parse for {target_filename} due to error: {e}")
-
-        # TRIMPS modifier for gym sessions 
-        if activity_type in ['Weight Training', 'Workout']:
-            if trimp_score > 0:
-                trimp_score = trimp_score * 1.75 # Standardized with app.py mapping
-            else:
-                moving_time_mins = row.get('Moving Time', 0) / 60.0
-                
-                trimp_score = moving_time_mins * (40 / 60) # 40 TRIMPs per hour
+        try:
+            if target_filename.endswith('.gpx') or target_filename.endswith('.gpx.gz'):
+                time_series_df = parse_gpx(target_filename)
+            elif target_filename.endswith('.fit') or target_filename.endswith('.fit.gz'):
+                time_series_df = parse_fit(target_filename)
+            
+            trimp_score = get_trimp_for_row(row, time_series_df)
+            
+        except Exception as e:
+            # Fallback if file parsing fails
+            trimp_score = get_trimp_for_row(row, None)
 
         if trimp_score > 0 or file_parsed_successfully:
             workout_records.append({
