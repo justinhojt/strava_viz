@@ -23,7 +23,7 @@ def plot_aero(df):
         fill='white', 
         stroke='#fc5200', 
         strokeWidth=1.5, 
-        opacity=0.8
+        opacity=0.7
     ).encode(
         tooltip=[alt.Tooltip('graph_date:T', title='Date', format='%Y-%m-%d'), 'aero_ratio:Q']
     )
@@ -32,7 +32,7 @@ def plot_aero(df):
         'graph_date', 'aero_ratio'
     ).mark_line(color='#fc5200', size=3)
 
-    return alt.layer(points, trend_line).properties(height=450)
+    return alt.layer(points, trend_line).properties(height=400)
     
 # Plots Fitness (Chronic Training Load) and Fatigue (Acute Training Load)
 def plot_fitness_fatigue(df):
@@ -56,7 +56,7 @@ def plot_fitness_fatigue(df):
             alt.Tooltip('Metric_Label:N', title='Metric'),
             alt.Tooltip('Value:Q', title='Stress Units', format='.2f')
         ]
-    ).properties(height=250)
+    ).properties(height=350)
 
 # Plots Training Stress Balance with training zones
 def plot_tsb_zones(df):
@@ -94,4 +94,4 @@ def plot_tsb_zones(df):
         color='#7f8c8d', strokeDash=[4, 4]
     ).encode(y='y:Q')
 
-    return alt.layer(zones, tsb_line, baseline).properties(height=250)
+    return alt.layer(zones, tsb_line, baseline).properties(height=350)
