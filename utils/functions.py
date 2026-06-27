@@ -34,6 +34,19 @@ def calc_trimps(df, hr_max=200, hr_rest=75, gender='male'):
     return float(row_trimp.sum())
 
 
+def get_trimp_for_row(row, time_series_df=None):
+    trimp = 0.0
+    
+    if time_series_df is not None and not time_series_df.empty:
+        trimp = calc_trimps(time_series_df)
+        
+    # Default to 40 TRIMP score/h as heart rate data underestimates weightlifting efforts
+    if row['Activity Type'] in ['Workout', 'Weight Training']:
+        return (row['Moving Time']/3600) * 40 
+            
+    return trimp
+
+
 # Filters out interval training
 def classify_workout_style(row):
     # Prevent division by zero
