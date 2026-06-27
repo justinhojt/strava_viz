@@ -14,9 +14,12 @@ try:
 
     # Page Navigation Router
     st.sidebar.title('Navigation')
-    page = st.sidebar.radio('Go to', ['Activity Viewer', 'Aerobic Efficiency Trends', 'Fitness, Fatigue and Form'])
-    
-    if page == 'Activity Viewer':
+    page = st.sidebar.radio('Go to', ['Summary', 'Activity Viewer', 'Aerobic Efficiency Trends', 'Fitness, Fatigue and Form'])
+
+    if page == 'Summary':
+        st.subheader('placeholder')
+        
+    elif page == 'Activity Viewer':
         # Sidebar navigation/filtering
         st.sidebar.header('Activity Filter')
         activity_types = summary_df['Activity Type'].unique()
