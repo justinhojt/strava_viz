@@ -8,31 +8,6 @@ from utils.plots import plot_fitness_fatigue, plot_tsb_zones
 st.set_page_config(layout='wide')
 st.title('Strava Archive Analytics Dashboard')
 
-# Helper function to eliminate redundant plotting code
-def create_aero_chart(chart_data):
-    chart_data['graph_date'] = chart_data['Activity Date'].dt.strftime('%Y-%m-%dT%H:%M:%S')
-
-    base = alt.Chart(chart_data).encode(
-        x=alt.X('graph_date:T', title='Date'),
-        y=alt.Y('aero_ratio:Q', title='Ratio (Speed/Heart Rate)', scale=alt.Scale(zero=False))
-    )
-
-    points = base.mark_circle(
-        size=60, 
-        fill='white', 
-        stroke='#fc5200', 
-        strokeWidth=1.5, 
-        opacity=0.8
-    ).encode(
-        tooltip=[alt.Tooltip('graph_date:T', title='Date', format='%Y-%m-%d'), 'aero_ratio:Q']
-    )
-
-    trend_line = base.transform_regression(
-        'graph_date', 'aero_ratio'
-    ).mark_line(color='#fc5200', size=3)
-
-    return alt.layer(points, trend_line).properties(height=500)
-
 # Load macro data
 try:
     summary_df = parse_csv()
@@ -79,14 +54,7 @@ try:
         max_hr = f'{selected_row["Max Heart Rate"]:.0f} bpm'
         cal = f'{selected_row["Calories"]:.0f} cal'
         
-        # Adjust TRIMP score calculation for weightlifting
-        base_trimp = calc_trimps(time_series_df)
-        if selected_row['Activity Type'] in ['Workout', 'Weight Training']:
-            moving_time_mins = selected_row.get('Moving Time', 0) / 60.0
-            adjusted_trimp = moving_time_mins * (40 / 60) # 40 per hour
-        else:
-            adjusted_trimp = base_trimp
-
+        adjusted_trimp = get_trimp_for_row(selected_row, time_series_df)
         trimp = f'{adjusted_trimp:.2f}'
 
         seconds_100m = selected_row['Moving Time'] / (selected_row['Distance'] / 100) if selected_row['Distance'] > 0 else 0
