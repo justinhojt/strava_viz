@@ -2,7 +2,7 @@ import altair as alt
 import pandas as pd
 
 # Plots aerobic efficiency chart
-def plot_aero_chart(chart_data):
+def plot_aero(chart_data):
     chart_data['graph_date'] = chart_data['Activity Date'].dt.strftime('%Y-%m-%dT%H:%M:%S')
 
     base = alt.Chart(chart_data).encode(
