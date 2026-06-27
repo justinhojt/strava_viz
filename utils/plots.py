@@ -85,7 +85,6 @@ def plot_tsb_zones(df):
         y=alt.Y('TSB:Q'),
         tooltip=[
             alt.Tooltip('Date:T', title='Date', format='%Y-%m-%d'),
-            alt.Tooltip('Metric_Label:N', title='Metric'),
             alt.Tooltip('Value:Q', title='Stress Units', format='.2f')
         ]
     )
