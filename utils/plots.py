@@ -14,7 +14,6 @@ def plot_aero(df):
     df['graph_date'] = df['Activity Date'].dt.strftime('%Y-%m-%dT%H:%M:%S')
 
     base = alt.Chart(df).encode(
-        # Updated X-axis format to "Jan '26"
         x=alt.X('graph_date:T', title='Date', axis=alt.Axis(format="%b '%y")),
         y=alt.Y('aero_ratio:Q', title='Ratio (Speed/Heart Rate)', scale=alt.Scale(zero=False))
     )
