@@ -45,7 +45,6 @@ def plot_fitness_fatigue(df, selected_date=None):
     base['Metric_Label'] = base['Metric'].map({'CTL': 'Fitness (CTL)', 'ATL': 'Fatigue (ATL)'})
 
     chart = alt.Chart(base).mark_line(strokeWidth=2).encode(
-        # Updated X-axis format to "Jan '26"
         x=alt.X('Date:T', title='Date', axis=alt.Axis(format="%b '%y")),
         y=alt.Y('Value:Q', title='Stress Units', scale=alt.Scale(zero=False)),
         color=alt.Color('Metric_Label:N', 
@@ -62,7 +61,7 @@ def plot_fitness_fatigue(df, selected_date=None):
     # Add vertical sync line if a date is provided
     if selected_date:
         vline = alt.Chart(pd.DataFrame({'Date': [pd.Timestamp(selected_date)]})).mark_rule(
-            color='#fc5200', strokeWidth=2
+            color='ffffff', strokeWidth=1
         ).encode(x='Date:T')
         return alt.layer(chart, vline).properties(height=350)
 
@@ -90,7 +89,6 @@ def plot_tsb_zones(df, selected_date=None):
     )
 
     tsb_line = alt.Chart(df).mark_line(color='#ffffff', strokeWidth=2).encode(
-        # Updated X-axis format to "Jan '26"
         x=alt.X('Date:T', title='Date', axis=alt.Axis(format="%b '%y")),
         y=alt.Y('TSB:Q'),
         tooltip=[
@@ -108,7 +106,7 @@ def plot_tsb_zones(df, selected_date=None):
     # Add vertical sync line if a date is provided
     if selected_date:
         vline = alt.Chart(pd.DataFrame({'Date': [pd.Timestamp(selected_date)]})).mark_rule(
-            color='#fc5200', strokeWidth=2
+            color='#ffffff', strokeWidth=1 
         ).encode(x='Date:T')
         layers.append(vline)
 
