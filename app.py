@@ -3,7 +3,7 @@ import altair as alt
 import pandas as pd
 from utils.data_loader import parse_csv, parse_gpx, parse_fit
 from utils.functions import parse_granular, calc_trimps, classify_workout_style
-from utils.plots import plot_fitness_fatigue, plot_tsb_zones
+from utils.plots import plot_aero, plot_fitness_fatigue, plot_tsb_zones
 
 st.set_page_config(layout='wide')
 st.title('Strava Archive Analytics Dashboard')
@@ -140,7 +140,7 @@ try:
 
         if not run_chart_data.empty:
             st.subheader('Running') 
-            st.altair_chart(create_aero_chart(run_chart_data), width='stretch')
+            st.altair_chart(plot_aero(run_chart_data), width='stretch')
 
         # --- WALKING DATA ---
         walks = summary_df[summary_df['Activity Type'] == 'Walk'].copy()
@@ -155,7 +155,7 @@ try:
 
         if not walk_chart_data.empty:
             st.subheader('Walking') 
-            st.altair_chart(create_aero_chart(walk_chart_data), width='stretch')
+            st.altair_chart(plot_aero(walk_chart_data), width='stretch')
         elif run_chart_data.empty and walk_chart_data.empty:
             st.warning('No valid rows containing both Heart Rate and Speed data were found to plot.')
 
