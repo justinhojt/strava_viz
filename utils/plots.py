@@ -51,7 +51,7 @@ def plot_fitness_fatigue(df):
                         scale=alt.Scale(domain=['Fitness (CTL)', 'Fatigue (ATL)'], 
                                         range=['#1f77b4', '#ff7f0e']),
                         title='Metric'),
-        tooltip=['Date:T', 'Value:Q', 'Metric_Label:N']
+        tooltip=['Date:T', round('Value:Q', 2), 'Metric_Label:N']
     ).properties(height=250)
 
 # Plots Training Stress Balance with training zones
@@ -79,7 +79,7 @@ def plot_tsb_zones(df):
     tsb_line = alt.Chart(df).mark_line(color='#ffffff', strokeWidth=2).encode(
         x=alt.X('Date:T', title='Date'),
         y=alt.Y('TSB:Q'),
-        tooltip=['Date:T', 'TSB:Q']
+        tooltip=['Date:T', round('TSB:Q', 2)]
     )
 
     baseline = alt.Chart(pd.DataFrame([{'y': 0}])).mark_rule(
