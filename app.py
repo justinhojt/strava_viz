@@ -235,21 +235,20 @@ try:
             The charts visualize the continuous tug-of-war between fitness and fatigue, with form informing us of the current dominating side.
             
             #### 1. Fitness (CTL)
-            CTL represents the long-term trend of your training volume and intensity. Because it is calculated as a 42-day moving average, it changes slowly.
+            CTL represents the long-term trend of training volume and intensity. Because it is calculated as a 42-day moving average, it changes slowly.
             
             #### 2. Fatigue (ATL)
-            ATL is highly volatile. Representing a short 7-day window, it reacts immediately to hard workouts or back-to-back training days. If your ATL line climbs sharply above your CTL, you are accumulating fatigue rapidly.
+            ATL is highly volatile. Representing a short 7-day window, it reacts immediately to hard workouts or back-to-back training days. If ATL climbs sharply above CTL, fatigue is accumulating rapidly.
             
             #### 3. Form (TSB)
-            Form is the mathematical difference between your fitness and your current fatigue:
+            Form is the mathematical difference between current fitness and current fatigue:
             
             $$TSB = CTL - ATL$$
             
-            * **When TSB > 0 (Freshness):** You have shed the fatigue of recent training, and your fitness is unmasked. This is your ideal state for a race or performance test.
-            * **When TSB < 0 (Overreaching):** You are accumulating training stress. While a negative number is required to stimulate adaptation and build fitness, staying deeply negative for too long risks injury or burnout.
+            * **When TSB > 0:** State of freshness; ideal for a race or performance test.
+            * **When TSB < 0:** Accumulating training stress. While a negative number is required to stimulate adaptation and build fitness, staying deeply negative for too long risks injury or burnout.
             
             ### 🚦 Reading the Training Zones
-            The colored backgrounds on the Form chart provide a quick decision-support framework to manage your training:
             
             * **🟢 Freshness (Above 0):** Minimal fatigue; peak state for racing or performance testing.
             * **⚫ Maintenance Zone (0 to -10):** Fitness is maintained but not actively building.
