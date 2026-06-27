@@ -207,10 +207,10 @@ try:
         chart_tab1, chart_tab2 = st.tabs(['📊 Fitness & Fatigue Dynamics', '🚦 Training Stress Balance (TSB)'])
         
         with chart_tab1:
-            st.altair_chart(plot_fitness_fatigue(trimps), width='stretch') 
+            st.altair_chart(plot_fitness_fatigue(trimps, selected_date), width='stretch') 
             
         with chart_tab2:
-            st.altair_chart(plot_tsb_zones(trimps), width='stretch') 
+            st.altair_chart(plot_tsb_zones(trimps, selected_date), width='stretch')
             
         with st.expander('🔬 View Physiological Model Methodology'):
             st.markdown("""
