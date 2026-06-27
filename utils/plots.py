@@ -61,7 +61,7 @@ def plot_fitness_fatigue(df, selected_date=None):
     # Add vertical sync line if a date is provided
     if selected_date:
         vline = alt.Chart(pd.DataFrame({'Date': [pd.Timestamp(selected_date)]})).mark_rule(
-            color='ffffff', strokeWidth=1
+            color='#ffffff', strokeWidth=1
         ).encode(x='Date:T')
         return alt.layer(chart, vline).properties(height=350)
 
