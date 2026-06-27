@@ -253,7 +253,7 @@ try:
             * **🟢 Freshness (Above 0):** Minimal fatigue; peak state for racing or performance testing.
             * **⚫ Maintenance Zone (0 to -10):** Fitness is maintained but not actively building.
             * **🟠 Optimal Training (-10 to -30):** Productive training stress with managed fatigue. The "sweet spot" for building fitness safely.
-            * **🔴 Overtraining (Below -30):** High risk of injury, illness, or chronic fatigue. Time to prioritize active recovery.
+            * **🔴 Overtraining (Below -30):** High risk of injury, illness, or chronic fatigue. 
             
             """)
             
