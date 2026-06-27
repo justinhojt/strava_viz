@@ -1,6 +1,14 @@
 import altair as alt
 import pandas as pd
 
+# Helper function to filter dataframe to the last recorded activity date
+def _filter_to_last_activity(df):
+    if 'trimps' in df.columns:
+        last_active_date = df[df['trimps'] > 0]['Date'].max()
+        if pd.notna(last_active_date):
+            return df[df['Date'] <= last_active_date]
+    return df
+
 # Plots aerobic efficiency chart
 def plot_aero(df):
     df['graph_date'] = df['Activity Date'].dt.strftime('%Y-%m-%dT%H:%M:%S')
@@ -28,6 +36,9 @@ def plot_aero(df):
     
 # Plots Fitness (Chronic Training Load) and Fatigue (Acute Training Load)
 def plot_fitness_fatigue(df):
+    # Filter timeline down to the last active workout day
+    df = _filter_to_last_activity(df)
+
     base = df.melt(id_vars=['Date'], value_vars=['CTL', 'ATL'], 
                    var_name='Metric', value_name='Value')
 
@@ -45,6 +56,9 @@ def plot_fitness_fatigue(df):
 
 # Plots Training Stress Balance with training zones
 def plot_tsb_zones(df):
+    # Filter timeline down to the last active workout day
+    df = _filter_to_last_activity(df)
+
     max_tsb = float(max(df['TSB'].max(), 15) + 10)
     min_tsb = float(min(df['TSB'].min(), -35) - 10)
 
