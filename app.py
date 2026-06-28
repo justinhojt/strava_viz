@@ -272,7 +272,7 @@ try:
             )
             st.altair_chart(elevation_chart, width='stretch')
 
-elif page == 'Aerobic Efficiency Trends':
+    elif page == 'Aerobic Efficiency Trends':
         st.subheader('🫀 Aerobic Efficiency Trends') 
 
         # Isolate and calculate running data
