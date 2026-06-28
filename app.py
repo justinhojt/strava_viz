@@ -273,7 +273,8 @@ try:
             st.altair_chart(elevation_chart, width='stretch')
 
     elif page == 'Aerobic Efficiency Trends':
-        st.subheader('🫀 Aerobic Efficiency Trends') 
+        st.subheader('🫀 Aerobic Efficiency Trends')
+        st.write('Running')
 
         # Isolate and calculate running data
         runs = summary_df[summary_df['Activity Type'] == 'Run'].copy()
