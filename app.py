@@ -241,7 +241,7 @@ try:
                     ]
                 ).properties(height=200)
                 
-                st.altair_chart(hr_bar, use_container_width=True)
+                st.altair_chart(hr_bar, width='stretch')
             else:
                 st.info("No Heart Rate data recorded for this session.")
                 
