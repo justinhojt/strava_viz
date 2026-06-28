@@ -52,7 +52,7 @@ try:
         
         col2.metric("Total Distance", f"{total_distance_km:,.2f} km")
         col3.metric("Moving Time", f"{total_hours:.0f}h {total_minutes:.0f}m")
-        col4.metric("Calories Burned", f"{total_calories:,.1f} kcal")
+        col4.metric("Calories Burned", f"{total_calories:,.0f} kcal")
         
         st.markdown('---')
         
