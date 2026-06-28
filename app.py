@@ -79,7 +79,7 @@ try:
                     'Run': '#fc5200',              
                     'Walk': '#ee9f28',             
                     'Swim': '#f9dcb0',             
-                    'Workout': '#dc6602',          
+                    'Workout': '#e17602',          
                 }
                 
                 if selected_type == 'All' and not filtered_df.empty:
