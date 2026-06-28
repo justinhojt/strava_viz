@@ -50,16 +50,16 @@ try:
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Total Activities", f"{total_activities}")
         
-        col2.metric("Total Distance", f"{total_distance_km:,.1f} km")
+        col2.metric("Total Distance", f"{total_distance_km:,.2f} km")
         col3.metric("Moving Time", f"{total_hours:.0f}h {total_minutes:.0f}m")
-        col4.metric("Calories Burned", f"{total_calories:,.0f} kcal")
+        col4.metric("Calories Burned", f"{total_calories:,.1f} kcal")
         
         st.markdown('---')
         
         st.markdown('### Performance Highs')
         ext_col1, ext_col2, ext_col3 = st.columns(3)
         ext_col1.metric("Total Elevation Gain", f"{total_elevation:,.0f} m")
-        ext_col2.metric("Longest Single Session", f"{max_distance_km:,.1f} km")
+        ext_col2.metric("Longest Single Session", f"{max_distance_km:,.2f} km")
         
         if avg_hr > 0:
             ext_col3.metric("Historical Avg HR", f"{avg_hr:.0f} bpm")
