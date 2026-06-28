@@ -124,6 +124,7 @@ try:
         ext_col4.metric('📅 Activities / Week', f'{weekly_avg:.1f}')
         
     elif page == 'Activity Viewer':
+        
         # Sidebar navigation/filtering
         st.sidebar.header('Activity Filter')
         activity_types = summary_df['Activity Type'].unique()
@@ -275,41 +276,42 @@ try:
         st.subheader('Aerobic efficiency') 
         st.write('A rising trendline mathematically demonstrates cardiovascular adaptation (moving faster at a lower metabolic cost).')
 
-        runs = summary_df[summary_df['Activity Type'] == 'Run'].copy()
-        runs['Workout Style'] = runs.apply(classify_workout_style, axis=1)
-        steady_runs = runs[runs['Workout Style'] == 'Steady State'].copy()
-
-        # Avoid division by zero and short distances
-        steady_runs = steady_runs[(steady_runs['Average Grade Adjusted Pace'] > 0) & (steady_runs['Distance'] >= 1000)]
-        steady_runs['aero_ratio'] = steady_runs['Average Grade Adjusted Pace'] / steady_runs['Average Heart Rate']
-
-        run_chart_data = (
-            steady_runs.dropna(subset=['Activity Date', 'aero_ratio'])
-            .sort_values('Activity Date')
-            .copy()
-        )
-
-        if not run_chart_data.empty:
-            st.subheader('Running') 
-            st.altair_chart(plot_aero(run_chart_data), width='stretch')
-
-        walks = summary_df[summary_df['Activity Type'] == 'Walk'].copy()
+        # --- NEW: Sidebar Activity Filter ---
+        st.sidebar.header('Activity Filter')
         
-        # Avoid division by zero and short distances
-        walks = walks[(walks['Average Speed'] > 0) & (walks['Distance'] >= 1000)]
-        walks['aero_ratio'] = walks['Average Speed'] / walks['Average Heart Rate']
+        # Only allow filtering for activities where speed/HR ratio makes logical sense
+        supported_activities = [act for act in summary_df['Activity Type'].unique() if act in ['Run', 'Walk', 'Ride', 'Virtual Ride']]
+        
+        if supported_activities:
+            selected_aero_type = st.sidebar.selectbox('Select Activity Type', supported_activities)
+            
+            act_df = summary_df[summary_df['Activity Type'] == selected_aero_type].copy()
+            
+            if selected_aero_type == 'Run':
+                act_df['Workout Style'] = act_df.apply(classify_workout_style, axis=1)
+                plot_df = act_df[act_df['Workout Style'] == 'Steady State'].copy()
+                
+                # FIX: Use plot_df for both sides of the condition to clear the terminal warning
+                plot_df = plot_df[(plot_df['Average Grade Adjusted Pace'] > 0) & (plot_df['Distance'] >= 1000)]
+                plot_df['aero_ratio'] = plot_df['Average Grade Adjusted Pace'] / plot_df['Average Heart Rate']
+            else:
+                # Logic for Walk, Ride, etc.
+                plot_df = act_df[(act_df['Average Speed'] > 0) & (act_df['Distance'] >= 1000)]
+                plot_df['aero_ratio'] = plot_df['Average Speed'] / plot_df['Average Heart Rate']
 
-        walk_chart_data = (
-            walks.dropna(subset=['Activity Date', 'aero_ratio'])
-            .sort_values('Activity Date')
-            .copy()
-        )
+            chart_data = (
+                plot_df.dropna(subset=['Activity Date', 'aero_ratio'])
+                .sort_values('Activity Date')
+                .copy()
+            )
 
-        if not walk_chart_data.empty:
-            st.subheader('Walking') 
-            st.altair_chart(plot_aero(walk_chart_data), width='stretch')
-        elif run_chart_data.empty and walk_chart_data.empty:
-            st.warning('No valid rows containing both Heart Rate and Speed data were found to plot.')
+            if not chart_data.empty:
+                st.subheader(selected_aero_type) 
+                st.altair_chart(plot_aero(chart_data), width='stretch')
+            else:
+                st.warning(f'No valid rows containing both Heart Rate and Speed data were found for {selected_aero_type}.')
+        else:
+            st.warning('No supported activities found for aerobic efficiency tracking.')
 
     elif page == 'Fitness, Fatigue and Form':
         trimps = parse_granular(summary_df.copy())
