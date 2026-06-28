@@ -169,37 +169,82 @@ try:
 
         seconds_km = selected_row['Moving Time'] / (selected_row['Distance'] / 1000) if selected_row['Distance'] > 0 else 0
         pace_km = f'{seconds_km // 60:.0f}m {seconds_km % 60:.0f}s/km'
-       
-        if selected_row['Activity Type'] in ['Workout', 'Weight Training']:
-            r1_col1, r1_col2, r1_col3 = st.columns(3)
-            r1_col1.metric('Moving Time', time)
-            r1_col2.metric('Average Heart Rate', avg_hr)
-            r1_col3.metric('Maximum Heart Rate', max_hr)
-            
-            r2_col1, r2_col2, r2_col3 = st.columns(3)
-            r2_col1.metric('Training Intensity Score', trimp)
-            
-        elif selected_row['Activity Type'] == 'Swim':
-            r1_col1, r1_col2, r1_col3 = st.columns(3)
-            r1_col1.metric('Distance', dist_m)
-            r1_col2.metric('Moving Time', time)
-            r1_col3.metric('Pace', pace_100m)
-            
-            r2_col1, r2_col2, r2_col3 = st.columns(3)
-            r2_col1.metric('Average Heart Rate', avg_hr)
-            r2_col2.metric('Maximum Heart Rate', max_hr)
-            r2_col3.metric('Training Intensity Score', trimp)
-    
-        else:
-            r1_col1, r1_col2, r1_col3 = st.columns(3)
-            r1_col1.metric('Distance', dist_km)
-            r1_col2.metric('Moving Time', time)
-            r1_col3.metric('Pace', pace_km)
-            
-            r2_col1, r2_col2, r2_col3 = st.columns(3)
-            r2_col1.metric('Average Heart Rate', avg_hr)
-            r2_col2.metric('Maximum Heart Rate', max_hr)
-            r2_col3.metric('Training Intensity Score', trimp)
+
+        st.markdown('### ⚡ Session Overview')
+        top_left, top_right = st.columns([1.5, 1])
+        
+        with top_left:
+            if selected_row['Activity Type'] in ['Workout', 'Weight Training']:
+                r1_col1, r1_col2, r1_col3 = st.columns(3)
+                r1_col1.metric('Moving Time', time)
+                r1_col2.metric('Average Heart Rate', avg_hr)
+                r1_col3.metric('Maximum Heart Rate', max_hr)
+                
+                r2_col1, r2_col2, r2_col3 = st.columns(3)
+                r2_col1.metric('Training Intensity Score', trimp)
+                
+            elif selected_row['Activity Type'] == 'Swim':
+                r1_col1, r1_col2, r1_col3 = st.columns(3)
+                r1_col1.metric('Distance', dist_m)
+                r1_col2.metric('Moving Time', time)
+                r1_col3.metric('Pace', pace_100m)
+                
+                r2_col1, r2_col2, r2_col3 = st.columns(3)
+                r2_col1.metric('Average Heart Rate', avg_hr)
+                r2_col2.metric('Maximum Heart Rate', max_hr)
+                r2_col3.metric('Training Intensity Score', trimp)
+        
+            else:
+                r1_col1, r1_col2, r1_col3 = st.columns(3)
+                r1_col1.metric('Distance', dist_km)
+                r1_col2.metric('Moving Time', time)
+                r1_col3.metric('Pace', pace_km)
+                
+                r2_col1, r2_col2, r2_col3 = st.columns(3)
+                r2_col1.metric('Average Heart Rate', avg_hr)
+                r2_col2.metric('Maximum Heart Rate', max_hr)
+                r2_col3.metric('Training Intensity Score', trimp)
+
+        with top_right:
+            # Heart Rate Zone Composition Chart
+            if 'heart_rate' in time_series_df.columns and time_series_df['heart_rate'].notna().any():
+                
+                act_max_hr = 200.0
+                    
+                # Calculate standard personalized zones based on % of Max HR
+                bins = [0, act_max_hr * 0.60, act_max_hr * 0.70, act_max_hr * 0.80, act_max_hr * 0.90, 300]
+                labels = ['Z1 Recovery', 'Z2 Aerobic', 'Z3 Tempo', 'Z4 Threshold', 'Z5 Anaerobic']
+                
+                # Map each second of data to a zone
+                time_series_df['HR_Zone'] = pd.cut(time_series_df['heart_rate'], bins=bins, labels=labels)
+                
+                # Aggregate time (Assuming 1 row = 1 second for standard GPS files)
+                zone_counts = time_series_df['HR_Zone'].value_counts().reset_index()
+                zone_counts.columns = ['Zone', 'Time (s)']
+                zone_counts['Minutes'] = zone_counts['Time (s)'] / 60
+                
+                # Define zone colors
+                zone_colors = alt.Scale(
+                    domain=labels,
+                    range=['#95a5a6', '#3498db', '#2ecc71', '#f1c40f', '#e74c3c'] 
+                )
+                
+                # Build horizontal bar chart
+                hr_bar = alt.Chart(zone_counts).mark_bar(cornerRadiusEnd=2, height=18).encode(
+                    y=alt.Y('Zone:N', sort=labels, title=None, axis=alt.Axis(labelAngle=0, grid=False)),
+                    x=alt.X('Minutes:Q', title='Time (Minutes)'),
+                    color=alt.Color('Zone:N', scale=zone_colors, legend=None),
+                    tooltip=[
+                        alt.Tooltip('Zone:N', title='Zone'),
+                        alt.Tooltip('Minutes:Q', title='Minutes', format='.1f')
+                    ]
+                ).properties(height=200)
+                
+                st.altair_chart(hr_bar, use_container_width=True)
+            else:
+                st.info("No Heart Rate data recorded for this session.")
+                
+        st.markdown('---')
             
         # Plot heart rate and elevation data 
         if time_series_df['heart_rate'].notna().any():
