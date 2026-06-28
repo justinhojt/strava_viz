@@ -17,9 +17,9 @@ try:
     page = st.sidebar.radio('Go to', ['Summary', 'Activity Viewer', 'Aerobic Efficiency Trends', 'Fitness, Fatigue and Form'])
 
     if page == 'Summary':
-        st.subheader('🏆 Lifetime Training Overview')
+        st.subheader('Lifetime Training Overview')
         
-        # 1. Unified Filter UX (Moved to Sidebar)
+        # Activity Filter
         st.sidebar.header('Activity Filter')
         activity_types = ['All'] + list(summary_df['Activity Type'].unique())
         selected_type = st.sidebar.selectbox('Select Activity Type', activity_types)
@@ -29,7 +29,7 @@ try:
         else:
             filtered_df = summary_df
             
-        # 2. Core KPI Calculations
+        # Core KPI Calculations
         total_activities = len(filtered_df)
         
         dist_df = filtered_df[~filtered_df['Activity Type'].isin(['Workout', 'Weight Training'])]
@@ -45,7 +45,7 @@ try:
         max_distance_km = dist_df['Distance'].max() / 1000 if not dist_df.empty else 0
         avg_hr = filtered_df['Average Heart Rate'].mean() if 'Average Heart Rate' in filtered_df.columns else 0
         
-        # Calculate Weekly Consistency (Activities per week)
+        # Calculate consistency (activities per week)
         if not filtered_df.empty and len(filtered_df) > 1:
             min_date = filtered_df['Activity Date'].min()
             max_date = filtered_df['Activity Date'].max()
@@ -54,14 +54,12 @@ try:
         else:
             weekly_avg = 0
 
-        # 3. Layout: Top Section (Metrics + Donut Chart)
         st.markdown('### ⚡ Core Metrics')
         
-        # Create a 60/40 split for the metrics and the chart
+        # 60/40 split for the metrics and the chart
         top_left, top_right = st.columns([1.5, 1])
         
         with top_left:
-            # 2x2 Grid for Core Metrics
             row1_col1, row1_col2 = st.columns(2)
             row1_col1.metric('🏃‍♂️ Total Activities', f'{total_activities}')
             row1_col2.metric('📏 Total Distance', f'{total_distance_km:,.1f} km')
@@ -71,29 +69,47 @@ try:
             row2_col2.metric('🔥 Calories Burned', f'{total_calories:,.0f} kcal')
             
         with top_right:
-            # Injecting the Composition Visualization
             if selected_type == 'All' and not filtered_df.empty:
                 # Group data for the donut chart
                 breakdown = filtered_df['Activity Type'].value_counts().reset_index()
                 breakdown.columns = ['Activity', 'Count']
                 
-                # Build Altair Donut Chart
-                donut_chart = alt.Chart(breakdown).mark_arc(innerRadius=60).encode(
-                    theta=alt.Theta(field='Count', type='quantitative'),
-                    color=alt.Color(field='Activity', type='nominal', 
-                                    scale=alt.Scale(scheme='category20'),
-                                    legend=alt.Legend(title='Activity Breakdown', orient='right')),
-                    tooltip=['Activity', 'Count']
-                ).properties(height=220)
+                # Plot donut chart
+                activity_colors = {
+                    'Run': '#fc5200',              
+                    'Walk': '#ee9f28',             
+                    'Swim': '#f9dcb0',             
+                    'Workout': '#dc6602',          
+                }
+                
+                if selected_type == 'All' and not filtered_df.empty:
+                    # Group data for the donut chart
+                    breakdown = filtered_df['Activity Type'].value_counts().reset_index()
+                    breakdown.columns = ['Activity', 'Count']
+                    
+                    # Dynamically align the palette with the activities present in the current dataframe
+                    # .get() fallback ensures chart doesnt break if a new activity type is logged
+                    present_activities = breakdown['Activity'].tolist()
+                    chart_range = [activity_colors.get(act, '#808080') for act in present_activities]
+                    
+                    # Build donut chart
+                    donut_chart = alt.Chart(breakdown).mark_arc(innerRadius=60).encode(
+                        theta=alt.Theta(field="Count", type="quantitative"),
+                        color=alt.Color(
+                            field="Activity", 
+                            type="nominal", 
+                            scale=alt.Scale(domain=present_activities, range=chart_range),
+                            legend=alt.Legend(title="Activity Breakdown", orient="right")
+                        ),
+                        tooltip=['Activity', 'Count']
+                    ).properties(height=220)
                 
                 st.altair_chart(donut_chart, use_container_width=True)
             else:
-                # Fallback if a specific filter is applied
                 st.info(f'Viewing filtered data for: **{selected_type}**.\n\nSelect "All" in the sidebar to view your activity composition chart.')
         
         st.markdown('---')
         
-        # 4. Layout: Bottom Section (Symmetrical 4-Column Highs)
         st.markdown('### ⭐ Performance Highs & Consistency')
         ext_col1, ext_col2, ext_col3, ext_col4 = st.columns(4)
         
