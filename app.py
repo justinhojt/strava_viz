@@ -248,7 +248,7 @@ try:
             
         # Plot heart rate and elevation data 
         if time_series_df['heart_rate'].notna().any():
-            st.subheader('Heart Rate')
+            st.subheader('❤️ Heart Rate')
             hr_chart = (
                 alt.Chart(time_series_df)
                 .mark_line(color='#fc5200')  
@@ -260,7 +260,7 @@ try:
             st.altair_chart(hr_chart, width='stretch')
     
         if time_series_df['elevation'].notna().any():
-            st.subheader('Elevation')
+            st.subheader('⛰️ Elevation')
             elevation_chart = (
                 alt.Chart(time_series_df)
                 .mark_line(color='#fc5200')
