@@ -106,7 +106,7 @@ try:
                 
                 st.altair_chart(donut_chart, width='stretch')
             else:
-                st.info(f'Viewing filtered data for: **{selected_type}**.\n\nSelect "All" in the sidebar to view your activity composition chart.')
+                st.info(f'Viewing filtered data for: **{selected_type}**.\n\nSelect "All" in the sidebar to view activity composition chart.')
         
         st.markdown('---')
         
