@@ -10,12 +10,16 @@ def filter_to_last_activity(df):
     return df
 
 # Plots aerobic efficiency chart
+# Plots aerobic efficiency chart with 30-day moving average
 def plot_aero(df):
+    # Calculate 30-day moving average in pandas based on the date window
+    df = df.sort_values('Activity Date')
+    df['moving_avg'] = df.rolling('30D', on='Activity Date')['aero_ratio'].mean()
+    
     df['graph_date'] = df['Activity Date'].dt.strftime('%Y-%m-%dT%H:%M:%S')
 
     base = alt.Chart(df).encode(
-        x=alt.X('graph_date:T', title='Date', axis=alt.Axis(format="%b '%y")),
-        y=alt.Y('aero_ratio:Q', title='Ratio (Speed/Heart Rate)', scale=alt.Scale(zero=False))
+        x=alt.X('graph_date:T', title='Date')
     )
 
     points = base.mark_circle(
@@ -25,12 +29,14 @@ def plot_aero(df):
         strokeWidth=1.5, 
         opacity=0.7
     ).encode(
+        y=alt.Y('aero_ratio:Q', title='Ratio (Speed/Heart Rate)', scale=alt.Scale(zero=False)),
         tooltip=[alt.Tooltip('graph_date:T', title='Date', format='%Y-%m-%d'), 'aero_ratio:Q']
     )
 
-    trend_line = base.transform_regression(
-        'graph_date', 'aero_ratio'
-    ).mark_line(color='#fc5200', size=3)
+    # Replaced the linear transform_regression with the calculated moving average
+    trend_line = base.mark_line(color='#fc5200', size=3).encode(
+        y=alt.Y('moving_avg:Q')
+    )
 
     return alt.layer(points, trend_line).properties(height=400)
     
