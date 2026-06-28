@@ -63,12 +63,12 @@ try:
         with top_left:
             # 2x2 Grid for Core Metrics
             row1_col1, row1_col2 = st.columns(2)
-            row1_col1.metric("🏃‍♂️ Total Activities", f"{total_activities}")
-            row1_col2.metric("📏 Total Distance", f"{total_distance_km:,.1f} km")
+            row1_col1.metric('🏃‍♂️ Total Activities', f'{total_activities}')
+            row1_col2.metric('📏 Total Distance', f'{total_distance_km:,.1f} km')
             
             row2_col1, row2_col2 = st.columns(2)
-            row2_col1.metric("⏱️ Moving Time", f"{total_hours:.0f}h {total_minutes:.0f}m")
-            row2_col2.metric("🔥 Calories Burned", f"{total_calories:,.0f} kcal")
+            row2_col1.metric('⏱️ Moving Time', f'{total_hours:.0f}h {total_minutes:.0f}m')
+            row2_col2.metric('🔥 Calories Burned', f'{total_calories:,.0f} kcal')
             
         with top_right:
             # Injecting the Composition Visualization
@@ -79,17 +79,17 @@ try:
                 
                 # Build Altair Donut Chart
                 donut_chart = alt.Chart(breakdown).mark_arc(innerRadius=60).encode(
-                    theta=alt.Theta(field="Count", type="quantitative"),
-                    color=alt.Color(field="Activity", type="nominal", 
+                    theta=alt.Theta(field='Count', type='quantitative'),
+                    color=alt.Color(field='Activity', type='nominal', 
                                     scale=alt.Scale(scheme='category20'),
-                                    legend=alt.Legend(title="Activity Breakdown", orient="right")),
+                                    legend=alt.Legend(title='Activity Breakdown', orient='right')),
                     tooltip=['Activity', 'Count']
                 ).properties(height=220)
                 
                 st.altair_chart(donut_chart, use_container_width=True)
             else:
                 # Fallback if a specific filter is applied
-                st.info(f"Viewing filtered data for: **{selected_type}**.\n\nSelect 'All' in the sidebar to view your activity composition chart.")
+                st.info(f'Viewing filtered data for: **{selected_type}**.\n\nSelect "All" in the sidebar to view your activity composition chart.')
         
         st.markdown('---')
         
@@ -97,15 +97,15 @@ try:
         st.markdown('### ⭐ Performance Highs & Consistency')
         ext_col1, ext_col2, ext_col3, ext_col4 = st.columns(4)
         
-        ext_col1.metric("⛰️ Total Elevation", f"{total_elevation:,.0f} m")
-        ext_col2.metric("🗺️ Longest Session", f"{max_distance_km:,.1f} km")
+        ext_col1.metric('⛰️ Total Elevation Gain', f'{total_elevation:,.0f} m')
+        ext_col2.metric('🗺️ Longest Session', f'{max_distance_km:,.1f} km')
         
         if avg_hr > 0:
-            ext_col3.metric("❤️ Historical Avg HR", f"{avg_hr:.0f} bpm")
+            ext_col3.metric('❤️ Historical Avg HR', f'{avg_hr:.0f} bpm')
         else:
-            ext_col3.metric("❤️ Historical Avg HR", "N/A")
+            ext_col3.metric('❤️ Historical Avg HR', 'N/A')
             
-        ext_col4.metric("📅 Sessions / Week", f"{weekly_avg:.1f}")
+        ext_col4.metric('📅 Sessions / Week', f'{weekly_avg:.1f}')
         
     elif page == 'Activity Viewer':
         # Sidebar navigation/filtering
@@ -117,7 +117,7 @@ try:
         filtered_summary = summary_df[summary_df['Activity Type'] == selected_type]
         
         # Create an activity selector dropdown
-        activity_map = {f"{row['Activity Date'].strftime('%Y-%m-%d')} - {row['Activity Name']}": row['Filename'] 
+        activity_map = {f'{row['Activity Date'].strftime('%Y-%m-%d')} - {row['Activity Name']}': row['Filename'] 
                         for _, row in filtered_summary.iterrows()}
         
         selected_activity_label = st.sidebar.selectbox('Select Specific Session', list(activity_map.keys()))
