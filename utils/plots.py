@@ -31,7 +31,6 @@ def plot_aero(df):
         tooltip=[alt.Tooltip('graph_date:T', title='Date', format='%Y-%m-%d'), 'aero_ratio:Q']
     )
 
-    # Replaced the linear transform_regression with the calculated moving average
     trend_line = base.mark_line(color='#fc5200', size=3).encode(
         y=alt.Y('moving_avg:Q')
     )
