@@ -9,10 +9,8 @@ def filter_to_last_activity(df):
             return df[df['Date'] <= last_active_date]
     return df
 
-# Plots aerobic efficiency chart
 # Plots aerobic efficiency chart with 30-day moving average
 def plot_aero(df):
-    # Calculate 30-day moving average in pandas based on the date window
     df = df.sort_values('Activity Date')
     df['moving_avg'] = df.rolling('30D', on='Activity Date')['aero_ratio'].mean()
     
