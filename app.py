@@ -94,17 +94,17 @@ try:
                     
                     # Build donut chart
                     donut_chart = alt.Chart(breakdown).mark_arc(innerRadius=60).encode(
-                        theta=alt.Theta(field="Count", type="quantitative"),
+                        theta=alt.Theta(field='Count', type='quantitative'),
                         color=alt.Color(
                             field="Activity", 
                             type="nominal", 
                             scale=alt.Scale(domain=present_activities, range=chart_range),
-                            legend=alt.Legend(title="Activity Breakdown", orient="right")
+                            legend=alt.Legend(title='Activity Breakdown', orient='right')
                         ),
                         tooltip=['Activity', 'Count']
                     ).properties(height=220)
                 
-                st.altair_chart(donut_chart, use_container_width=True)
+                st.altair_chart(donut_chart, width='stretch')
             else:
                 st.info(f'Viewing filtered data for: **{selected_type}**.\n\nSelect "All" in the sidebar to view your activity composition chart.')
         
