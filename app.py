@@ -114,14 +114,14 @@ try:
         ext_col1, ext_col2, ext_col3, ext_col4 = st.columns(4)
         
         ext_col1.metric('⛰️ Total Elevation Gain', f'{total_elevation:,.0f} m')
-        ext_col2.metric('🗺️ Longest Session', f'{max_distance_km:,.1f} km')
+        ext_col2.metric('🗺️ Longest Activity Distance', f'{max_distance_km:,.1f} km')
         
         if avg_hr > 0:
             ext_col3.metric('❤️ Historical Avg HR', f'{avg_hr:.0f} bpm')
         else:
             ext_col3.metric('❤️ Historical Avg HR', 'N/A')
             
-        ext_col4.metric('📅 Sessions / Week', f'{weekly_avg:.1f}')
+        ext_col4.metric('📅 Activities / Week', f'{weekly_avg:.1f}')
         
     elif page == 'Activity Viewer':
         # Sidebar navigation/filtering
