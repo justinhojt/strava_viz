@@ -16,7 +16,7 @@ try:
     st.sidebar.title('Navigation')
     page = st.sidebar.radio('Go to', ['Summary', 'Activity Viewer', 'Aerobic Efficiency Trends', 'Fitness, Fatigue and Form'])
 
-if page == 'Summary':
+    if page == 'Summary':
         st.subheader('🏆 Lifetime Training Overview')
         
         # 1. Unified Filter UX (Moved to Sidebar)
