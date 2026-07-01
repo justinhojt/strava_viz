@@ -1,3 +1,9 @@
+import streamlit as st
+
+from utils.data_loader import parse_csv
+from utils.functions import parse_granular
+from utils.plots import plot_fitness_fatigue, plot_tsb_zones
+
 trimps = parse_granular(summary_df.copy())
 
 st.subheader('Historical Performance Analysis')
