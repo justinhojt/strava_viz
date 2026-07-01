@@ -25,7 +25,7 @@ This application is divided into a modular, multi-page Streamlit architecture:
 │   ├── activities                      # Individual gpx/fit files
 │   └── activities.csv                  # Strava bulk export summary
 ├── pages/                              # Streamlit sub-pages
-│   ├── 1__Activity_Viewer.py           
+│   ├── 1_Activity_Viewer.py           
 │   ├── 2_Aerobic_Efficiency_Trends.py  
 │   └── 3_Fitness_Fatigue_Form.py       
 └── utils/                              # Core pipeline logic
