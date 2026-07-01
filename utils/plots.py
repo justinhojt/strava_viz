@@ -1,5 +1,6 @@
 import altair as alt
 import pandas as pd
+import config
 
 # Helper function to filter dataframe to the last recorded activity date
 def filter_to_last_activity(df):
@@ -77,10 +78,10 @@ def plot_tsb_zones(df, selected_date=None):
     min_tsb = float(min(df['TSB'].min(), -35) - 10)
 
     zone_data = pd.DataFrame([
-        {'y1': 0, 'y2': max_tsb, 'color': '#6cf7a1'},        
-        {'y1': -10, 'y2': 0, 'color': '#808080'},        
-        {'y1': -30, 'y2': -10, 'color': '#ff9955'},   
-        {'y1': min_tsb, 'y2': -30, 'color': '#f44e65'}     
+        {'y1': 0, 'y2': max_tsb, 'color': config.ZONE_COLORS['Freshness']},        
+        {'y1': -10, 'y2': 0, 'color': config.ZONE_COLORS['Maintenance']},        
+        {'y1': -30, 'y2': -10, 'color': config.ZONE_COLORS['Optimal_Training']},   
+        {'y1': min_tsb, 'y2': -30, 'color': config.ZONE_COLORS['Overtraining']}     
     ])
 
     zones = alt.Chart(zone_data).mark_rect(opacity=0.25).encode(
@@ -90,14 +91,7 @@ def plot_tsb_zones(df, selected_date=None):
         tooltip=alt.value(None)
     )
 
-    tsb_line = alt.Chart(df).mark_line(color='#ffffff', strokeWidth=2).encode(
-        x=alt.X('Date:T', title='Date', axis=alt.Axis(format="%b '%y")),
-        y=alt.Y('TSB:Q'),
-        tooltip=[
-            alt.Tooltip('Date:T', title='Date', format='%Y-%m-%d'),
-            alt.Tooltip('TSB:Q', title='Form', format='.2f')
-        ]
-    )
+    tsb_line = alt.Chart(df).mark_line(color=config.COLOR_PURE_WHITE, strokeWidth=2)
 
     baseline = alt.Chart(pd.DataFrame([{'y': 0}])).mark_rule(
         color='#7f8c8d', strokeDash=[4, 4]
