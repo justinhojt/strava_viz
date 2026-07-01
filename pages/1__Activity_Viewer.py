@@ -3,7 +3,7 @@ import pandas as pd
 import altair as alt
 
 from utils.data_loader import parse_csv, parse_gpx, parse_fit
-from utils.functions import parse_granular, classify_workout_style
+from utils.functions import get_trimp_for_row
 
 # Fetch the shared dataset from session state
 if 'summary_df' in st.session_state:
