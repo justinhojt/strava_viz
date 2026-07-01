@@ -91,7 +91,10 @@ def plot_tsb_zones(df, selected_date=None):
         tooltip=alt.value(None)
     )
 
-    tsb_line = alt.Chart(df).mark_line(color=config.COLOR_PURE_WHITE, strokeWidth=2)
+    tsb_line = alt.Chart(df).mark_line(color=config.COLOR_PURE_WHITE, strokeWidth=2).encode(
+    x=alt.X('Date:T', title='Date', axis=alt.Axis(format="%b '%y")),
+    y=alt.Y('TSB:Q', title='Form (TSB)')
+    )
 
     baseline = alt.Chart(pd.DataFrame([{'y': 0}])).mark_rule(
         color='#7f8c8d', strokeDash=[4, 4]
