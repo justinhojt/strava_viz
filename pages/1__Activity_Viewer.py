@@ -5,6 +5,14 @@ import altair as alt
 from utils.data_loader import parse_csv, parse_gpx, parse_fit
 from utils.functions import parse_granular, classify_workout_style
 
+# Fetch the shared dataset from session state
+if 'summary_df' in st.session_state:
+    summary_df = st.session_state['summary_df']
+else:
+    # Fallback just in case someone refreshes this page directly
+    from utils.data_loader import parse_csv
+    summary_df = parse_csv()
+
 # Sidebar navigation/filtering
 st.sidebar.header('Activity Filter')
 activity_types = summary_df['Activity Type'].unique()
