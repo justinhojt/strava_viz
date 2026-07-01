@@ -1,423 +1,109 @@
 import streamlit as st
 import altair as alt
-import pandas as pd
-from utils.data_loader import parse_csv, parse_gpx, parse_fit
-from utils.functions import parse_granular, calc_trimps, get_trimp_for_row, classify_workout_style
-from utils.plots import plot_aero, plot_fitness_fatigue, plot_tsb_zones
+from utils.data_loader import parse_csv
 
-st.set_page_config(layout='wide')
+st.set_page_config(layout='wide', page_title='Strava Analytics')
 st.title('Strava Archive Analytics Dashboard')
 
 # Load macro data
-try:
-    summary_df = parse_csv()
+summary_df = parse_csv()
 
-    # Page Navigation Router
-    st.sidebar.title('Navigation')
-    page = st.sidebar.radio('Go to', ['Summary', 'Activity Viewer', 'Aerobic Efficiency Trends', 'Fitness, Fatigue and Form'])
+st.subheader('Lifetime Training Overview')
 
-    if page == 'Summary':
-        st.subheader('Lifetime Training Overview')
-        
-        # Activity Filter
-        st.sidebar.header('Activity Filter')
-        activity_types = ['All'] + list(summary_df['Activity Type'].unique())
-        selected_type = st.sidebar.selectbox('Select Activity Type', activity_types)
-        
-        if selected_type != 'All':
-            filtered_df = summary_df[summary_df['Activity Type'] == selected_type]
-        else:
-            filtered_df = summary_df
-            
-        # Core KPI Calculations
-        total_activities = len(filtered_df)
-        
-        dist_df = filtered_df[~filtered_df['Activity Type'].isin(['Workout', 'Weight Training'])]
-        total_distance_km = dist_df['Distance'].sum() / 1000
-        
-        total_seconds = filtered_df['Moving Time'].sum()
-        total_hours = total_seconds // 3600
-        total_minutes = (total_seconds % 3600) // 60
-        
-        total_calories = filtered_df['Calories'].sum()
-        
-        total_elevation = filtered_df['Elevation Gain'].sum() if 'Elevation Gain' in filtered_df.columns else 0
-        max_distance_km = dist_df['Distance'].max() / 1000 if not dist_df.empty else 0
-        avg_hr = filtered_df['Average Heart Rate'].mean() if 'Average Heart Rate' in filtered_df.columns else 0
-        
-        # Calculate consistency (activities per week)
-        if not filtered_df.empty and len(filtered_df) > 1:
-            min_date = filtered_df['Activity Date'].min()
-            max_date = filtered_df['Activity Date'].max()
-            weeks_active = (max_date - min_date).days / 7
-            weekly_avg = total_activities / weeks_active if weeks_active > 0 else total_activities
-        else:
-            weekly_avg = 0
+# Activity Filter
+st.sidebar.header('Activity Filter')
+activity_types = ['All'] + list(summary_df['Activity Type'].unique())
+selected_type = st.sidebar.selectbox('Select Activity Type', activity_types)
 
-        st.markdown('### ⚡ Core Metrics')
-        
-        # 60/40 split for the metrics and the chart
-        top_left, top_right = st.columns([1.5, 1])
-        
-        with top_left:
-            row1_col1, row1_col2 = st.columns(2)
-            row1_col1.metric('🏃‍♂️ Total Activities', f'{total_activities}')
-            row1_col2.metric('📏 Total Distance', f'{total_distance_km:,.1f} km')
-            
-            row2_col1, row2_col2 = st.columns(2)
-            row2_col1.metric('⏱️ Moving Time', f'{total_hours:.0f}h {total_minutes:.0f}m')
-            row2_col2.metric('🔥 Calories Burned', f'{total_calories:,.0f} kcal')
-            
-        with top_right:
-            if selected_type == 'All' and not filtered_df.empty:
-                # Group data for the donut chart
-                breakdown = filtered_df['Activity Type'].value_counts().reset_index()
-                breakdown.columns = ['Activity', 'Count']
-                
-                # Plot donut chart
-                activity_colors = {
-                    'Run': '#fc5200',              
-                    'Walk': '#ee9f28',             
-                    'Swim': '#f9dcb0',             
-                    'Workout': '#e17602',          
-                }
-                
-                if selected_type == 'All' and not filtered_df.empty:
-                    # Group data for the donut chart
-                    breakdown = filtered_df['Activity Type'].value_counts().reset_index()
-                    breakdown.columns = ['Activity', 'Count']
-                    
-                    # Dynamically align the palette with the activities present in the current dataframe
-                    # .get() fallback ensures chart doesnt break if a new activity type is logged
-                    present_activities = breakdown['Activity'].tolist()
-                    chart_range = [activity_colors.get(act, '#808080') for act in present_activities]
-                    
-                    # Build donut chart
-                    donut_chart = alt.Chart(breakdown).mark_arc(innerRadius=60).encode(
-                        theta=alt.Theta(field='Count', type='quantitative'),
-                        color=alt.Color(
-                            field="Activity", 
-                            type="nominal", 
-                            scale=alt.Scale(domain=present_activities, range=chart_range),
-                            legend=alt.Legend(title='Activity Breakdown', orient='right')
-                        ),
-                        tooltip=['Activity', 'Count']
-                    ).properties(height=220)
-                
-                st.altair_chart(donut_chart, width='stretch')
-            else:
-                st.info(f'Viewing filtered data for: **{selected_type}**.\n\nSelect "All" in the sidebar to view activity composition chart.')
-        
-        st.markdown('---')
-        
-        st.markdown('### ⭐ Performance Highs & Consistency')
-        ext_col1, ext_col2, ext_col3, ext_col4 = st.columns(4)
-        
-        ext_col1.metric('⛰️ Total Elevation Gain', f'{total_elevation:,.0f} m')
-        ext_col2.metric('🗺️ Longest Activity Distance', f'{max_distance_km:,.1f} km')
-        
-        if avg_hr > 0:
-            ext_col3.metric('❤️ Historical Avg HR', f'{avg_hr:.0f} bpm')
-        else:
-            ext_col3.metric('❤️ Historical Avg HR', 'N/A')
-            
-        ext_col4.metric('📅 Activities / Week', f'{weekly_avg:.1f}')
-        
-    elif page == 'Activity Viewer':
-        
-        # Sidebar navigation/filtering
-        st.sidebar.header('Activity Filter')
-        activity_types = summary_df['Activity Type'].unique()
-        selected_type = st.sidebar.selectbox('Select Activity Type', activity_types)
-        
-        # Filter summary data based on selection
-        filtered_summary = summary_df[summary_df['Activity Type'] == selected_type]
-        
-        # Create an activity selector dropdown
-        activity_map = {f'{row['Activity Date'].strftime('%Y-%m-%d')} - {row['Activity Name']}': row['Filename'] 
-                        for _, row in filtered_summary.iterrows()}
-        
-        selected_activity_label = st.sidebar.selectbox('Select Specific Session', list(activity_map.keys()))
-        target_filename = activity_map[selected_activity_label]
+if selected_type != 'All':
+    filtered_df = summary_df[summary_df['Activity Type'] == selected_type]
+else:
+    filtered_df = summary_df
     
-        # Load and parse the second-by-second granular details
-        with st.spinner('Parsing data...'):
-            if target_filename.endswith('.gpx') or target_filename.endswith('.gpx.gz'):
-                time_series_df = parse_gpx(target_filename)
-            elif target_filename.endswith('.fit') or target_filename.endswith('.fit.gz'):
-                time_series_df = parse_fit(target_filename) 
-            else:
-                st.error('Unsupported file format.')
+# Core KPI Calculations
+total_activities = len(filtered_df)
+
+dist_df = filtered_df[~filtered_df['Activity Type'].isin(['Workout', 'Weight Training'])]
+total_distance_km = dist_df['Distance'].sum() / 1000
+
+total_seconds = filtered_df['Moving Time'].sum()
+total_hours = total_seconds // 3600
+total_minutes = (total_seconds % 3600) // 60
+
+total_calories = filtered_df['Calories'].sum()
+
+total_elevation = filtered_df['Elevation Gain'].sum() if 'Elevation Gain' in filtered_df.columns else 0
+max_distance_km = dist_df['Distance'].max() / 1000 if not dist_df.empty else 0
+avg_hr = filtered_df['Average Heart Rate'].mean() if 'Average Heart Rate' in filtered_df.columns else 0
+
+# Calculate consistency (activities per week)
+if not filtered_df.empty and len(filtered_df) > 1:
+    min_date = filtered_df['Activity Date'].min()
+    max_date = filtered_df['Activity Date'].max()
+    weeks_active = (max_date - min_date).days / 7
+    weekly_avg = total_activities / weeks_active if weeks_active > 0 else total_activities
+else:
+    weekly_avg = 0
+
+st.markdown('### ⚡ Core Metrics')
+
+# 60/40 split for the metrics and the chart
+top_left, top_right = st.columns([1.5, 1])
+
+with top_left:
+    row1_col1, row1_col2 = st.columns(2)
+    row1_col1.metric('🏃‍♂️ Total Activities', f'{total_activities}')
+    row1_col2.metric('📏 Total Distance', f'{total_distance_km:,.1f} km')
     
-        if time_series_df.empty:
-            st.warning('This specific activity has a file entry but contains no coordinate data streams.')
-        
-        # Key Performance Indicators
-        selected_row = filtered_summary[filtered_summary['Filename'] == target_filename].iloc[0]
+    row2_col1, row2_col2 = st.columns(2)
+    row2_col1.metric('⏱️ Moving Time', f'{total_hours:.0f}h {total_minutes:.0f}m')
+    row2_col2.metric('🔥 Calories Burned', f'{total_calories:,.0f} kcal')
     
-        time = f'{selected_row["Moving Time"] // 60:.0f}m {selected_row["Moving Time"] % 60:.0f}s'
-        dist_m = f'{selected_row["Distance"]:.0f} m'
-        dist_km = f'{selected_row["Distance"] / 1000:.2f} km'
-        avg_hr = f'{selected_row["Average Heart Rate"]:.0f} bpm'
-        max_hr = f'{selected_row["Max Heart Rate"]:.0f} bpm'
-        cal = f'{selected_row["Calories"]:.0f} cal'
+with top_right:
+    if selected_type == 'All' and not filtered_df.empty:
+        # Group data for the donut chart
+        breakdown = filtered_df['Activity Type'].value_counts().reset_index()
+        breakdown.columns = ['Activity', 'Count']
         
-        adjusted_trimp = get_trimp_for_row(selected_row, time_series_df)
-        trimp = f'{adjusted_trimp:.2f}'
-
-        seconds_100m = selected_row['Moving Time'] / (selected_row['Distance'] / 100) if selected_row['Distance'] > 0 else 0
-        pace_100m = f'{seconds_100m // 60:.0f}m {seconds_100m % 60:.0f}s/100m'
-
-        seconds_km = selected_row['Moving Time'] / (selected_row['Distance'] / 1000) if selected_row['Distance'] > 0 else 0
-        pace_km = f'{seconds_km // 60:.0f}m {seconds_km % 60:.0f}s/km'
-
-        st.markdown('### ⚡ Session Overview')
-        top_left, top_right = st.columns([1.5, 1])
+        # Plot donut chart
+        activity_colors = {
+            'Run': '#fc5200',              
+            'Walk': '#ee9f28',             
+            'Swim': '#f9dcb0',             
+            'Workout': '#e17602',          
+        }
         
-        with top_left:
-            if selected_row['Activity Type'] in ['Workout', 'Weight Training']:
-                r1_col1, r1_col2, r1_col3 = st.columns(3)
-                r1_col1.metric('Moving Time', time)
-                r1_col2.metric('Average Heart Rate', avg_hr)
-                r1_col3.metric('Maximum Heart Rate', max_hr)
-                
-                r2_col1, r2_col2, r2_col3 = st.columns(3)
-                r2_col1.metric('Training Intensity Score', trimp)
-                
-            elif selected_row['Activity Type'] == 'Swim':
-                r1_col1, r1_col2, r1_col3 = st.columns([1, 1, 1.3])
-                r1_col1.metric('Distance', dist_m)
-                r1_col2.metric('Moving Time', time)
-                r1_col3.metric('Pace', pace_100m)
-                
-                r2_col1, r2_col2, r2_col3 = st.columns([1, 1, 1.3])
-                r2_col1.metric('Average Heart Rate', avg_hr)
-                r2_col2.metric('Maximum Heart Rate', max_hr)
-                r2_col3.metric('Training Intensity Score', trimp)
+        # Dynamically align the palette with the activities present in the current dataframe
+        present_activities = breakdown['Activity'].tolist()
+        chart_range = [activity_colors.get(act, '#808080') for act in present_activities]
         
-            else:
-                r1_col1, r1_col2, r1_col3 = st.columns(3)
-                r1_col1.metric('Distance', dist_km)
-                r1_col2.metric('Moving Time', time)
-                r1_col3.metric('Pace', pace_km)
-                
-                r2_col1, r2_col2, r2_col3 = st.columns(3)
-                r2_col1.metric('Average Heart Rate', avg_hr)
-                r2_col2.metric('Maximum Heart Rate', max_hr)
-                r2_col3.metric('Training Intensity Score', trimp)
+        # Build donut chart
+        donut_chart = alt.Chart(breakdown).mark_arc(innerRadius=60).encode(
+            theta=alt.Theta(field='Count', type='quantitative'),
+            color=alt.Color(
+                field="Activity", 
+                type="nominal", 
+                scale=alt.Scale(domain=present_activities, range=chart_range),
+                legend=alt.Legend(title='Activity Breakdown', orient='right')
+            ),
+            tooltip=['Activity', 'Count']
+        ).properties(height=220)
+        
+        st.altair_chart(donut_chart, width='stretch')
+    else:
+        st.info(f'Viewing filtered data for: **{selected_type}**.\n\nSelect "All" in the sidebar to view activity composition chart.')
 
-        with top_right:
-            # Heart Rate Zone Composition Chart
-            if 'heart_rate' in time_series_df.columns and time_series_df['heart_rate'].notna().any():
-                
-                act_max_hr = 200.0
-                    
-                # Calculate standard personalized zones based on % of Max HR
-                bins = [0, act_max_hr * 0.60, act_max_hr * 0.70, act_max_hr * 0.80, act_max_hr * 0.90, 300]
-                labels = ['Z1 Recovery', 'Z2 Aerobic', 'Z3 Tempo', 'Z4 Threshold', 'Z5 Anaerobic']
-                
-                # Map each second of data to a zone
-                time_series_df['HR_Zone'] = pd.cut(time_series_df['heart_rate'], bins=bins, labels=labels)
-                
-                # Aggregate time (Assuming 1 row = 1 second for standard GPS files)
-                zone_counts = time_series_df['HR_Zone'].value_counts().reset_index()
-                zone_counts.columns = ['Zone', 'Time (s)']
-                zone_counts['Minutes'] = zone_counts['Time (s)'] / 60
-                
-                # Define zone colors
-                zone_colors = alt.Scale(
-                    domain=labels,
-                    range=['#95a5a6', '#3498db', '#2ecc71', '#f1c40f', '#e74c3c'] 
-                )
-                
-                # Build horizontal bar chart
-                hr_bar = alt.Chart(zone_counts).mark_bar(cornerRadiusEnd=2, height=18).encode(
-                    y=alt.Y('Zone:N', sort=labels, title=None, axis=alt.Axis(labelAngle=0, grid=False)),
-                    x=alt.X('Minutes:Q', title='Time (Minutes)'),
-                    color=alt.Color('Zone:N', scale=zone_colors, legend=None),
-                    tooltip=[
-                        alt.Tooltip('Zone:N', title='Zone'),
-                        alt.Tooltip('Minutes:Q', title='Minutes', format='.1f')
-                    ]
-                ).properties(height=200)
-                
-                st.altair_chart(hr_bar, width='stretch')
-            else:
-                st.info("No Heart Rate data recorded for this session.")
-                
-        st.markdown('---')
-            
-        # Plot heart rate and elevation data 
-        if time_series_df['heart_rate'].notna().any():
-            st.subheader('❤️ Heart Rate')
-            hr_chart = (
-                alt.Chart(time_series_df)
-                .mark_line(color='#fc5200')  
-                .encode(
-                    x=alt.X('graph_timestamp:T', title='Time'),
-                    y=alt.Y('heart_rate:Q', title='Heart Rate (bpm)', scale=alt.Scale(zero=False))
-                )
-            )
-            st.altair_chart(hr_chart, width='stretch')
+st.markdown('---')
+
+st.markdown('### ⭐ Performance Highs & Consistency')
+ext_col1, ext_col2, ext_col3, ext_col4 = st.columns(4)
+
+ext_col1.metric('⛰️ Total Elevation Gain', f'{total_elevation:,.0f} m')
+ext_col2.metric('🗺️ Longest Activity Distance', f'{max_distance_km:,.1f} km')
+
+if avg_hr > 0:
+    ext_col3.metric('❤️ Historical Avg HR', f'{avg_hr:.0f} bpm')
+else:
+    ext_col3.metric('❤️ Historical Avg HR', 'N/A')
     
-        if time_series_df['elevation'].notna().any():
-            st.subheader('⛰️ Elevation')
-            elevation_chart = (
-                alt.Chart(time_series_df)
-                .mark_line(color='#fc5200')
-                .encode(
-                    x=alt.X('graph_timestamp:T', title='Time'),
-                    y=alt.Y('elevation:Q', title='Elevation (m)', scale=alt.Scale(zero=False))
-                )
-            )
-            st.altair_chart(elevation_chart, width='stretch')
-
-    elif page == 'Aerobic Efficiency Trends':
-        st.subheader('🫀 Aerobic Efficiency Trends')
-        st.write('Running')
-
-        # Isolate and calculate running data
-        runs = summary_df[summary_df['Activity Type'] == 'Run'].copy()
-        runs['Workout Style'] = runs.apply(classify_workout_style, axis=1)
-        steady_runs = runs[runs['Workout Style'] == 'Steady State'].copy()
-
-        steady_runs = steady_runs[(steady_runs['Average Grade Adjusted Pace'] > 0) & (steady_runs['Distance'] >= 1000)]
-        steady_runs['aero_ratio'] = steady_runs['Average Grade Adjusted Pace'] / steady_runs['Average Heart Rate']
-
-        run_chart_data = (
-            steady_runs.dropna(subset=['Activity Date', 'aero_ratio'])
-            .sort_values('Activity Date')
-            .copy()
-        )
-
-        if not run_chart_data.empty:
-            st.altair_chart(plot_aero(run_chart_data), width='stretch')
-        else:
-            st.warning('⚠️ No valid running rows containing both Heart Rate and Speed data were found to plot.')
-
-        # Methodology Expander
-        with st.expander('🔬 View Aerobic Efficiency Methodology'):
-            st.markdown("""
-            ## 📈 Understanding Aerobic Efficiency
-    
-            Aerobic efficiency measures how much physical output (speed) your body can produce for a given cardiovascular input (heart rate).
-            
-            ---
-            
-            ### 🧮 The Calculation
-            This dashboard calculates efficiency for steady-state runs using the following ratio:
-            
-            $$ \\text{Efficiency} = \\frac{\\text{Grade Adjusted Speed}}{\\text{Average Heart Rate}} $$
-            
-            *Note: We specifically filter for "Steady State" runs and use Grade Adjusted metrics to ensure elevation changes and interval spikes do not heavily skew the data.*
-            
-            ---
-            
-            ### 📊 How to Read the Chart
-            
-            * **Upward Trend ↗️:** Cardiovascular adaptation is occurring. You are getting fitter and can hold the same pace at a lower heart rate.
-            * **Downward Trend ↘️:** This can indicate accumulated fatigue, a loss of fitness, or external environmental factors like severe heat stress (which causes your heart rate to spike for the same effort).
-            * **Daily Variance 📉📈:** Factors like sleep quality, caffeine intake, ambient temperature, and hydration will cause daily fluctuations. Focus on the long-term trendline rather than the individual dots!
-            """)
-
-    elif page == 'Fitness, Fatigue and Form':
-        trimps = parse_granular(summary_df.copy())
-
-        st.subheader('Historical Performance Analysis')
-
-        # Date slider
-        min_date = trimps['Date'].min().to_pydatetime()
-        max_date = summary_df['Activity Date'].max().to_pydatetime()
-        
-        selected_date = st.slider(
-            '📅 Use the slider to view stats for that day:',
-            min_value=min_date,
-            max_value=max_date,
-            value=max_date,  
-            format='YYYY-MM-DD'
-        )
-        
-        # Filter the metrics down to the single selected day
-        matched_row = trimps[trimps['Date'] == pd.Timestamp(selected_date)]
-        
-        if not matched_row.empty:
-            metrics = matched_row.iloc[0]
-            ctl = metrics['CTL']
-            atl = metrics['ATL']
-            tsb = metrics['TSB']
-            
-            # Dynamic KPI cards
-            col1, col2, col3 = st.columns(3)
-            col1.metric('Fitness (CTL)', f'{ctl:.2f}')
-            col2.metric('Fatigue (ATL)', f'{atl:.2f}')
-            
-            if tsb < -30:
-                status, color = 'Overtraining Risk', 'inverse'
-            elif -30 <= tsb < -10:
-                status, color = 'Optimal Training', 'normal'
-            elif -10 <= tsb <= 0 :
-                status, color = 'Maintenance Zone', 'normal'
-            else:
-                status, color = 'Fresh / Recovery', 'normal'
-                
-            col3.metric('Form (TSB)', f'{tsb:.2f}', delta=status, delta_color=color)
-
-        st.markdown('---')
-
-        # Charts and documentation
-        chart_tab1, chart_tab2 = st.tabs(['📊 Fitness & Fatigue Dynamics', '🚦 Training Stress Balance (TSB)'])
-        
-        with chart_tab1:
-            st.altair_chart(plot_fitness_fatigue(trimps, selected_date), width='stretch') 
-            
-        with chart_tab2:
-            st.altair_chart(plot_tsb_zones(trimps, selected_date), width='stretch')
-            
-        with st.expander('🔬 View Physiological Model Methodology'):
-            st.markdown("""
-            ## 📊 Understanding Fitness, Fatigue, and Form
-    
-            Training effectively requires balancing hard work with structured recovery. These metrics, derived from the Banister Impulse-Response model, transform raw workout data into a predictive view of an individual's physiology.
-            
-            ---
-            
-            ### 📈 The Core Metrics
-            At the heart of the graphs are three primary metrics that track training load:
-            
-            | Metric | Full Name | Time Horizon | What it means |
-            | :--- | :--- | :--- | :--- |
-            | **CTL** | Chronic Training Load | ~42 Days | Fitness (long-term adaptation) |
-            | **ATL** | Acute Training Load | ~7 Days | Fatigue (short-term exhaustion) |
-            | **TSB** | Training Stress Balance | Daily | Form (readiness to perform) |
-            
-            ---
-            
-            ### 🔄 How They Interact
-            The charts visualize the continuous tug-of-war between fitness and fatigue, with form informing us of the current dominating side.
-            
-            #### 1. Fitness (CTL)
-            CTL represents the long-term trend of training volume and intensity. Because it is calculated as a 42-day exponentially weighted moving average (EWMA), it changes slowly.
-            
-            #### 2. Fatigue (ATL)
-            ATL is highly volatile. Representing a short 7-day EWMA, it reacts immediately to hard workouts or back-to-back training days. If ATL climbs sharply above CTL, fatigue is accumulating rapidly.
-            
-            #### 3. Form (TSB)
-            Form is the mathematical difference between current fitness and current fatigue:
-            
-            $$TSB = CTL - ATL$$
-            
-            * **When TSB > 0:** State of freshness; ideal for a race or performance test.
-            * **When TSB < 0:** Accumulating training stress. While a negative number is required to stimulate adaptation and build fitness, staying deeply negative for too long risks injury or burnout.
-            
-            ### 🚦 Reading the Training Zones
-            
-            * **🟢 Freshness (Above 0):** Minimal fatigue; peak state for racing or performance testing.
-            * **⚫ Maintenance Zone (0 to -10):** Fitness is maintained but not actively building.
-            * **🟠 Optimal Training (-10 to -30):** Productive training stress with managed fatigue. The "sweet spot" for building fitness safely.
-            * **🔴 Overtraining (Below -30):** High risk of injury, illness, or chronic fatigue. 
-            
-            """)
-            
-except Exception as e:
-    st.error(f'Data Pipeline Error: {e}')
-    st.info('Ensure your extracted Strava data folder is structured correctly in the root directory.')
+ext_col4.metric('📅 Activities / Week', f'{weekly_avg:.1f}')
