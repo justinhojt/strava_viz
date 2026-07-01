@@ -8,6 +8,7 @@ st.title('Strava Archive Analytics Dashboard')
 # Load macro data
 summary_df = parse_csv()
 
+# Summary page
 st.subheader('Lifetime Training Overview')
 
 # Activity Filter
