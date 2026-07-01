@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 
 from utils.data_loader import parse_csv
 from utils.functions import parse_granular
