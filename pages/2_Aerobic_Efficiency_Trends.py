@@ -1,3 +1,8 @@
+import streamlit as st
+
+from utils.data_loader import parse_csv
+from utils.plots import plot_aero
+
 st.subheader('🫀 Aerobic Efficiency Trends')
 st.write('Running')
 
