@@ -12,7 +12,7 @@ This application is divided into a modular, multi-page Streamlit architecture:
 * Fitness, Fatigue & Form: Implements the Banister TRIMP (Training Impulse) model to calculate and visualize your physiological state:
   * Fitness (CTL): 42-day rolling average of training load.
   * Fatigue (ATL): 7-day acute rolling average.
-  * Form (TSB): Calculated as $TSB = CTL - ATL$, plotted against custom training zones (Freshness, Maintenance, Optimal Training, Overtraining).
+  * Form (TSB): Calculated as $\text{TSB} = \text{CTL} - \text{ATL}$, plotted against custom training zones (Freshness, Maintenance, Optimal Training, Overtraining).
 
 ---
 
