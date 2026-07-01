@@ -5,8 +5,11 @@ from utils.data_loader import parse_csv
 st.set_page_config(layout='wide', page_title='Strava Analytics')
 st.title('Strava Archive Analytics Dashboard')
 
-# Load macro data
-summary_df = parse_csv()
+# Load data into session state so other pages can see it
+if 'summary_df' not in st.session_state:
+    st.session_state['summary_df'] = parse_csv()
+
+summary_df = st.session_state['summary_df']
 
 # Summary page
 st.subheader('Lifetime Training Overview')
