@@ -1,12 +1,13 @@
 from fitparse import FitFile
 import streamlit as st
 import pandas as pd
+import config
 import gpxpy
 import gzip
 import os
 import io
 
-csv = os.path.join('data', 'activities.csv')
+csv = config.ACTIVITIES_CSV
 
 # Helper function to avoid timestamp timezone conversion redundancies
 def process_timestamps(df):
