@@ -1,8 +1,6 @@
 # Strava Archive Analytics Dashboard
 
-A comprehensive, locally-hosted Streamlit dashboard designed to process, analyze, and visualize your lifetime Strava bulk export data. 
-
-Unlike standard fitness apps, this dashboard bypasses basic metrics to offer deep, localized insights into cardiovascular adaptation, aerobic efficiency, and long-term physiological trends using the Banister Impulse-Response Model.
+A comprehensive, locally-hosted Streamlit dashboard designed to process, analyze, and visualize your lifetime Strava bulk export data. This dashboard goes beyond basic metrics, offering deep, individualized insights into cardiovascular adaptation, aerobic efficiency, and long-term physiological trends.
 
 ## Key Features
 
