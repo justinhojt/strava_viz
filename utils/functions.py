@@ -6,7 +6,7 @@ import streamlit as st
 from utils.data_loader import parse_gpx, parse_fit
 
 # Calculates cumulative Banister TRIMP score from second-by-second time-series data
-def calc_trimps(df, hr_max=200, hr_rest=75, gender='male'):
+def calc_trimps(df, hr_max=config.DEFAULT_HR_MAX, hr_rest=config.DEFAULT_HR_REST, gender=config.DEFAULT_GENDER):
     if df.empty or 'heart_rate' not in df or 'timestamp' not in df:
         return 0.0
     
