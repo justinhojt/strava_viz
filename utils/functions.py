@@ -50,7 +50,7 @@ def classify_workout_style(row):
         return 'Steady State'
 
 # Parses all granular data
-@st.cache_data
+@st.cache_data(show_spinner='Calculating historical training load metrics...')
 def parse_granular(df):
     workout_records = []
 
