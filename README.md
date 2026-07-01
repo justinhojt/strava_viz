@@ -32,3 +32,4 @@ This application is divided into a modular, multi-page Streamlit architecture:
     ├── data_loader.py                  # gpx/fit parsing and timezone standardization
     ├── functions.py                    # TRIMP score calculations and data transformations
     └── plots.py                        # Altair chart configurations
+```
