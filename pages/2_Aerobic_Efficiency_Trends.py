@@ -3,6 +3,14 @@ import streamlit as st
 from utils.data_loader import parse_csv
 from utils.plots import plot_aero
 
+# Fetch the shared dataset from session state
+if 'summary_df' in st.session_state:
+    summary_df = st.session_state['summary_df']
+else:
+    # Fallback just in case someone refreshes this page directly
+    from utils.data_loader import parse_csv
+    summary_df = parse_csv()
+
 st.subheader('🫀 Aerobic Efficiency Trends')
 st.write('Running')
 
