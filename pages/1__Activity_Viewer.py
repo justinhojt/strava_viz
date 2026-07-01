@@ -1,3 +1,10 @@
+import streamlit as st
+import pandas as pd
+import altair as alt
+
+from utils.data_loader import parse_csv, parse_gpx, parse_fit
+from utils.functions import parse_granular, classify_workout_style
+
 # Sidebar navigation/filtering
 st.sidebar.header('Activity Filter')
 activity_types = summary_df['Activity Type'].unique()
