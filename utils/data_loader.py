@@ -7,8 +7,6 @@ import gzip
 import os
 import io
 
-from utils.functions import get_historical_weather
-
 csv = config.ACTIVITIES_CSV
 
 def process_timestamps(df):
@@ -103,13 +101,3 @@ def parse_fit(fit_filename):
             })
                 
     return process_timestamps(pd.DataFrame(track_data))
-
-@st.cache_data
-def load_activity_weather(df, activity_date):
-    if df.empty or 'latitude' not in df.columns or 'longitude' not in df.columns:
-        return None
-        
-    start_coords = df[['latitude', 'longitude']].dropna().iloc[0]
-    lat, lon = start_coords['latitude'], start_coords['longitude']
-    date_str = pd.to_datetime(activity_date).strftime('%Y-%m-%d')
-    return get_historical_weather(lat, lon, date_str)
