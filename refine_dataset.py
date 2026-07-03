@@ -121,8 +121,9 @@ def main():
     df['temperature_2m'] = None
     df['relative_humidity_2m'] = None
     df['wind_speed_10m'] = None
+    df['workout_style'] = 'Unknown'
     
-    # FIX: Cast column to object type to prevent PyArrow strict string assignment errors
+    # Cast column to object type to prevent PyArrow strict string assignment errors
     df['Activity Date'] = df['Activity Date'].astype(object)
     
     # Initialize the timezone finder
@@ -132,11 +133,25 @@ def main():
         filename = row['Filename']
         tqdm.write(f' → Processing file: {filename}')
         
-        # Extract coordinates first
+        # Classify workout style (interval vs steady state)
+        avg_speed = row.get('Average Speed')
+        moving_time = row.get('Moving Time')
+        elapsed_time = row.get('Elapsed Time')
+        
+        if pd.isna(avg_speed) or avg_speed == 0 or not elapsed_time:
+            style = 'Unknown'
+        elif (moving_time / elapsed_time) < 0.7:
+            style = 'Interval'
+        else:
+            style = 'Steady State'
+            
+        df.at[index, 'workout_style'] = style
+        
+        # Extract coordinates
         lat, lon = extract_start_coords(filename)
             
         if lat is None or lon is None:
-            tqdm.write('   [Skipped] No GPS data found.')
+            tqdm.write('   [Skipped] No GPS data found. Weather columns will remain empty.')
             continue
             
         # Find the local timezone
