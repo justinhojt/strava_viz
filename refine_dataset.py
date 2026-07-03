@@ -122,6 +122,9 @@ def main():
     df['relative_humidity_2m'] = None
     df['wind_speed_10m'] = None
     
+    # FIX: Cast column to object type to prevent PyArrow strict string assignment errors
+    df['Activity Date'] = df['Activity Date'].astype(object)
+    
     # Initialize the timezone finder
     tzf = TimezoneFinder()
 
