@@ -39,16 +39,6 @@ def get_trimp_for_row(row, time_series_df=None):
             
     return trimp
 
-# Filters out interval training
-def classify_workout_style(row):
-    if pd.isna(row['Average Speed']) or row['Average Speed'] == 0:
-        return 'Unknown'
-
-    if row['Moving Time']/row['Elapsed Time'] < 0.75:
-        return 'Interval'
-    else:
-        return 'Steady State'
-
 # Parses all granular data
 @st.cache_data(show_spinner='Calculating historical training load metrics...')
 def parse_granular(df):
