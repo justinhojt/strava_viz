@@ -100,28 +100,3 @@ def parse_granular(df):
     trimps['TSB'] = trimps['TSB'].fillna(0)
     
     return trimps
-
-# Fetches temperature and humidity for a specific location and date
-def get_historical_weather(lat, lon, activity_date):
-    url = 'https://archive-api.open-meteo.com/v1/archive'
-    params = {
-        'latitude': lat,
-        'longitude': lon,
-        'start_date': activity_date,
-        'end_date': activity_date,
-        'hourly': ['temperature_2m', 'relative_humidity_2m', 'wind_speed_10m'],
-        'timezone': 'auto'
-    }
-    
-    try:
-        response = requests.get(url, params=params)
-        response.raise_for_status()
-        data = response.json()
-        
-        hourly_df = pd.DataFrame(data['hourly'])
-        hourly_df['time'] = pd.to_datetime(hourly_df['time'])
-        return hourly_df
-        
-    except Exception as e:
-        print(f'Error fetching weather for {activity_date}: {e}')
-        return None
