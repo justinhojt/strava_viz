@@ -159,7 +159,7 @@ def main():
                     localized_date = raw_date + pd.Timedelta(hours=8)
                 
             # Update the dataframe with the true local time
-            df.at[index, 'Activity Date'] = localized_date
+            df.at[index, 'Activity Date'] = str(localized_date)
             
             # Fetch weather using the optimized signature mapping parameters
             weather = get_weather_with_timeout(session, lat, lon, localized_date)
