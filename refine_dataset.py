@@ -28,7 +28,7 @@ def clean_csv(file_path):
     # Drop columns with all identical values
     df = df.loc[:, df.nunique() > 1]
 
-    df = df.drop(['Distance'])
+    df = df.drop('Distance')
     df = df.rename(columns={'Distance.1': 'Distance'})
     
     # Drop duplicate columns
