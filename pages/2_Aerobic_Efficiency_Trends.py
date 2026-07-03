@@ -1,6 +1,6 @@
 import streamlit as st
 import numpy as np
-from scikit-learn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression
 
 from utils.data_loader import parse_csv
 from utils.plots import plot_aero
