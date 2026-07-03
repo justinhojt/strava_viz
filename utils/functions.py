@@ -10,11 +10,10 @@ from utils.data_loader import parse_gpx, parse_fit
 def calc_trimps(df, hr_max=config.DEFAULT_HR_MAX, hr_rest=config.DEFAULT_HR_REST, gender=config.DEFAULT_GENDER):
     if df.empty or 'heart_rate' not in df or 'timestamp' not in df:
         return 0.0
-    
+ 
     delta_t_minutes = pd.to_datetime(df['timestamp']).diff().dt.total_seconds().fillna(1.0) / 60.0
     
     hr = pd.to_numeric(df['heart_rate'], errors='coerce').ffill().bfill()
-    
     delta_hr = (hr - hr_rest) / (hr_max - hr_rest)
     delta_hr = delta_hr.clip(0.0, 1.0)
     
