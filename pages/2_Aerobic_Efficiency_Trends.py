@@ -47,16 +47,16 @@ if has_enough_data:
     coef_hum = model.coef_[2]
     
     # Define standard environmental baseline (28°C and 80% Humidity)
-    ideal_temp = 28.0
-    ideal_hum = 80.0
+    standard_temp = 28.0
+    standard_hum = 80.0
     
     # Create a hypothetical feature set: Actual Pace, but Perfect Weather
-    X_ideal = X.copy()
-    X_ideal['temperature_2m'] = ideal_temp
-    X_ideal['relative_humidity_2m'] = ideal_hum
+    X_standard = X.copy()
+    X_standard['temperature_2m'] = standard_temp
+    X_standard['relative_humidity_2m'] = standard_hum
     
-    # Predict hypothetical HR in ideal conditions
-    ml_df['adjusted_hr'] = model.predict(X_ideal)
+    # Predict hypothetical HR in standard conditions
+    ml_df['adjusted_hr'] = model.predict(X_standard)
     
     # Recalculate efficiency using the normalized HR
     ml_df['adjusted_aero_ratio'] = ml_df['Average Grade Adjusted Pace'] / ml_df['adjusted_hr']
