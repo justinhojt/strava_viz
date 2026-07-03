@@ -37,7 +37,7 @@ def clean_csv(file_path):
     return df
 
 # Fetches weather based on the exact hour of the localized timestamp
-def get_weather_with_timeout(lat, lon, activity_timestamp):
+def get_weather_with_timeout(session, lat, lon, activity_timestamp, retries=3):
     url = 'https://archive-api.open-meteo.com/v1/archive'
     
     date_str = activity_timestamp.strftime('%Y-%m-%d')
@@ -52,25 +52,36 @@ def get_weather_with_timeout(lat, lon, activity_timestamp):
         'timezone': 'auto'
     }
     
-    try:
-        response = requests.get(url, params=params, timeout=10)
-        
-        if response.status_code == 429:
-            tqdm.write(' ⚠️ API Rate Limit Hit! Sleeping for 60 seconds...')
-            time.sleep(60)
-            return get_weather_with_timeout(lat, lon, activity_timestamp)
+    for attempt in range(retries):
+        try:
+            # Use session instead of requests, and increase timeout to 15s
+            response = session.get(url, params=params, timeout=15)
             
-        response.raise_for_status()
-        data = response.json()
-        
-        return {
-            'temp': data['hourly']['temperature_2m'][hour_index],
-            'humidity': data['hourly']['relative_humidity_2m'][hour_index],
-            'wind': data['hourly']['wind_speed_10m'][hour_index]
-        }
-    except Exception as e:
-        tqdm.write(f'   ❌ Weather API Fetch Failed for {date_str} at hour {hour_index}: {e}')
-        return {'temp': None, 'humidity': None, 'wind': None}
+            if response.status_code == 429:
+                tqdm.write(' ⚠️ API Rate Limit Hit! Sleeping for 60 seconds...')
+                time.sleep(60)
+                return get_weather_with_timeout(session, lat, lon, activity_timestamp, retries)
+                
+            response.raise_for_status()
+            data = response.json()
+            
+            return {
+                'temp': data['hourly']['temperature_2m'][hour_index],
+                'humidity': data['hourly']['relative_humidity_2m'][hour_index],
+                'wind': data['hourly']['wind_speed_10m'][hour_index]
+            }
+            
+        except requests.exceptions.Timeout:
+            if attempt < retries - 1:
+                tqdm.write(f"   ⏳ Read timeout on attempt {attempt + 1}. Retrying in 2 seconds...")
+                time.sleep(2)
+            else:
+                tqdm.write(f"   ❌ API Timeout failed after {retries} attempts for {date_str}.")
+        except Exception as e:
+            tqdm.write(f"   ❌ Weather API Fetch Failed for {date_str}: {e}")
+            break
+            
+    return {'temp': None, 'humidity': None, 'wind': None}
 
 # Instantly extracts the first GPS coordinate without loading the whole file into memory
 def extract_start_coords(filename):
