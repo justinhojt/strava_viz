@@ -27,11 +27,12 @@ def clean_csv(file_path):
     
     # Drop columns with all identical values
     df = df.loc[:, df.nunique() > 1]
+
+    df = df.drop(['Distance'])
+    df = df.rename(columns={'Distance.1': 'Distance'})
     
-    # Drop duplicate/unwanted columns
-    df = df.drop(columns=['Distance', *[col for col in df.columns if '.1' in col]], errors='ignore')
-    if 'Distance.1' in df.columns:
-        df = df.rename(columns={'Distance.1': 'Distance'})
+    # Drop duplicate columns
+    df = df.drop(columns=[*[col for col in df.columns if '.1' in col]], errors='ignore')
         
     return df
 
