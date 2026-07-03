@@ -1,10 +1,12 @@
-import config
+import streamlit as st
 import pandas as pd
 import numpy as np
-import streamlit as st
+import requests
+import config
+
 from utils.data_loader import parse_gpx, parse_fit
 
-# Calculates cumulative Banister TRIMP score from second-by-second time-series data
+# Calculates cumulative TRIMP score time-series data
 def calc_trimps(df, hr_max=config.DEFAULT_HR_MAX, hr_rest=config.DEFAULT_HR_REST, gender=config.DEFAULT_GENDER):
     if df.empty or 'heart_rate' not in df or 'timestamp' not in df:
         return 0.0
@@ -16,7 +18,6 @@ def calc_trimps(df, hr_max=config.DEFAULT_HR_MAX, hr_rest=config.DEFAULT_HR_REST
     delta_hr = (hr - hr_rest) / (hr_max - hr_rest)
     delta_hr = delta_hr.clip(0.0, 1.0)
     
-    # Compute the exponential weighting factor
     if gender.lower() == 'male':
         y = 0.64 * np.exp(1.92 * delta_hr)
     else:
@@ -110,3 +111,28 @@ def parse_granular(df):
     trimps['TSB'] = trimps['TSB'].fillna(0)
     
     return trimps
+
+# Fetches temperature and humidity for a specific location and date
+def get_historical_weather(lat, lon, activity_date):
+    url = 'https://archive-api.open-meteo.com/v1/archive'
+    params = {
+        'latitude': lat,
+        'longitude': lon,
+        'start_date': activity_date,
+        'end_date': activity_date,
+        'hourly': ['temperature_2m', 'relative_humidity_2m', 'wind_speed_10m'],
+        'timezone': 'auto'
+    }
+    
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        
+        hourly_df = pd.DataFrame(data['hourly'])
+        hourly_df['time'] = pd.to_datetime(hourly_df['time'])
+        return hourly_df
+        
+    except Exception as e:
+        print(f'Error fetching weather for {activity_date}: {e}')
+        return None
