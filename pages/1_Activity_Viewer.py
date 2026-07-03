@@ -10,7 +10,6 @@ if 'summary_df' in st.session_state:
     summary_df = st.session_state['summary_df']
 else:
     # Fallback just in case someone refreshes this page directly
-    from utils.data_loader import parse_csv
     summary_df = parse_csv()
 
 # Sidebar navigation/filtering
