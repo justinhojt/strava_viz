@@ -122,22 +122,48 @@ def extract_start_coords(filename):
     return None, None
 
 def main():
+    print(f'Loading and cleaning {CSV_PATH}...')
     df = clean_csv(CSV_PATH)
     
-    # Ensure weather destination properties exist
-    for col in ['temperature_2m', 'relative_humidity_2m', 'wind_speed_10m']:
-        if col not in df.columns:
-            df[col] = None
-            
+    # Filter for runs only
+    activity_type_col = 'Activity Type' if 'Activity Type' in df.columns else 'type'
+    if activity_type_col in df.columns:
+        df = df[df[activity_type_col].astype(str).str.lower() == 'run']
+        print(f'Successfully filtered dataset down to {df.shape[0]} Running activities.')
+        
+    # Initialize new columns
+    df['temperature_2m'] = None
+    df['relative_humidity_2m'] = None
+    df['wind_speed_10m'] = None
+    df['workout_style'] = 'Unknown'
+    
+    # Cast column to object type to provide fallback protection
+    df['Activity Date'] = df['Activity Date'].astype(object)
+    
+    # Initialize the timezone finder
     tzf = TimezoneFinder()
     
-    # Establish single persistent networking layer session
+    # Spin up persistent connection session
     with requests.Session() as session:
-        for index, row in tqdm(df.iterrows(), total=df.shape[0], desc='Processing Activities'):
+        for index, row in tqdm(df.iterrows(), total=df.shape[0], desc='Processing Runs'):
             filename = row['Filename']
             
-            lat, lon = extract_start_coords(filename)
+            avg_speed = row.get('Average Speed')
+            moving_time = row.get('Moving Time')
+            elapsed_time = row.get('Elapsed Time')
             
+            if pd.isna(avg_speed) or avg_speed == 0 or not elapsed_time:
+                style = 'Unknown'
+            elif (moving_time / elapsed_time) < 0.7:
+                style = 'Interval'
+            else:
+                style = 'Steady State'
+                
+            df.at[index, 'workout_style'] = style
+            
+            # --- Coordinates Extraction ---
+            lat, lon = extract_start_coords(filename)
+                
             if lat is None or lon is None:
                 continue
                 
@@ -158,10 +184,10 @@ def main():
                 else:
                     localized_date = raw_date + pd.Timedelta(hours=8)
                 
-            # Update the dataframe with the true local time
+            # Cast timestamp explicitly to str to bypass PyArrow string dtype requirements
             df.at[index, 'Activity Date'] = str(localized_date)
             
-            # Fetch weather using the optimized signature mapping parameters
+            # Fetch weather securely passing down the session
             weather = get_weather_with_timeout(session, lat, lon, localized_date)
             
             df.at[index, 'temperature_2m'] = weather['temp']
@@ -169,9 +195,9 @@ def main():
             df.at[index, 'wind_speed_10m'] = weather['wind']
             
             time.sleep(0.1)
-            
-    print(f' Saving complete refined csv back to database path: {OUTPUT_PATH}...')
+        
     df.to_csv(OUTPUT_PATH, index=False)
+    print(f'\nSuccess! Dataset safely saved to {OUTPUT_PATH}')
 
 if __name__ == '__main__':
     main()
