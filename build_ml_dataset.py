@@ -7,8 +7,8 @@ from tqdm import tqdm
 from utils.data_loader import parse_fit, parse_gpx
 from utils.functions import get_historical_weather
 
-CSV_PATH = 'activities.csv'
-OUTPUT_PATH = 'activities_ml_ready.csv'
+CSV_PATH = 'data/activities.csv'
+OUTPUT_PATH = 'data/activities_ml_ready.csv'
 
 def main():
     print(f'Loading {CSV_PATH}...')
