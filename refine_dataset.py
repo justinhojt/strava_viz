@@ -125,50 +125,51 @@ def main():
     print(f'Loading and cleaning {CSV_PATH}...')
     df = clean_csv(CSV_PATH)
     
-    # Filter for runs only
     activity_type_col = 'Activity Type' if 'Activity Type' in df.columns else 'type'
-    if activity_type_col in df.columns:
-        df = df[df[activity_type_col].astype(str).str.lower() == 'run']
-        print(f'Successfully filtered dataset down to {df.shape[0]} Running activities.')
         
-    # Initialize new columns
+    # Initialize new columns for the whole dataset
     df['temperature_2m'] = None
     df['relative_humidity_2m'] = None
     df['wind_speed_10m'] = None
     df['workout_style'] = 'Unknown'
     
-    # Cast column to object type to provide fallback protection
+    # Cast column to object type to provide fallback protection against PyArrow
     df['Activity Date'] = df['Activity Date'].astype(object)
     
     # Initialize the timezone finder
     tzf = TimezoneFinder()
+
+    print(f"🌍 Processing {df.shape[0]} total activities and compiling weather strictly for runs...")
     
     # Spin up persistent connection session
     with requests.Session() as session:
-        for index, row in tqdm(df.iterrows(), total=df.shape[0], desc='Processing Runs'):
+        for index, row in tqdm(df.iterrows(), total=df.shape[0], desc='Processing Activities'):
             filename = row['Filename']
+            is_run = str(row.get(activity_type_col, '')).lower() == 'run'
             
-            avg_speed = row.get('Average Speed')
-            moving_time = row.get('Moving Time')
-            elapsed_time = row.get('Elapsed Time')
-            
-            if pd.isna(avg_speed) or avg_speed == 0 or not elapsed_time:
-                style = 'Unknown'
-            elif (moving_time / elapsed_time) < 0.7:
-                style = 'Interval'
-            else:
-                style = 'Steady State'
+            # --- Workout Style Engine (Runs Only) ---
+            if is_run:
+                avg_speed = row.get('Average Speed')
+                moving_time = row.get('Moving Time')
+                elapsed_time = row.get('Elapsed Time')
                 
-            df.at[index, 'workout_style'] = style
+                if pd.isna(avg_speed) or avg_speed == 0 or not elapsed_time:
+                    style = 'Unknown'
+                elif (moving_time / elapsed_time) < 0.7:
+                    style = 'Interval'
+                else:
+                    style = 'Steady State'
+                    
+                df.at[index, 'workout_style'] = style
             
-            # --- Coordinates Extraction ---
+            # --- Coordinates Extraction (Runs on everything to get timezone) ---
             lat, lon = extract_start_coords(filename)
                 
-            if lat is None or lon is None:
-                continue
-                
             # Find the local timezone
-            tz_name = tzf.timezone_at(lng=lon, lat=lat) 
+            if lat is not None and lon is not None:
+                tz_name = tzf.timezone_at(lng=lon, lat=lat) 
+            else:
+                tz_name = None
             
             # Convert the timestamp dynamically
             raw_date = pd.to_datetime(row['Activity Date'])
@@ -187,17 +188,19 @@ def main():
             # Cast timestamp explicitly to str to bypass PyArrow string dtype requirements
             df.at[index, 'Activity Date'] = str(localized_date)
             
-            # Fetch weather securely passing down the session
-            weather = get_weather_with_timeout(session, lat, lon, localized_date)
-            
-            df.at[index, 'temperature_2m'] = weather['temp']
-            df.at[index, 'relative_humidity_2m'] = weather['humidity']
-            df.at[index, 'wind_speed_10m'] = weather['wind']
-            
-            time.sleep(0.1)
+            # Fetch weather data for runs with gps coordinates
+            if is_run and lat is not None and lon is not None:
+                weather = get_weather_with_timeout(session, lat, lon, localized_date)
+                
+                df.at[index, 'temperature_2m'] = weather['temp']
+                df.at[index, 'relative_humidity_2m'] = weather['humidity']
+                df.at[index, 'wind_speed_10m'] = weather['wind']
+                
+                # Respect rate limits
+                time.sleep(0.1)
         
     df.to_csv(OUTPUT_PATH, index=False)
-    print(f'\nSuccess! Dataset safely saved to {OUTPUT_PATH}')
+    print(f'\nSuccess! Full multi-sport dataset safely saved to {OUTPUT_PATH}')
 
 if __name__ == '__main__':
     main()
