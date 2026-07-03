@@ -22,7 +22,7 @@ def parse_csv():
         raise FileNotFoundError(f'Could not find activities dataset at {csv}')
         
     df = pd.read_csv(csv)
-    df['Activity Date'] = pd.to_datetime(df['Activity Date'])
+    df['Activity Date'] = pd.to_datetime(df['Activity Date'], format='mixed')
     return df
 
 @st.cache_data
