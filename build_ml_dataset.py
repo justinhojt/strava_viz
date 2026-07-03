@@ -15,53 +15,52 @@ logging.disable(logging.WARNING)
 CSV_PATH = 'data/activities.csv'
 OUTPUT_PATH = 'data/activities_ml_ready.csv'
 
+# Fetches weather data with a 10 second timeout
 def get_weather_with_timeout(lat, lon, activity_date):
-    """Fetches weather data with a strict 10-second timeout."""
-    url = "https://archive-api.open-meteo.com/v1/archive"
+    url = 'https://archive-api.open-meteo.com/v1/archive'
     params = {
-        "latitude": lat,
-        "longitude": lon,
-        "start_date": activity_date,
-        "end_date": activity_date,
-        "hourly": ["temperature_2m", "relative_humidity_2m", "wind_speed_10m"],
-        "timezone": "auto"
+        'latitude': lat,
+        'longitude': lon,
+        'start_date': activity_date,
+        'end_date': activity_date,
+        'hourly': ['temperature_2m', 'relative_humidity_2m', 'wind_speed_10m'],
+        'timezone': 'auto'
     }
     try:
-        # THE CRITICAL TIMEOUT
         response = requests.get(url, params=params, timeout=10)
         
         if response.status_code == 429:
-            tqdm.write(" ⚠️ API Rate Limit Hit! Sleeping for 60 seconds...")
+            tqdm.write(' ⚠️ API Rate Limit Hit! Sleeping for 60 seconds...')
             time.sleep(60)
             return get_weather_with_timeout(lat, lon, activity_date)
             
         response.raise_for_status()
         data = response.json()
         return {
-            "temp": data['hourly']['temperature_2m'][0],
-            "humidity": data['hourly']['relative_humidity_2m'][0],
-            "wind": data['hourly']['wind_speed_10m'][0]
+            'temp': data['hourly']['temperature_2m'][0],
+            'humidity': data['hourly']['relative_humidity_2m'][0],
+            'wind': data['hourly']['wind_speed_10m'][0]
         }
     except Exception as e:
-        return {"temp": None, "humidity": None, "wind": None}
+        return {'temp': None, 'humidity': None, 'wind': None}
 
+# Instantly extraacts the first GPS coordinate without loading the whole file into memory
 def extract_start_coords(filename):
-    """Instantly rips the first GPS coordinate out of files without loading the whole file into memory."""
     file_path = os.path.join('data', filename)
     if not os.path.exists(file_path):
         return None, None
         
     try:
         if filename.endswith('.gpx') or filename.endswith('.gpx.gz'):
-            # Bypass gpxpy. Read raw text to find the first <trkpt> instantly.
+            # Bypass gpxpy and read raw text to find the first <trkpt> instantly
             open_func = gzip.open if filename.endswith('.gz') else open
             mode = 'rt' if filename.endswith('.gz') else 'r'
             
             with open_func(file_path, mode, encoding='utf-8') as f:
                 for line in f:
                     if '<trkpt' in line or '<wpt' in line:
-                        lat_match = re.search(r'lat="([^"]+)"', line)
-                        lon_match = re.search(r'lon="([^"]+)"', line)
+                        lat_match = re.search(r'lat='([^']+)'', line)
+                        lon_match = re.search(r'lon='([^']+)'', line)
                         if lat_match and lon_match:
                             return float(lat_match.group(1)), float(lon_match.group(1))
             return None, None
@@ -84,33 +83,32 @@ def extract_start_coords(filename):
     return None, None
 
 def main():
-    print(f"Loading {CSV_PATH}...")
+    print(f'Loading {CSV_PATH}...')
     df = pd.read_csv(CSV_PATH)
     df = df.dropna(subset=['Filename'])
     
-    # --- FILTER FOR RUNS ONLY ---
+    # Filter for runs only
     activity_type_col = 'Activity Type' if 'Activity Type' in df.columns else 'type'
     if activity_type_col in df.columns:
         df = df[df[activity_type_col].astype(str).str.lower() == 'run']
-        print(f"Successfully filtered dataset down to {df.shape[0]} Running activities.")
+        print(f'Successfully filtered dataset down to {df.shape[0]} Running activities.')
         
     df['temperature_2m'] = None
     df['relative_humidity_2m'] = None
     df['wind_speed_10m'] = None
 
-    for index, row in tqdm(df.iterrows(), total=df.shape[0], desc="Processing Runs"):
+    for index, row in tqdm(df.iterrows(), total=df.shape[0], desc='Processing Runs'):
         filename = row['Filename']
         date_str = pd.to_datetime(row['Activity Date']).strftime('%Y-%m-%d')
         
-        tqdm.write(f" → Processing file: {filename}")
+        tqdm.write(f' → Processing file: {filename}')
         
         lat, lon = extract_start_coords(filename)
             
         if lat is None or lon is None:
-            tqdm.write(f"   [Skipped] No GPS data found.")
+            tqdm.write(f'   [Skipped] No GPS data found.')
             continue
             
-        # Fetch weather using the SAFE function with a timeout
         weather = get_weather_with_timeout(lat, lon, date_str)
         
         df.at[index, 'temperature_2m'] = weather['temp']
@@ -120,7 +118,7 @@ def main():
         time.sleep(0.5)
         
     df.to_csv(OUTPUT_PATH, index=False)
-    print(f"\nSuccess! Dataset safely saved to {OUTPUT_PATH}")
+    print(f'\nSuccess! Dataset safely saved to {OUTPUT_PATH}')
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
