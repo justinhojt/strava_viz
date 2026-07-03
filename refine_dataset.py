@@ -75,6 +75,7 @@ def get_weather_with_timeout(lat, lon, activity_timestamp):
 def extract_start_coords(filename):
     file_path = os.path.join('data', filename)
     if not os.path.exists(file_path):
+        tqdm.write(f'   ⚠️ [File Missing] Cannot find file at: {file_path}')
         return None, None
         
     try:
@@ -85,8 +86,8 @@ def extract_start_coords(filename):
             with open_func(file_path, mode, encoding='utf-8') as f:
                 for line in f:
                     if '<trkpt' in line or '<wpt' in line:
-                        lat_match = re.search(r'lat="([^"]+)"', line)
-                        lon_match = re.search(r'lon="([^"]+)"', line)
+                        lat_match = re.search(r'lat=["\']([^"\']+)["\']', line)
+                        lon_match = re.search(r'lon=["\']([^"\']+)["\']', line)
                         if lat_match and lon_match:
                             return float(lat_match.group(1)), float(lon_match.group(1))
             return None, None
@@ -104,8 +105,8 @@ def extract_start_coords(filename):
                         if abs(lat) > 180: lat = lat * (180.0 / 2**31)
                         if abs(lon) > 180: lon = lon * (180.0 / 2**31)
                         return lat, lon
-    except Exception:
-        pass
+    except Exception as e:
+        tqdm.write(f"   ❌ [Parsing Error] Failed to read {filename}: {e}")
     return None, None
 
 def main():
