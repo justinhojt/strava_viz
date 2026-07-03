@@ -1,7 +1,7 @@
 import os
 
 DATA_DIR = 'data'
-ACTIVITIES_CSV = os.path.join(DATA_DIR, 'activities.csv')
+ACTIVITIES_CSV = os.path.join(DATA_DIR, 'activities_refined.csv')
 
 # UI colour hex codes
 COLOR_STRAVA_ORANGE = '#fc5200'
