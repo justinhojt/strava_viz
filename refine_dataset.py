@@ -112,11 +112,8 @@ def main():
     print(f'Loading and cleaning {CSV_PATH}...')
     df = clean_csv(CSV_PATH)
     
-    # Filter for runs only
+    # Identify the activity type column
     activity_type_col = 'Activity Type' if 'Activity Type' in df.columns else 'type'
-    if activity_type_col in df.columns:
-        df = df[df[activity_type_col].astype(str).str.lower() == 'run']
-        print(f'Successfully filtered dataset down to {df.shape[0]} Running activities.')
         
     # Initialize new columns
     df['temperature_2m'] = None
@@ -130,9 +127,12 @@ def main():
     # Initialize the timezone finder
     tzf = TimezoneFinder()
 
-    for index, row in tqdm(df.iterrows(), total=df.shape[0], desc='Processing Runs'):
+    for index, row in tqdm(df.iterrows(), total=df.shape[0], desc='Processing Activities'):
         filename = row['Filename']
         tqdm.write(f' → Processing file: {filename}')
+        
+        # Check if this specific activity is a run
+        is_run = str(row.get(activity_type_col, '')).lower() == 'run'
         
         # Classify workout style (interval vs steady state)
         avg_speed = row.get('Average Speed')
@@ -151,12 +151,11 @@ def main():
         # Extract coordinates
         lat, lon = extract_start_coords(filename)
             
-        if lat is None or lon is None:
-            tqdm.write('   [Skipped] No GPS data found. Weather columns will remain empty.')
-            continue
-            
         # Find the local timezone
-        tz_name = tzf.timezone_at(lng=lon, lat=lat) 
+        if lat is not None and lon is not None:
+            tz_name = tzf.timezone_at(lng=lon, lat=lat) 
+        else:
+            tz_name = None
         
         # Convert the timestamp dynamically
         raw_date = pd.to_datetime(row['Activity Date'])
@@ -175,17 +174,25 @@ def main():
         # Update the dataframe with the true local time
         df.at[index, 'Activity Date'] = localized_date
         
-        # Fetch weather using the localized timestamp
-        weather = get_weather_with_timeout(lat, lon, localized_date)
-        
-        df.at[index, 'temperature_2m'] = weather['temp']
-        df.at[index, 'relative_humidity_2m'] = weather['humidity']
-        df.at[index, 'wind_speed_10m'] = weather['wind']
-        
-        time.sleep(0.1)
+        # Fetch weather only if it is a run and we have coordinates
+        if is_run and lat is not None and lon is not None:
+            weather = get_weather_with_timeout(lat, lon, localized_date)
+            
+            df.at[index, 'temperature_2m'] = weather['temp']
+            df.at[index, 'relative_humidity_2m'] = weather['humidity']
+            df.at[index, 'wind_speed_10m'] = weather['wind']
+            
+            # Respect rate limits for the API
+            time.sleep(0.1)
+            
+        elif is_run:
+            tqdm.write('   [Skipped Weather] No GPS data found for this run.')
         
     df.to_csv(OUTPUT_PATH, index=False)
     print(f'\nSuccess! Dataset safely saved to {OUTPUT_PATH}')
+
+if __name__ == '__main__':
+    main()
 
 if __name__ == '__main__':
     main()
