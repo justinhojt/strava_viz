@@ -4,7 +4,6 @@ from sklearn.linear_model import LinearRegression
 
 from utils.data_loader import parse_csv
 from utils.plots import plot_aero
-from utils.functions import classify_workout_style
 
 # Fetch the shared dataset from session state
 if 'summary_df' in st.session_state:
