@@ -3,8 +3,7 @@ import logging
 import time
 from tqdm import tqdm
 
-# Blanket silence all internal Streamlit warnings when running offline
-logging.getLogger('streamlit').setLevel(logging.ERROR)
+logging.disable(logging.WARNING)
 
 from utils.data_loader import parse_fit, parse_gpx
 from utils.functions import get_historical_weather
