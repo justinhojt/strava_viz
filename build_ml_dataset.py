@@ -4,7 +4,7 @@ import time
 import os
 from tqdm import tqdm
 
-from data_loader import parse_fit, parse_gpx
+from utils.data_loader import parse_fit, parse_gpx
 from utils.functions import get_historical_weather
 
 CSV_PATH = 'activities.csv'
