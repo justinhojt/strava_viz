@@ -14,7 +14,7 @@ else:
 st.subheader('🫀 Aerobic Efficiency Trends')
 
 runs = summary_df[summary_df['Activity Type'] == 'Run'].copy()
-steady_runs = runs[runs['Workout Style'] == 'Steady State'].copy()
+steady_runs = runs[runs['workout_style'] == 'Steady State'].copy()
 
 # Filter for valid pacing/HR and minimum distance
 steady_runs = steady_runs[(steady_runs['Average Grade Adjusted Pace'] > 0) & 
