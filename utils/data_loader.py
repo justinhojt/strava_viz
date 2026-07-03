@@ -25,13 +25,6 @@ def parse_csv():
         raise FileNotFoundError(f'Could not find activities.csv at {csv}')
         
     df = pd.read_csv(csv)
-    df = df.dropna(subset=['Filename'])
-    df = df.loc[:, df.nunique() > 1]
-    df = df.drop(columns=['Distance', *[col for col in df.columns if '.1' in col]], errors='ignore')
-    
-    if 'Distance.1' in df.columns:
-        df = df.rename(columns={'Distance.1': 'Distance'})
-        
     df['Activity Date'] = pd.to_datetime(df['Activity Date'])
     return df
 
