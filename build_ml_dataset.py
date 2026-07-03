@@ -1,11 +1,10 @@
 import pandas as pd
-import requests
 import logging
 import time
-import os
 from tqdm import tqdm
-# Suppress Streamlit's internal script runner warnings in bare mode
-logging.getLogger('streamlit.runtime.scriptrunner_utils').setLevel(logging.ERROR)
+
+# Blanket silence all internal Streamlit warnings when running offline
+logging.getLogger('streamlit').setLevel(logging.ERROR)
 
 from utils.data_loader import parse_fit, parse_gpx
 from utils.functions import get_historical_weather
