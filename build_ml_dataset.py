@@ -1,13 +1,10 @@
-import pandas as pd
 import requests
 import time
 import os
 import gzip
-import io
 import re
 import logging
 from tqdm import tqdm
-from fitparse import FitFile
 
 # Globally disable logging warnings to keep our progress bar clean
 logging.disable(logging.WARNING)
