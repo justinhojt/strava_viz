@@ -7,9 +7,10 @@ import gzip
 import os
 import io
 
+from utils.functions import get_historical_weather
+
 csv = config.ACTIVITIES_CSV
 
-# Helper function to avoid timestamp timezone conversion redundancies
 def process_timestamps(df):
     if not df.empty:
         df['timestamp'] = pd.to_datetime(df['timestamp'])
@@ -26,23 +27,14 @@ def parse_csv():
         raise FileNotFoundError(f'Could not find activities.csv at {csv}')
         
     df = pd.read_csv(csv)
-
-    # Drop rows that don't have an associated raw data file
     df = df.dropna(subset=['Filename'])
-
-    # Drop blank columns or columns that contain only 1 unique non-blank value 
     df = df.loc[:, df.nunique() > 1]
-
-    # Drop unstandardized 'Distance' (mixed units) and use the 2nd standardized meter-based column instead
-    df = df.drop(columns=['Distance'])
-    df = df.rename(columns={'Distance.1': 'Distance'})
-
-    # Drop duplicated columns
-    df = df.drop(columns=[col for col in df.columns if '.1' in col])
-  
-    # Standardize date column to datetime data type
+    df = df.drop(columns=['Distance', *[col for col in df.columns if '.1' in col]], errors='ignore')
+    
+    if 'Distance.1' in df.columns:
+        df = df.rename(columns={'Distance.1': 'Distance'})
+        
     df['Activity Date'] = pd.to_datetime(df['Activity Date'])
-
     return df
 
 @st.cache_data
@@ -52,19 +44,17 @@ def parse_gpx(gpx_filename):
     if not os.path.exists(gpx_file):
         raise FileNotFoundError(f"File not found: {gpx_file}")
         
-    if gpx_file.endswith('.gz'):
-        with gzip.open(gpx_file, 'rt', encoding='utf-8') as f:
-            gpx = gpxpy.parse(f)
-    else:
-        with open(gpx_file, 'r', encoding='utf-8') as f:
-            gpx = gpxpy.parse(f)
+    open_func = gzip.open if gpx_file.endswith('.gz') else open
+    mode = 'rt' if gpx_file.endswith('.gz') else 'r'
+    
+    with open_func(gpx_file, mode, encoding='utf-8') as f:
+        gpx = gpxpy.parse(f)
             
     track_data = []
     for track in gpx.tracks:
         for segment in track.segments:
             for point in segment.points:
                 hr = None
-                # Extract heart rate data if available
                 if point.extensions:
                     for ext in point.extensions:
                         if 'hr' in ext.tag:
@@ -72,6 +62,8 @@ def parse_gpx(gpx_filename):
                             
                 track_data.append({
                     'timestamp': point.time,
+                    'latitude': point.latitude,   
+                    'longitude': point.longitude,
                     'elevation': point.elevation,
                     'heart_rate': hr
                 })
@@ -85,29 +77,39 @@ def parse_fit(fit_filename):
     if not os.path.exists(fit_file):
         raise FileNotFoundError(f"File not found: {fit_file}")
         
-    if fit_file.endswith('.gz'):
-        with gzip.open(fit_file, 'rb') as f:
-            fitfile = FitFile(io.BytesIO(f.read()))
-    else:
-        with open(fit_file, 'rb') as f:
-            fitfile = FitFile(f)
+    open_func = gzip.open if fit_file.endswith('.gz') else open
+    with open_func(fit_file, 'rb') as f:
+        fitfile = FitFile(io.BytesIO(f.read()) if fit_file.endswith('.gz') else f)
             
     track_data = []
-    
-    # Iterate over every second-by-second data point message
     for record in fitfile.get_messages('record'):
         values = record.get_values()
         
-        # Garmin devices often use 'enhanced_altitude' for better precision
-        ele = values.get('enhanced_altitude')
-        if ele is None:
-            ele = values.get('altitude')
+        ele = values.get('enhanced_altitude', values.get('altitude'))
+        
+        lat = values.get('position_lat')
+        lon = values.get('position_long')
+        if lat is not None and lon is not None:
+            lat = lat * (180.0 / 2**31)
+            lon = lon * (180.0 / 2**31)
             
         if 'timestamp' in values:
             track_data.append({
                 'timestamp': values.get('timestamp'),
+                'latitude': lat,
+                'longitude': lon,
                 'elevation': ele,
                 'heart_rate': values.get('heart_rate')
             })
                 
     return process_timestamps(pd.DataFrame(track_data))
+
+@st.cache_data
+def load_activity_weather(df, activity_date):
+    if df.empty or 'latitude' not in df.columns or 'longitude' not in df.columns:
+        return None
+        
+    start_coords = df[['latitude', 'longitude']].dropna().iloc[0]
+    lat, lon = start_coords['latitude'], start_coords['longitude']
+    date_str = pd.to_datetime(activity_date).strftime('%Y-%m-%d')
+    return get_historical_weather(lat, lon, date_str)
