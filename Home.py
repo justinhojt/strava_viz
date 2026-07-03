@@ -38,16 +38,24 @@ total_calories = filtered_df['Calories'].sum()
 
 total_elevation = filtered_df['Elevation Gain'].sum() if 'Elevation Gain' in filtered_df.columns else 0
 max_distance_km = dist_df['Distance'].max() / 1000 if not dist_df.empty else 0
-avg_hr = filtered_df['Average Heart Rate'].mean() if 'Average Heart Rate' in filtered_df.columns else 0
 
-# Calculate consistency (activities per week)
+# Calculate consistency metrics per week
 if not filtered_df.empty and len(filtered_df) > 1:
     min_date = filtered_df['Activity Date'].min()
     max_date = filtered_df['Activity Date'].max()
     weeks_active = (max_date - min_date).days / 7
+    
+    # Activities per week
     weekly_avg = total_activities / weeks_active if weeks_active > 0 else total_activities
+    
+    # Moving time per week
+    avg_seconds_per_week = total_seconds / weeks_active if weeks_active > 0 else total_seconds
+    avg_weekly_hours = avg_seconds_per_week // 3600
+    avg_weekly_minutes = (avg_seconds_per_week % 3600) // 60
 else:
     weekly_avg = 0
+    avg_weekly_hours = 0
+    avg_weekly_minutes = 0
 
 st.markdown('### ⚡ Core Metrics')
 
@@ -105,9 +113,7 @@ ext_col1, ext_col2, ext_col3, ext_col4 = st.columns(4)
 ext_col1.metric('⛰️ Total Elevation Gain', f'{total_elevation:,.0f} m')
 ext_col2.metric('🗺️ Longest Activity Distance', f'{max_distance_km:,.1f} km')
 
-if avg_hr > 0:
-    ext_col3.metric('❤️ Historical Avg HR', f'{avg_hr:.0f} bpm')
-else:
-    ext_col3.metric('❤️ Historical Avg HR', 'N/A')
+# Updated from Historical Avg HR to Avg Moving Time / Week
+ext_col3.metric('⏱️ Avg Moving Time / Week', f'{avg_weekly_hours:.0f}h {avg_weekly_minutes:.0f}m')
     
 ext_col4.metric('📅 Activities / Week', f'{weekly_avg:.1f}')
