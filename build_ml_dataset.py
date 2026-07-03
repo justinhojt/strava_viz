@@ -11,13 +11,14 @@ import gpxpy
 # Globally disable logging warnings to keep our progress bar clean
 logging.disable(logging.WARNING)
 
+# Import your weather function
 from utils.functions import get_historical_weather
 
 CSV_PATH = 'data/activities.csv'
 OUTPUT_PATH = 'data/activities_ml_ready.csv'
 
-# Instantly grabs the very first GPS coordinate and exits to avoid freezing on massive files.
 def extract_start_coords(filename):
+    """Instantly grabs the very first GPS coordinate and exits to avoid freezing."""
     file_path = os.path.join('data', filename)
     if not os.path.exists(file_path):
         return None, None
@@ -61,20 +62,30 @@ def main():
     df = pd.read_csv(CSV_PATH)
     df = df.dropna(subset=['Filename'])
     
+    # --- FILTER FOR RUNS ONLY ---
+    activity_type_col = 'Activity Type' if 'Activity Type' in df.columns else 'type'
+    if activity_type_col in df.columns:
+        df = df[df[activity_type_col].astype(str).str.lower() == 'run']
+        print(f"Successfully filtered dataset down to {df.shape[0]} Running activities.")
+    else:
+        print("Warning: Could not find an Activity Type column to filter runs.")
+        
     df['temperature_2m'] = None
     df['relative_humidity_2m'] = None
     df['wind_speed_10m'] = None
     
-    # Check if Strava already gave us the coordinates directly in the CSV spreadsheet
     has_csv_coords = 'Start Latitude' in df.columns and 'Start Longitude' in df.columns
     if has_csv_coords:
         print("Found native GPS coordinates in CSV! Bypassing raw file parsing entirely...")
     else:
         print("Extracting starting coordinates from raw files (optimized mode)...")
 
-    for index, row in tqdm(df.iterrows(), total=df.shape[0], desc="Processing Activities"):
+    for index, row in tqdm(df.iterrows(), total=df.shape[0], desc="Processing Runs"):
         filename = row['Filename']
         date_str = pd.to_datetime(row['Activity Date']).strftime('%Y-%m-%d')
+        
+        # Diagnostic logging: prints out before the work happens
+        tqdm.write(f" → Processing file: {filename} ({date_str})")
         
         try:
             if has_csv_coords and pd.notna(row['Start Latitude']):
@@ -85,14 +96,13 @@ def main():
             if lat is None or lon is None:
                 continue
                 
-            # Fetch the weather data using your function
+            # Fetch the weather data
             weather = get_historical_weather(lat, lon, date_str)
             
             df.at[index, 'temperature_2m'] = weather['temp']
             df.at[index, 'relative_humidity_2m'] = weather['humidity']
             df.at[index, 'wind_speed_10m'] = weather['wind']
             
-            # Respect Open-Meteo API Limits
             time.sleep(0.5)
             
         except Exception:
