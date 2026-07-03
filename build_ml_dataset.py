@@ -15,7 +15,7 @@ from tqdm import tqdm
 logging.disable(logging.WARNING)
 
 CSV_PATH = 'data/activities.csv'
-OUTPUT_PATH = 'data/activities_ml_ready.csv'
+OUTPUT_PATH = 'data/activities_refined.csv'
 
 # Parses and cleans the initial activities CSV
 def clean_csv(file_path):
