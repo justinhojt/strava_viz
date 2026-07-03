@@ -69,6 +69,7 @@ def get_weather_with_timeout(lat, lon, activity_timestamp):
             'wind': data['hourly']['wind_speed_10m'][hour_index]
         }
     except Exception as e:
+        tqdm.write(f'   ❌ Weather API Fetch Failed for {date_str} at hour {hour_index}: {e}')
         return {'temp': None, 'humidity': None, 'wind': None}
 
 # Instantly extracts the first GPS coordinate without loading the whole file into memory
@@ -106,7 +107,7 @@ def extract_start_coords(filename):
                         if abs(lon) > 180: lon = lon * (180.0 / 2**31)
                         return lat, lon
     except Exception as e:
-        tqdm.write(f"   ❌ [Parsing Error] Failed to read {filename}: {e}")
+        tqdm.write(f'   ❌ [Parsing Error] Failed to read {filename}: {e}')
     return None, None
 
 def main():
