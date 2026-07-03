@@ -122,87 +122,56 @@ def extract_start_coords(filename):
     return None, None
 
 def main():
-    print(f'Loading and cleaning {CSV_PATH}...')
     df = clean_csv(CSV_PATH)
     
-    # Identify the activity type column
-    activity_type_col = 'Activity Type' if 'Activity Type' in df.columns else 'type'
-        
-    # Initialize new columns
-    df['temperature_2m'] = None
-    df['relative_humidity_2m'] = None
-    df['wind_speed_10m'] = None
-    df['workout_style'] = 'Unknown'
-    
-    # Cast column to object type to prevent PyArrow strict string assignment errors
-    df['Activity Date'] = df['Activity Date'].astype(object)
-    
-    # Initialize the timezone finder
+    # Ensure weather destination properties exist
+    for col in ['temperature_2m', 'relative_humidity_2m', 'wind_speed_10m']:
+        if col not in df.columns:
+            df[col] = None
+            
     tzf = TimezoneFinder()
-
-    for index, row in tqdm(df.iterrows(), total=df.shape[0], desc='Processing Activities'):
-        filename = row['Filename']
-        tqdm.write(f' → Processing file: {filename}')
-        
-        # Check if this specific activity is a run
-        is_run = str(row.get(activity_type_col, '')).lower() == 'run'
-        
-        # Classify workout style (interval vs steady state)
-        avg_speed = row.get('Average Speed')
-        moving_time = row.get('Moving Time')
-        elapsed_time = row.get('Elapsed Time')
-        
-        if pd.isna(avg_speed) or avg_speed == 0 or not elapsed_time:
-            style = 'Unknown'
-        elif (moving_time / elapsed_time) < 0.7:
-            style = 'Interval'
-        else:
-            style = 'Steady State'
+    
+    # Establish single persistent networking layer session
+    with requests.Session() as session:
+        for index, row in tqdm(df.iterrows(), total=df.shape[0], desc='Processing Activities'):
+            filename = row['Filename']
             
-        df.at[index, 'workout_style'] = style
-        
-        # Extract coordinates
-        lat, lon = extract_start_coords(filename)
+            lat, lon = extract_start_coords(filename)
             
-        # Find the local timezone
-        if lat is not None and lon is not None:
+            if lat is None or lon is None:
+                continue
+                
+            # Find the local timezone
             tz_name = tzf.timezone_at(lng=lon, lat=lat) 
-        else:
-            tz_name = None
-        
-        # Convert the timestamp dynamically
-        raw_date = pd.to_datetime(row['Activity Date'])
-        
-        if tz_name:
-            if raw_date.tz is not None:
-                localized_date = raw_date.tz_convert(tz_name).tz_localize(None)
-            else:
-                localized_date = raw_date.tz_localize('UTC').tz_convert(tz_name).tz_localize(None)
-        else:
-            if raw_date.tz is not None:
-                localized_date = raw_date.tz_convert('Asia/Singapore').tz_localize(None)
-            else:
-                localized_date = raw_date + pd.Timedelta(hours=8)
             
-        # Update the dataframe with the true local time
-        df.at[index, 'Activity Date'] = localized_date
-        
-        # Fetch weather only if it is a run and we have coordinates
-        if is_run and lat is not None and lon is not None:
-            weather = get_weather_with_timeout(lat, lon, localized_date)
+            # Convert the timestamp dynamically
+            raw_date = pd.to_datetime(row['Activity Date'])
+            
+            if tz_name:
+                if raw_date.tz is not None:
+                    localized_date = raw_date.tz_convert(tz_name).tz_localize(None)
+                else:
+                    localized_date = raw_date.tz_localize('UTC').tz_convert(tz_name).tz_localize(None)
+            else:
+                if raw_date.tz is not None:
+                    localized_date = raw_date.tz_convert('Asia/Singapore').tz_localize(None)
+                else:
+                    localized_date = raw_date + pd.Timedelta(hours=8)
+                
+            # Update the dataframe with the true local time
+            df.at[index, 'Activity Date'] = localized_date
+            
+            # Fetch weather using the optimized signature mapping parameters
+            weather = get_weather_with_timeout(session, lat, lon, localized_date)
             
             df.at[index, 'temperature_2m'] = weather['temp']
             df.at[index, 'relative_humidity_2m'] = weather['humidity']
             df.at[index, 'wind_speed_10m'] = weather['wind']
             
-            # Respect rate limits for the API
             time.sleep(0.1)
             
-        elif is_run:
-            tqdm.write('   [Skipped Weather] No GPS data found for this run.')
-        
+    print(f' Saving complete refined csv back to database path: {OUTPUT_PATH}...')
     df.to_csv(OUTPUT_PATH, index=False)
-    print(f'\nSuccess! Dataset safely saved to {OUTPUT_PATH}')
 
 if __name__ == '__main__':
     main()
