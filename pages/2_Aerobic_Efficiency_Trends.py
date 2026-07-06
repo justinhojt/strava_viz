@@ -12,6 +12,7 @@ else:
     summary_df = parse_csv()
 
 st.subheader('🫀 Aerobic Efficiency Trends')
+st.spinner('Calculating historical aerobic efficiency trends...')
 
 runs = summary_df[summary_df['Activity Type'] == 'Run'].copy()
 steady_runs = runs[runs['workout_style'] == 'Steady State'].copy()
