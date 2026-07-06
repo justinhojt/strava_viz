@@ -3,7 +3,7 @@ import altair as alt
 import config
 
 from utils.data_loader import parse_csv
-from plots import plot_donut
+from utils.plots import plot_donut
 
 st.set_page_config(layout='wide', page_title='Strava Analytics')
 st.title('Strava Archive Analytics Dashboard')
