@@ -5,11 +5,10 @@ from utils.data_loader import parse_csv
 from utils.functions import parse_granular
 from utils.plots import plot_fitness_fatigue, plot_tsb_zones
 
-# Fetch the shared dataset from session state
+# Fetch the shared dataset from session state if available, else load it in
 if 'summary_df' in st.session_state:
     summary_df = st.session_state['summary_df']
 else:
-    # Fallback just in case someone refreshes this page directly
     summary_df = parse_csv()
 
 trimps = parse_granular(summary_df.copy())
