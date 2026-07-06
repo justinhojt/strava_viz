@@ -19,7 +19,7 @@ steady_runs = runs[runs['workout_style'] == 'Steady State'].copy()
 # Filter for valid pacing/HR and minimum distance
 steady_runs = steady_runs[(steady_runs['Average Grade Adjusted Pace'] > 0) & 
                           (steady_runs['Average Heart Rate'] > 0) & 
-                          (steady_runs['Distance'] >= 1000)]
+                          (steady_runs['Distance'] >= 2000)]
 
 # Calculate standard Raw Efficiency
 steady_runs['aero_ratio'] = steady_runs['Average Grade Adjusted Pace'] / steady_runs['Average Heart Rate']
