@@ -12,7 +12,7 @@ else:
     summary_df = parse_csv()
 
 st.subheader('🫀 Aerobic Efficiency Trends')
-st.write('Runs with over 10 minutes of moving time')
+st.write('Runs with over 15 minutes of moving time')
 
 runs = summary_df[summary_df['Activity Type'] == 'Run'].copy()
 steady_runs = runs[runs['workout_style'] == 'Steady State'].copy()
@@ -20,7 +20,7 @@ steady_runs = runs[runs['workout_style'] == 'Steady State'].copy()
 # Filter for valid pacing/HR and minimum distance
 steady_runs = steady_runs[(steady_runs['Average Grade Adjusted Pace'] > 0) & 
                           (steady_runs['Average Heart Rate'] > 0) & 
-                          (steady_runs['Moving Time'] >= 600)]
+                          (steady_runs['Moving Time'] >= 900)]
 
 # Calculate standard Raw Efficiency
 steady_runs['aero_ratio'] = steady_runs['Average Grade Adjusted Pace'] / steady_runs['Average Heart Rate']
