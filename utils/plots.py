@@ -38,7 +38,7 @@ def plot_aero(df):
 
     return alt.layer(points, trend_line).properties(height=400)
     
-# Plots Fitness (Chronic Training Load) and Fatigue (Acute Training Load)
+# Plots fitness (chronic training load) and fatigue (acute training load)
 def plot_fitness_fatigue(df, selected_date=None):
     df = filter_to_last_activity(df)
 
@@ -70,7 +70,7 @@ def plot_fitness_fatigue(df, selected_date=None):
 
     return chart.properties(height=350)
 
-# Plots Training Stress Balance with training zones
+# Plots training stress balance with training zones
 def plot_tsb_zones(df, selected_date=None):
     df = filter_to_last_activity(df)
 
@@ -121,7 +121,6 @@ def plot_donut(df):
     present_activities = breakdown['Activity'].tolist()
     chart_range = [config.ACTIVITY_COLORS.get(act, config.ACTIVITY_COLORS['Default']) for act in present_activities]
     
-    # Build donut chart
     donut_chart = alt.Chart(breakdown).mark_arc(innerRadius=60).encode(
         theta=alt.Theta(field='Count', type='quantitative'),
         color=alt.Color(
