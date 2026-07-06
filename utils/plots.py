@@ -134,3 +134,34 @@ def plot_donut(df):
     ).properties(height=220)
     
     return donut_chart
+
+# Plots a horizontal bar chart of time spent in each heart rate zone
+def plot_hr_zones(zone_counts, labels):
+    zone_colors = alt.Scale(
+        domain=labels,
+        range=config.HR_ZONE_COLORS 
+    )
+    
+    return alt.Chart(zone_counts).mark_bar(cornerRadiusEnd=2, height=18).encode(
+        y=alt.Y('Zone:N', sort=labels, title=None, axis=alt.Axis(labelAngle=0, grid=False)),
+        x=alt.X('Minutes:Q', title='Time (Minutes)'),
+        color=alt.Color('Zone:N', scale=zone_colors, legend=None),
+        tooltip=[
+            alt.Tooltip('Zone:N', title='Zone'),
+            alt.Tooltip('Minutes:Q', title='Minutes', format='.1f')
+        ]
+    ).properties(height=200)
+
+def plot_heart_rate_series(df):
+    """Plots a line chart of heart rate over time."""
+    return alt.Chart(df).mark_line(color=config.COLOR_STRAVA_ORANGE).encode(
+        x=alt.X('graph_timestamp:T', title='Time'),
+        y=alt.Y('heart_rate:Q', title='Heart Rate (bpm)', scale=alt.Scale(zero=False))
+    )
+
+def plot_elevation_series(df):
+    """Plots a line chart of elevation over time."""
+    return alt.Chart(df).mark_line(color=config.COLOR_STRAVA_ORANGE).encode(
+        x=alt.X('graph_timestamp:T', title='Time'),
+        y=alt.Y('elevation:Q', title='Elevation (m)', scale=alt.Scale(zero=False))
+    )
