@@ -17,17 +17,16 @@ st.sidebar.header('Activity Filter')
 activity_types = summary_df['Activity Type'].unique()
 selected_type = st.sidebar.selectbox('Select Activity Type', activity_types)
 
-# Filter summary data based on selection
 filtered_summary = summary_df[summary_df['Activity Type'] == selected_type]
 
-# Create an activity selector dropdown
+# Activity selector dropdown
 activity_map = {f"{row['Activity Date'].strftime('%Y-%m-%d')} - {row['Activity Name']}": row['Filename'] 
                 for _, row in filtered_summary.iterrows()}
 
 selected_activity_label = st.sidebar.selectbox('Select Specific Session', list(activity_map.keys()))
 target_filename = activity_map[selected_activity_label]
 
-# Load and parse second-by-second activity data
+# Parse second-by-second activity data
 with st.spinner('Parsing data...'):
     if target_filename.endswith('.gpx') or target_filename.endswith('.gpx.gz'):
         time_series_df = parse_gpx(target_filename)
@@ -120,7 +119,7 @@ with top_right:
         
 st.markdown('---')
     
-# Plot heart rate and elevation data via abstracted plot functions
+# Plot heart rate and elevation data
 if 'heart_rate' in time_series_df.columns and time_series_df['heart_rate'].notna().any():
     st.subheader('❤️ Heart Rate')
     hr_chart = plot_heart_rate_series(time_series_df)
