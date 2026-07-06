@@ -8,6 +8,10 @@ COLOR_STRAVA_ORANGE = '#fc5200'
 COLOR_MUTED_GREY = '#808080'
 COLOR_PURE_WHITE = '#ffffff'
 
+# Performance Metrics Lines
+COLOR_FITNESS = '#1f77b4'        # Muted blue
+COLOR_FATIGUE = '#ff7f0e'        # Muted orange
+
 # Heart Rate Zone Breakdown
 HR_ZONE_COLORS = ['#95a5a6', '#3498db', '#2ecc71', '#f1c40f', '#e74c3c']
 
