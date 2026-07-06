@@ -29,7 +29,7 @@ steady_runs['aero_ratio'] = steady_runs['Average Grade Adjusted Pace'] / steady_
 ml_df = steady_runs.dropna(subset=['Average Grade Adjusted Pace', 'Average Heart Rate', 'temperature_2m', 'relative_humidity_2m']).copy()
 
 # Initialize ML state variables
-has_enough_data = len(ml_df) >= 15
+has_enough_data = len(ml_df) >= 20
 model_trained = False
 coef_temp = 0.0
 coef_hum = 0.0
@@ -66,9 +66,9 @@ st.write('Running')
 # Only show the ML toggle if we actually have enough data to train the model safely
 use_ml = False
 if model_trained:
-    use_ml = st.checkbox("🔮 **Show Weather-Adjusted True Fitness** (Normalized to Singapore Baseline 28°C / 80% Humidity)", value=False)
+    use_ml = st.checkbox('🔮 **Show Weather-Adjusted True Fitness** (Normalized to Singapore Baseline 28°C / 80% Humidity)', value=False)
 elif len(steady_runs) > 0:
-    st.info(f"Keep running! You need at least 15 steady-state runs with weather data to unlock ML True Fitness tracking. (Currently have {len(ml_df)})")
+    st.info(f'Keep running! You need at least 20 steady-state runs with weather data to unlock ML True Fitness tracking. (Currently have {len(ml_df)})')
 
 # Determine which data to plot based on the user's toggle
 if use_ml and model_trained:
@@ -92,20 +92,20 @@ else:
 
 # Personal Heat Penalty
 if model_trained:
-    st.markdown("### 🧬 Your Personal Environmental Profile")
-    st.write("Using Multiple Linear Regression, we analyzed how your specific physiology reacts to the elements.")
+    st.markdown('### 🧬 Your Personal Environmental Profile')
+    st.write('Using Multiple Linear Regression, we analyzed how your specific physiology reacts to the elements.')
     
     col1, col2 = st.columns(2)
     with col1:
-        st.metric(label="🌡️ Heat Penalty (per 1°C)", 
-                  value=f"{coef_temp:+.2f} bpm",
-                  delta="Heart Rate Impact", delta_color="inverse")
+        st.metric(label='🌡️ Heat Penalty (per 1°C)', 
+                  value=f'{coef_temp:+.2f} bpm',
+                  delta='Heart Rate Impact', delta_color='inverse')
     with col2:
-        st.metric(label="💧 Humidity Penalty (per 1%)", 
-                  value=f"{coef_hum:+.2f} bpm",
-                  delta="Heart Rate Impact", delta_color="inverse")
+        st.metric(label='💧 Humidity Penalty (per 1%)', 
+                  value=f'{coef_hum:+.2f} bpm',
+                  delta='Heart Rate Impact', delta_color='inverse')
         
-    st.caption("*Metrics indicate how much your heart rate increases to maintain the same pace as weather worsens.*")
+    st.caption('*Metrics indicate how much your heart rate increases to maintain the same pace as weather worsens.*')
 
 # Methodology Expander
 with st.expander('🔬 View Aerobic Efficiency Methodology'):
