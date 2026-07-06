@@ -8,9 +8,13 @@ A comprehensive, locally-hosted Streamlit dashboard designed to process, analyze
 This application is divided into a modular, multi-page Streamlit architecture:
 
 * **Home (Lifetime Overview):** A high-level macro view of your training history. Includes KPI aggregations, activity composition breakdowns (interactive donut charts), and total metric summaries.
+* 
 * **Activity Viewer:** Dive into second-by-second granular data for individual sessions. Parses `.gpx` and `.fit` files to plot heart rate zones, elevation profiles, and time-in-zone histograms.
+* 
 * **Aerobic Efficiency Trends:** Tracks your cardiovascular adaptation over time. Specifically isolates "Steady State" runs and calculates the $\text{Efficiency} = \frac{\text{Speed}}{\text{Heart Rate}}$ ratio to visualize how your body adapts to sustained efforts.
+* 
   * **True Fitness (ML Integration):** Utilizes multiple linear regression to build a Personal Environmental Profile. Calculates your unique "Heat Penalty" and "Humidity Penalty" to normalize performance data against a standard baseline (e.g., 28°C / 80% Humidity), revealing true fitness adaptations masked by summer cardiac drift.
+  * 
 * **Fitness, Fatigue & Form:** Implements the Banister TRIMP (Training Impulse) model to calculate and visualize your physiological state:
   * **Fitness (CTL):** 42-day rolling average of training load.
   * **Fatigue (ATL):** 7-day acute rolling average.
@@ -20,11 +24,11 @@ This application is divided into a modular, multi-page Streamlit architecture:
 
 ## Repository Structure
 
-The application enforces a strict separation of concerns. All UI styling and constants are managed centrally, and frontend pages are decoupled from backend calculations and charting logic.
+All UI styling and constants are managed centrally, and frontend pages are decoupled from backend calculations and charting logic.
 
 ```text
 ├── Home.py                             # Main Streamlit entry point
-├── config.py                           # Centralized configuration for UI colors, HR zones, and ML baselines
+├── config.py                           # Centralized configuration for UI colors, HR zones and other constants
 ├── data/                               # Place Strava export data here
 │   ├── activities/                     # Individual gpx/fit files
 │   └── activities.csv                  # Strava bulk export summary
