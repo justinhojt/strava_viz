@@ -12,7 +12,7 @@ else:
     summary_df = parse_csv()
 
 st.subheader('🫀 Aerobic Efficiency Trends')
-st.spinner('Calculating historical aerobic efficiency trends...')
+st.write('Runs with over 10 minutes of moving time')
 
 runs = summary_df[summary_df['Activity Type'] == 'Run'].copy()
 steady_runs = runs[runs['workout_style'] == 'Steady State'].copy()
@@ -60,8 +60,6 @@ if has_enough_data:
     # Recalculate efficiency using the normalized HR
     ml_df['adjusted_aero_ratio'] = ml_df['Average Grade Adjusted Pace'] / ml_df['adjusted_hr']
     model_trained = True
-
-st.write('Running')
 
 # Only show the ML toggle if we actually have enough data to train the model safely
 use_ml = False
