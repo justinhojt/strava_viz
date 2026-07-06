@@ -1,7 +1,8 @@
 import streamlit as st
 import altair as alt
-from utils.data_loader import parse_csv
 import config
+
+from utils.data_loader import parse_csv
 
 st.set_page_config(layout='wide', page_title='Strava Analytics')
 st.title('Strava Archive Analytics Dashboard')
