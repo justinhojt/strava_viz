@@ -62,7 +62,7 @@ else:
 
 st.markdown('### ⚡ Core Metrics')
 
-# 60/40 split for the metrics and the chart
+# 60/40 split for KPIs and chart
 top_left, top_right = st.columns([1.5, 1])
 
 with top_left:
@@ -89,7 +89,5 @@ ext_col1, ext_col2, ext_col3, ext_col4 = st.columns(4)
 ext_col1.metric('⛰️ Total Elevation Gain', f'{total_elevation:,.0f} m')
 ext_col2.metric('🗺️ Longest Activity Distance', f'{max_distance_km:,.1f} km')
 
-# Updated from Historical Avg HR to Avg Moving Time / Week
-ext_col3.metric('⏱️ Avg Moving Time / Week', f'{avg_weekly_hours:.0f}h {avg_weekly_minutes:.0f}m')
-    
+ext_col3.metric('⏱️ Avg Moving Time / Week', f'{avg_weekly_hours:.0f}h {avg_weekly_minutes:.0f}m')    
 ext_col4.metric('📅 Activities / Week', f'{weekly_avg:.1f}')
