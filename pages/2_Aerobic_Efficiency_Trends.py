@@ -16,7 +16,7 @@ st.write('Runs with over 15 minutes of moving time')
 runs = summary_df[summary_df['Activity Type'] == 'Run'].copy()
 steady_runs = runs[runs['workout_style'] == 'Steady State'].copy()
 
-# Filter for valid pacing/HR and minimum distance
+# Filter for valid pacing/HR and minimum moving time
 steady_runs = steady_runs[(steady_runs['Average Grade Adjusted Pace'] > 0) & 
                           (steady_runs['Average Heart Rate'] > 0) & 
                           (steady_runs['Moving Time'] >= 900)]
@@ -85,7 +85,7 @@ if not run_chart_data.empty:
 else:
     st.warning('⚠️ No valid running rows containing both Heart Rate and Speed data were found to plot.')
 
-# Personal Heat Penalty
+# Personal environmental penalties
 if model_trained:
     st.markdown('### 🧬 Personal Environmental Profile')
     st.write('Using multiple linear regression, we can analyse how a specific body reacts to heat and humidity.')
