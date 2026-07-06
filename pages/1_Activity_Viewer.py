@@ -1,9 +1,10 @@
 import streamlit as st
-import altair as alt
 import pandas as pd
 
 from utils.data_loader import parse_csv, parse_gpx, parse_fit
 from utils.functions import get_trimp_for_row
+from utils.plots import plot_hr_zones, plot_heart_rate_series, plot_elevation_series
+import config
 
 # Fetch the shared dataset from session state if available, else load it in
 if 'summary_df' in st.session_state:
@@ -20,7 +21,7 @@ selected_type = st.sidebar.selectbox('Select Activity Type', activity_types)
 filtered_summary = summary_df[summary_df['Activity Type'] == selected_type]
 
 # Create an activity selector dropdown
-activity_map = {f'{row['Activity Date'].strftime('%Y-%m-%d')} - {row['Activity Name']}': row['Filename'] 
+activity_map = {f"{row['Activity Date'].strftime('%Y-%m-%d')} - {row['Activity Name']}": row['Filename'] 
                 for _, row in filtered_summary.iterrows()}
 
 selected_activity_label = st.sidebar.selectbox('Select Specific Session', list(activity_map.keys()))
@@ -97,7 +98,7 @@ with top_left:
 with top_right:
     if 'heart_rate' in time_series_df.columns and time_series_df['heart_rate'].notna().any():
         
-        act_max_hr = 200.0
+        act_max_hr = config.DEFAULT_HR_MAX
             
         # Calculate standard personalized zones based on % of max HR
         bins = [0, act_max_hr * 0.60, act_max_hr * 0.70, act_max_hr * 0.80, act_max_hr * 0.90, 300]
@@ -106,55 +107,26 @@ with top_right:
         # Map each second of data to a zone
         time_series_df['HR_Zone'] = pd.cut(time_series_df['heart_rate'], bins=bins, labels=labels)
         
-        # Aggregate time (assuming 1 row = 1 second for standard GPS files)
+        # Aggregate time 
         zone_counts = time_series_df['HR_Zone'].value_counts().reset_index()
         zone_counts.columns = ['Zone', 'Time (s)']
         zone_counts['Minutes'] = zone_counts['Time (s)'] / 60
         
-        # Define zone colors
-        zone_colors = alt.Scale(
-            domain=labels,
-            range=['#95a5a6', '#3498db', '#2ecc71', '#f1c40f', '#e74c3c'] 
-        )
-        
-        # Build horizontal bar chart
-        hr_bar = alt.Chart(zone_counts).mark_bar(cornerRadiusEnd=2, height=18).encode(
-            y=alt.Y('Zone:N', sort=labels, title=None, axis=alt.Axis(labelAngle=0, grid=False)),
-            x=alt.X('Minutes:Q', title='Time (Minutes)'),
-            color=alt.Color('Zone:N', scale=zone_colors, legend=None),
-            tooltip=[
-                alt.Tooltip('Zone:N', title='Zone'),
-                alt.Tooltip('Minutes:Q', title='Minutes', format='.1f')
-            ]
-        ).properties(height=200)
-        
+        # Call abstracted plot function
+        hr_bar = plot_hr_zones(zone_counts, labels)
         st.altair_chart(hr_bar, width='stretch')
     else:
         st.info("No Heart Rate data recorded for this session.")
         
 st.markdown('---')
     
-# Plot heart rate and elevation data 
-if time_series_df['heart_rate'].notna().any():
+# Plot heart rate and elevation data via abstracted plot functions
+if 'heart_rate' in time_series_df.columns and time_series_df['heart_rate'].notna().any():
     st.subheader('❤️ Heart Rate')
-    hr_chart = (
-        alt.Chart(time_series_df)
-        .mark_line(color='#fc5200')  
-        .encode(
-            x=alt.X('graph_timestamp:T', title='Time'),
-            y=alt.Y('heart_rate:Q', title='Heart Rate (bpm)', scale=alt.Scale(zero=False))
-        )
-    )
+    hr_chart = plot_heart_rate_series(time_series_df)
     st.altair_chart(hr_chart, width='stretch')
 
-if time_series_df['elevation'].notna().any():
+if 'elevation' in time_series_df.columns and time_series_df['elevation'].notna().any():
     st.subheader('⛰️ Elevation')
-    elevation_chart = (
-        alt.Chart(time_series_df)
-        .mark_line(color='#fc5200')
-        .encode(
-            x=alt.X('graph_timestamp:T', title='Time'),
-            y=alt.Y('elevation:Q', title='Elevation (m)', scale=alt.Scale(zero=False))
-        )
-    )
+    elevation_chart = plot_elevation_series(time_series_df)
     st.altair_chart(elevation_chart, width='stretch')
