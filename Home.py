@@ -1,6 +1,7 @@
 import streamlit as st
 import altair as alt
 from utils.data_loader import parse_csv
+import config
 
 st.set_page_config(layout='wide', page_title='Strava Analytics')
 st.title('Strava Archive Analytics Dashboard')
@@ -77,24 +78,16 @@ with top_right:
         breakdown = filtered_df['Activity Type'].value_counts().reset_index()
         breakdown.columns = ['Activity', 'Count']
         
-        # Plot donut chart
-        activity_colors = {
-            'Run': '#fc5200',              
-            'Walk': '#ee9f28',             
-            'Swim': '#f9dcb0',             
-            'Workout': '#e17602',          
-        }
-        
-        # Dynamically align the palette with the activities present in the current dataframe
+        # Dynamically align the palette with the activities present in the current dataframe using config
         present_activities = breakdown['Activity'].tolist()
-        chart_range = [activity_colors.get(act, '#808080') for act in present_activities]
+        chart_range = [config.ACTIVITY_COLORS.get(act, config.ACTIVITY_COLORS['Default']) for act in present_activities]
         
         # Build donut chart
         donut_chart = alt.Chart(breakdown).mark_arc(innerRadius=60).encode(
             theta=alt.Theta(field='Count', type='quantitative'),
             color=alt.Color(
-                field="Activity", 
-                type="nominal", 
+                field='Activity', 
+                type='nominal', 
                 scale=alt.Scale(domain=present_activities, range=chart_range),
                 legend=alt.Legend(title='Activity Breakdown', orient='right')
             ),
