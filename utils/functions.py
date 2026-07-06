@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import requests
 import config
 
 from utils.data_loader import parse_gpx, parse_fit
