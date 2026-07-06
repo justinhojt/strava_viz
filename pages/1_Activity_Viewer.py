@@ -22,10 +22,11 @@ filtered_summary = summary_df[summary_df['Activity Type'] == selected_type]
 # Create an activity selector dropdown
 activity_map = {f'{row['Activity Date'].strftime('%Y-%m-%d')} - {row['Activity Name']}': row['Filename'] 
                 for _, row in filtered_summary.iterrows()}
+
 selected_activity_label = st.sidebar.selectbox('Select Specific Session', list(activity_map.keys()))
 target_filename = activity_map[selected_activity_label]
 
-# Load and parse the second-by-second granular details
+# Load and parse second-by-second activity data
 with st.spinner('Parsing data...'):
     if target_filename.endswith('.gpx') or target_filename.endswith('.gpx.gz'):
         time_series_df = parse_gpx(target_filename)
@@ -37,9 +38,9 @@ with st.spinner('Parsing data...'):
 if time_series_df.empty:
     st.warning('This specific activity has a file entry but contains no coordinate data streams.')
 
-# Key Performance Indicators
 selected_row = filtered_summary[filtered_summary['Filename'] == target_filename].iloc[0]
 
+# KPI calculations
 time = f'{selected_row["Moving Time"] // 60:.0f}m {selected_row["Moving Time"] % 60:.0f}s'
 dist_m = f'{selected_row["Distance"]:.0f} m'
 dist_km = f'{selected_row["Distance"] / 1000:.2f} km'
@@ -59,6 +60,7 @@ pace_km = f'{seconds_km // 60:.0f}m {seconds_km % 60:.0f}s/km'
 st.markdown('### ⚡ Session Overview')
 top_left, top_right = st.columns([1.5, 1])
 
+# KPIs
 with top_left:
     if selected_row['Activity Type'] in ['Workout', 'Weight Training']:
         r1_col1, r1_col2, r1_col3 = st.columns(3)
@@ -91,20 +93,20 @@ with top_left:
         r2_col2.metric('Maximum Heart Rate', max_hr)
         r2_col3.metric('Training Intensity Score', trimp)
 
+# Heart rate zone duration bar chart 
 with top_right:
-    # Heart Rate Zone Composition Chart
     if 'heart_rate' in time_series_df.columns and time_series_df['heart_rate'].notna().any():
         
         act_max_hr = 200.0
             
-        # Calculate standard personalized zones based on % of Max HR
+        # Calculate standard personalized zones based on % of max HR
         bins = [0, act_max_hr * 0.60, act_max_hr * 0.70, act_max_hr * 0.80, act_max_hr * 0.90, 300]
         labels = ['Z1 Recovery', 'Z2 Aerobic', 'Z3 Tempo', 'Z4 Threshold', 'Z5 Anaerobic']
         
         # Map each second of data to a zone
         time_series_df['HR_Zone'] = pd.cut(time_series_df['heart_rate'], bins=bins, labels=labels)
         
-        # Aggregate time (Assuming 1 row = 1 second for standard GPS files)
+        # Aggregate time (assuming 1 row = 1 second for standard GPS files)
         zone_counts = time_series_df['HR_Zone'].value_counts().reset_index()
         zone_counts.columns = ['Zone', 'Time (s)']
         zone_counts['Minutes'] = zone_counts['Time (s)'] / 60
