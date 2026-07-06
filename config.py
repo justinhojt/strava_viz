@@ -8,6 +8,9 @@ COLOR_STRAVA_ORANGE = '#fc5200'
 COLOR_MUTED_GREY = '#808080'
 COLOR_PURE_WHITE = '#ffffff'
 
+# Heart Rate Zone Breakdown
+HR_ZONE_COLORS = ['#95a5a6', '#3498db', '#2ecc71', '#f1c40f', '#e74c3c']
+
 # Activity composition breakdown (donut chart)
 ACTIVITY_COLORS = {
     'Run': '#fc5200',              
