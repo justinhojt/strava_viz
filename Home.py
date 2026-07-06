@@ -76,7 +76,7 @@ with top_left:
     
 with top_right:
     if selected_type == 'All' and not filtered_df.empty:
-        donut_chart = plot_activity_breakdown(filtered_df)
+        donut_chart = plot_donut(filtered_df)
         st.altair_chart(donut_chart, width='stretch')
     else:
         st.info(f'Viewing filtered data for: **{selected_type}**.\n\nSelect "All" in the sidebar to view activity composition chart.')
