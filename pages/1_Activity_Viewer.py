@@ -20,8 +20,14 @@ selected_type = st.sidebar.selectbox('Select Activity Type', activity_types)
 filtered_summary = summary_df[summary_df['Activity Type'] == selected_type]
 
 # Activity selector dropdown
-activity_map = {f"{row['Activity Date'].strftime('%Y-%m-%d')} - {row['Activity Name']}": row['Filename'] 
-                for _, row in filtered_summary.iterrows()}
+activity_map = {
+    f"{date.strftime('%Y-%m-%d')} - {name}": filename 
+    for date, name, filename in zip(
+        filtered_summary['Activity Date'], 
+        filtered_summary['Activity Name'], 
+        filtered_summary['Filename']
+    )
+}
 
 selected_activity_label = st.sidebar.selectbox('Select Specific Session', list(activity_map.keys()))
 target_filename = activity_map[selected_activity_label]
