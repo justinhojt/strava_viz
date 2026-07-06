@@ -16,7 +16,7 @@ summary_df = st.session_state['summary_df']
 # Summary page
 st.subheader('Lifetime Training Overview')
 
-# Activity Filter
+# Activity filter
 st.sidebar.header('Activity Filter')
 activity_types = ['All'] + list(summary_df['Activity Type'].unique())
 selected_type = st.sidebar.selectbox('Select Activity Type', activity_types)
@@ -26,7 +26,7 @@ if selected_type != 'All':
 else:
     filtered_df = summary_df
     
-# Core KPI Calculations
+# KPIs
 total_activities = len(filtered_df)
 
 dist_df = filtered_df[~filtered_df['Activity Type'].isin(['Workout', 'Weight Training'])]
@@ -41,7 +41,7 @@ total_calories = filtered_df['Calories'].sum()
 total_elevation = filtered_df['Elevation Gain'].sum() if 'Elevation Gain' in filtered_df.columns else 0
 max_distance_km = dist_df['Distance'].max() / 1000 if not dist_df.empty else 0
 
-# Calculate consistency metrics per week
+# Weekly consistency metrics
 if not filtered_df.empty and len(filtered_df) > 1:
     min_date = filtered_df['Activity Date'].min()
     max_date = filtered_df['Activity Date'].max()
