@@ -3,6 +3,7 @@ import altair as alt
 import config
 
 from utils.data_loader import parse_csv
+from plots import plot_donut
 
 st.set_page_config(layout='wide', page_title='Strava Analytics')
 st.title('Strava Archive Analytics Dashboard')
@@ -75,26 +76,7 @@ with top_left:
     
 with top_right:
     if selected_type == 'All' and not filtered_df.empty:
-        # Group data for the donut chart
-        breakdown = filtered_df['Activity Type'].value_counts().reset_index()
-        breakdown.columns = ['Activity', 'Count']
-        
-        # Dynamically align the palette with the activities present in the current dataframe using config
-        present_activities = breakdown['Activity'].tolist()
-        chart_range = [config.ACTIVITY_COLORS.get(act, config.ACTIVITY_COLORS['Default']) for act in present_activities]
-        
-        # Build donut chart
-        donut_chart = alt.Chart(breakdown).mark_arc(innerRadius=60).encode(
-            theta=alt.Theta(field='Count', type='quantitative'),
-            color=alt.Color(
-                field='Activity', 
-                type='nominal', 
-                scale=alt.Scale(domain=present_activities, range=chart_range),
-                legend=alt.Legend(title='Activity Breakdown', orient='right')
-            ),
-            tooltip=['Activity', 'Count']
-        ).properties(height=220)
-        
+        donut_chart = plot_activity_breakdown(filtered_df)
         st.altair_chart(donut_chart, width='stretch')
     else:
         st.info(f'Viewing filtered data for: **{selected_type}**.\n\nSelect "All" in the sidebar to view activity composition chart.')
