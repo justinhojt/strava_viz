@@ -119,7 +119,7 @@ with st.expander('🔬 View Aerobic Efficiency Methodology'):
     
     $$ \\text{Efficiency} = \\frac{\\text{Grade Adjusted Speed}}{\\text{Average Heart Rate}} $$
     
-    *Note: We specifically filter for "Steady State" runs and use Grade Adjusted metrics to ensure elevation changes and interval spikes do not heavily skew the data.*
+    *Note: We specifically filter for "Steady State" runs with over 15 minutes of moving time and use Grade Adjusted metrics to ensure elevation changes and interval spikes do not heavily skew the data.*
     
     ---
     
