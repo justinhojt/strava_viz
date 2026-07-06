@@ -58,6 +58,8 @@ seconds_km = selected_row['Moving Time'] / (selected_row['Distance'] / 1000) if 
 pace_km = f'{seconds_km // 60:.0f}m {seconds_km % 60:.0f}s/km'
 
 st.markdown('### ⚡ Session Overview')
+
+# 60/40 split for KPIs and chart
 top_left, top_right = st.columns([1.5, 1])
 
 # KPIs
