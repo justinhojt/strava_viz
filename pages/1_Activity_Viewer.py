@@ -1,15 +1,14 @@
 import streamlit as st
-import pandas as pd
 import altair as alt
+import pandas as pd
 
 from utils.data_loader import parse_csv, parse_gpx, parse_fit
 from utils.functions import get_trimp_for_row
 
-# Fetch the shared dataset from session state
+# Fetch the shared dataset from session state if available, else load it in
 if 'summary_df' in st.session_state:
     summary_df = st.session_state['summary_df']
 else:
-    # Fallback just in case someone refreshes this page directly
     summary_df = parse_csv()
 
 # Sidebar navigation/filtering
@@ -23,7 +22,6 @@ filtered_summary = summary_df[summary_df['Activity Type'] == selected_type]
 # Create an activity selector dropdown
 activity_map = {f'{row['Activity Date'].strftime('%Y-%m-%d')} - {row['Activity Name']}': row['Filename'] 
                 for _, row in filtered_summary.iterrows()}
-
 selected_activity_label = st.sidebar.selectbox('Select Specific Session', list(activity_map.keys()))
 target_filename = activity_map[selected_activity_label]
 
