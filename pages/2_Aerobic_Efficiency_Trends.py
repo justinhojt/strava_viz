@@ -2,11 +2,10 @@ from sklearn.linear_model import LinearRegression
 import streamlit as st
 import numpy as np
 
-
 from utils.data_loader import parse_csv
 from utils.plots import plot_aero
 
-# Fetch the shared dataset from session state
+# Fetch the shared dataset from session state if available, else load it in
 if 'summary_df' in st.session_state:
     summary_df = st.session_state['summary_df']
 else:
@@ -23,7 +22,7 @@ steady_runs = steady_runs[(steady_runs['Average Grade Adjusted Pace'] > 0) &
                           (steady_runs['Average Heart Rate'] > 0) & 
                           (steady_runs['Moving Time'] >= 900)]
 
-# Calculate standard Raw Efficiency
+# Calculate raw efficiency
 steady_runs['aero_ratio'] = steady_runs['Average Grade Adjusted Pace'] / steady_runs['Average Heart Rate']
 
 # Filter out runs missing weather data for the ML model
@@ -36,7 +35,6 @@ coef_temp = 0.0
 coef_hum = 0.0
 
 if has_enough_data:
-    # Oredict Heart Rate based on how fast you were going and the weather
     X = ml_df[['Average Grade Adjusted Pace', 'temperature_2m', 'relative_humidity_2m']]
     y = ml_df['Average Heart Rate']
     
@@ -50,7 +48,7 @@ if has_enough_data:
     standard_temp = 28.0
     standard_hum = 80.0
     
-    # Create a hypothetical feature set: Actual Pace, but Perfect Weather
+    # Create a hypothetical feature set: actual pace, but perfect weather
     X_standard = X.copy()
     X_standard['temperature_2m'] = standard_temp
     X_standard['relative_humidity_2m'] = standard_hum
@@ -88,11 +86,10 @@ if not run_chart_data.empty:
 else:
     st.warning('⚠️ No valid running rows containing both Heart Rate and Speed data were found to plot.')
 
-
 # Personal Heat Penalty
 if model_trained:
-    st.markdown('### 🧬 Your Personal Environmental Profile')
-    st.write('Using Multiple Linear Regression, we analyzed how your specific physiology reacts to the elements.')
+    st.markdown('### 🧬 Personal Environmental Profile')
+    st.write('Using multiple linear regression, we can analyse how a specific body reacts to heat and humidity.')
     
     col1, col2 = st.columns(2)
     with col1:
@@ -104,7 +101,7 @@ if model_trained:
                   value=f'{coef_hum:+.2f} bpm',
                   delta='Heart Rate Impact', delta_color='inverse')
         
-    st.caption('*Metrics indicate how much your heart rate increases to maintain the same pace as weather worsens.*')
+    st.caption('*Metrics indicate how much heart rate increases to maintain the same pace as weather worsens.*')
 
 # Methodology Expander
 with st.expander('🔬 View Aerobic Efficiency Methodology'):
@@ -127,7 +124,7 @@ with st.expander('🔬 View Aerobic Efficiency Methodology'):
     ### 🔮 True Fitness (Weather Normalization)
     If you live in an environment with distinct seasons or high heat, your raw efficiency will artificially drop in the summer due to cardiac drift, masking your actual fitness gains.
     
-    When **True Fitness** is enabled, a machine learning model isolates your pace and calculates what your heart rate *would have been* if the run occurred in an optimal 15°C environment at 50% humidity.
+    When **True Fitness** is enabled, a machine learning model isolates your pace and calculates what your heart rate *would have been* if the run occurred in a typical 28°C environment at 80% humidity.
     
     ---
     
@@ -135,5 +132,5 @@ with st.expander('🔬 View Aerobic Efficiency Methodology'):
     
     * **Upward Trend ↗️:** Cardiovascular adaptation is occurring. You are getting fitter and can hold the same pace at a lower heart rate.
     * **Downward Trend ↘️:** This can indicate accumulated fatigue, a loss of fitness, or external environmental factors like severe heat stress.
-    * **Daily Variance 📉📈:** Factors like sleep quality, caffeine intake, ambient temperature, and hydration will cause daily fluctuations. Focus on the long-term trendline rather than the individual dots!
+    * **Daily Variance 📉📈:** Factors like sleep quality, caffeine intake, ambient temperature, and hydration will cause daily fluctuations.
     """)
