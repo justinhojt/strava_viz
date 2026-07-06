@@ -23,8 +23,8 @@ def plot_aero(df):
 
     points = base.mark_circle(
         size=60, 
-        fill='white', 
-        stroke='#fc5200', 
+        fill=config.COLOR_PURE_WHITE, 
+        stroke=config.COLOR_STRAVA_ORANGE, 
         strokeWidth=1.5, 
         opacity=0.7
     ).encode(
@@ -32,7 +32,7 @@ def plot_aero(df):
         tooltip=[alt.Tooltip('graph_date:T', title='Date', format='%Y-%m-%d'), 'aero_ratio:Q']
     )
 
-    trend_line = base.mark_line(color='#fc5200', size=3).encode(
+    trend_line = base.mark_line(color=config.COLOR_STRAVA_ORANGE, size=3).encode(
         y=alt.Y('moving_avg:Q')
     )
 
@@ -52,7 +52,7 @@ def plot_fitness_fatigue(df, selected_date=None):
         y=alt.Y('Value:Q', title='Stress Units', scale=alt.Scale(zero=False)),
         color=alt.Color('Metric_Label:N', 
                         scale=alt.Scale(domain=['Fitness (CTL)', 'Fatigue (ATL)'], 
-                                        range=['#1f77b4', '#ff7f0e']),
+                                        range=[config.COLOR_FITNESS, config.COLOR_FATIGUE]),
                         title='Metric'),
         tooltip=[
             alt.Tooltip('Date:T', title='Date', format='%Y-%m-%d'),
@@ -64,7 +64,7 @@ def plot_fitness_fatigue(df, selected_date=None):
     # Add vertical sync line if a date is provided
     if selected_date:
         vline = alt.Chart(pd.DataFrame({'Date': [pd.Timestamp(selected_date)]})).mark_rule(
-            color='#ffffff', strokeWidth=1
+            color=config.COLOR_PURE_WHITE, strokeWidth=1
         ).encode(x='Date:T')
         return alt.layer(chart, vline).properties(height=350)
 
@@ -92,12 +92,12 @@ def plot_tsb_zones(df, selected_date=None):
     )
 
     tsb_line = alt.Chart(df).mark_line(color=config.COLOR_PURE_WHITE, strokeWidth=2).encode(
-    x=alt.X('Date:T', title='Date', axis=alt.Axis(format="%b '%y")),
-    y=alt.Y('TSB:Q', title='Form (TSB)')
+        x=alt.X('Date:T', title='Date', axis=alt.Axis(format="%b '%y")),
+        y=alt.Y('TSB:Q', title='Form (TSB)')
     )
 
     baseline = alt.Chart(pd.DataFrame([{'y': 0}])).mark_rule(
-        color='#7f8c8d', strokeDash=[4, 4]
+        color=config.COLOR_MUTED_GREY, strokeDash=[4, 4]
     ).encode(y='y:Q')
 
     layers = [zones, tsb_line, baseline]
@@ -105,39 +105,8 @@ def plot_tsb_zones(df, selected_date=None):
     # Add vertical sync line if a date is provided
     if selected_date:
         vline = alt.Chart(pd.DataFrame({'Date': [pd.Timestamp(selected_date)]})).mark_rule(
-            color='#ffffff', strokeWidth=1 
+            color=config.COLOR_PURE_WHITE, strokeWidth=1 
         ).encode(x='Date:T')
         layers.append(vline)
 
     return alt.layer(*layers).properties(height=350)
-
-# Plots a horizontal bar chart of time spent in each heart rate zone
-def plot_hr_zones(zone_counts, labels):
-    zone_colors = alt.Scale(
-        domain=labels,
-        range=config.HR_ZONE_COLORS 
-    )
-    
-    return alt.Chart(zone_counts).mark_bar(cornerRadiusEnd=2, height=18).encode(
-        y=alt.Y('Zone:N', sort=labels, title=None, axis=alt.Axis(labelAngle=0, grid=False)),
-        x=alt.X('Minutes:Q', title='Time (Minutes)'),
-        color=alt.Color('Zone:N', scale=zone_colors, legend=None),
-        tooltip=[
-            alt.Tooltip('Zone:N', title='Zone'),
-            alt.Tooltip('Minutes:Q', title='Minutes', format='.1f')
-        ]
-    ).properties(height=200)
-
-def plot_heart_rate_series(df):
-    """Plots a line chart of heart rate over time."""
-    return alt.Chart(df).mark_line(color=config.COLOR_STRAVA_ORANGE).encode(
-        x=alt.X('graph_timestamp:T', title='Time'),
-        y=alt.Y('heart_rate:Q', title='Heart Rate (bpm)', scale=alt.Scale(zero=False))
-    )
-
-def plot_elevation_series(df):
-    """Plots a line chart of elevation over time."""
-    return alt.Chart(df).mark_line(color=config.COLOR_STRAVA_ORANGE).encode(
-        x=alt.X('graph_timestamp:T', title='Time'),
-        y=alt.Y('elevation:Q', title='Elevation (m)', scale=alt.Scale(zero=False))
-    )
