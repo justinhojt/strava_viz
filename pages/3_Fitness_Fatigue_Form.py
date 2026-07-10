@@ -16,7 +16,7 @@ trimps = parse_granular(summary_df.copy())
 st.subheader('Historical Performance Analysis')
 
 # Date slider
-min_date = trimps['Date'].min().to_pydatetime()
+min_date = trimps['Date'].min().to_pydatetime() # Streamlit uses python datetime instead of pandas datetime
 max_date = summary_df['Activity Date'].max().to_pydatetime()
 
 selected_date = st.slider(
