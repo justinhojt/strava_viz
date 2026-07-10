@@ -87,7 +87,7 @@ else:
 
 # Personal environmental penalties
 if model_trained:
-    st.markdown('### 🧬 Personal Environmental Profile')
+    st.subheader('🧬 Personal Environmental Profile')
     st.write('Using multiple linear regression, we can analyse how a specific body reacts to heat and humidity.')
     
     col1, col2 = st.columns(2)
