@@ -116,7 +116,7 @@ with top_right:
         time_series_df['HR_Zone'] = pd.cut(time_series_df['heart_rate'], bins=bins, labels=labels)
         
         # Aggregate time 
-        zone_counts = time_series_df['HR_Zone'].value_counts().reset_index()
+        zone_counts = time_series_df['HR_Zone'].value_counts().reset_index() # reset_index() to change zone from index to column
         zone_counts.columns = ['Zone', 'Time (s)']
         zone_counts['Minutes'] = zone_counts['Time (s)'] / 60
         
