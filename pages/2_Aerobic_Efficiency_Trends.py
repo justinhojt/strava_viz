@@ -47,7 +47,7 @@ if has_enough_data:
     standard_temp = 28.0
     standard_hum = 80.0
     
-    # Create a hypothetical feature set: actual pace, but perfect weather
+    # Create a hypothetical feature set: actual pace, but standard weather
     X_standard = X.copy()
     X_standard['temperature_2m'] = standard_temp
     X_standard['relative_humidity_2m'] = standard_hum
