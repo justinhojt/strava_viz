@@ -4,7 +4,7 @@ import config
 
 from utils.data_loader import parse_csv, parse_gpx, parse_fit
 from utils.functions import get_trimp_for_row
-from utils.plots import plot_hr_zones, plot_heart_rate_series, plot_elevation_series
+from utils.plots import plot_hr_zones, plot_hr_series, plot_ele_series
 
 # Fetch the shared dataset from session state if available, else load it in
 if 'summary_df' in st.session_state:
@@ -21,7 +21,7 @@ filtered_summary = summary_df[summary_df['Activity Type'] == selected_type]
 
 # Activity selector dropdown
 activity_map = {
-    f"{date.strftime('%Y-%m-%d')} - {name}": filename 
+    f'{date.strftime("%Y-%m-%d")} - {name}': filename 
     for date, name, filename in zip(
         filtered_summary['Activity Date'], 
         filtered_summary['Activity Name'], 
@@ -80,6 +80,7 @@ with top_left:
         r2_col1.metric('Training Intensity Score', trimp)
         
     elif selected_row['Activity Type'] == 'Swim':
+        # Slightly wider 3rd column to fit 100m pace
         r1_col1, r1_col2, r1_col3 = st.columns([1, 1, 1.3])
         r1_col1.metric('Distance', dist_m)
         r1_col2.metric('Moving Time', time)
@@ -119,21 +120,20 @@ with top_right:
         zone_counts.columns = ['Zone', 'Time (s)']
         zone_counts['Minutes'] = zone_counts['Time (s)'] / 60
         
-        # Call abstracted plot function
         hr_bar = plot_hr_zones(zone_counts, labels)
         st.altair_chart(hr_bar, width='stretch')
     else:
-        st.info("No Heart Rate data recorded for this session.")
+        st.info('No Heart Rate data recorded for this session.')
         
 st.markdown('---')
     
 # Plot heart rate and elevation data
 if 'heart_rate' in time_series_df.columns and time_series_df['heart_rate'].notna().any():
     st.subheader('❤️ Heart Rate')
-    hr_chart = plot_heart_rate_series(time_series_df)
+    hr_chart = plot_hr_series(time_series_df)
     st.altair_chart(hr_chart, width='stretch')
 
 if 'elevation' in time_series_df.columns and time_series_df['elevation'].notna().any():
     st.subheader('⛰️ Elevation')
-    elevation_chart = plot_elevation_series(time_series_df)
+    elevation_chart = plot_ele_series(time_series_df)
     st.altair_chart(elevation_chart, width='stretch')
