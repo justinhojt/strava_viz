@@ -6,6 +6,8 @@ from utils.data_loader import parse_csv, parse_gpx, parse_fit
 from utils.functions import get_trimp_for_row
 from utils.plots import plot_hr_zones, plot_hr_series, plot_ele_series
 
+st.subheader('⚡ Session Overview')
+
 # Fetch the shared dataset from session state if available, else load it in
 if 'summary_df' in st.session_state:
     summary_df = st.session_state['summary_df']
@@ -62,8 +64,6 @@ pace_100m = f'{seconds_100m // 60:.0f}m {seconds_100m % 60:.0f}s/100m'
 
 seconds_km = selected_row['Moving Time'] / (selected_row['Distance'] / 1000) if selected_row['Distance'] > 0 else 0
 pace_km = f'{seconds_km // 60:.0f}m {seconds_km % 60:.0f}s/km'
-
-st.subheader('⚡ Session Overview')
 
 # 60/40 split for KPIs and chart
 top_left, top_right = st.columns([1.5, 1])
