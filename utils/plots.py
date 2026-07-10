@@ -153,14 +153,14 @@ def plot_hr_zones(zone_counts, labels):
     return zone_chart
 
 # Plots a line chart of heart rate over time
-def plot_heart_rate_series(df):
+def plot_hr_series(df):
     return alt.Chart(df).mark_line(color=config.COLOR_STRAVA_ORANGE).encode(
         x=alt.X('graph_timestamp:T', title='Time'),
         y=alt.Y('heart_rate:Q', title='Heart Rate (bpm)', scale=alt.Scale(zero=False))
     )
 
 # Plots a line chart of elevation over time
-def plot_elevation_series(df):
+def plot_ele_series(df):
     return alt.Chart(df).mark_line(color=config.COLOR_STRAVA_ORANGE).encode(
         x=alt.X('graph_timestamp:T', title='Time'),
         y=alt.Y('elevation:Q', title='Elevation (m)', scale=alt.Scale(zero=False))
