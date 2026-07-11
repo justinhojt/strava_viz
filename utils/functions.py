@@ -64,7 +64,9 @@ def parse_granular(df):
                 trimp_score = get_trimp_for_row(row, time_series_df)
                 
             except Exception as e:
+                st.warning(f'⚠️ Failed to parse {target_filename}: {e}')
                 trimp_score = get_trimp_for_row(row, None)
+                
         if trimp_score > 0 or file_parsed_successfully:
             workout_records.append({
                 'Date': activity_date,
