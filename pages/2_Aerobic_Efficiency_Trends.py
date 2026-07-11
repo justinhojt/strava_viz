@@ -40,8 +40,9 @@ if has_enough_data:
     model = LinearRegression()
     model.fit(X, y)
     
-    coef_temp = model.coef_[1]
-    coef_hum = model.coef_[2]
+    coefs = dict(zip(X.columns, model.coef_))
+    coef_temp = coefs['temperature_2m']
+    coef_hum = coefs['relative_humidity_2m']
     
     # Define standard environmental baseline (28°C and 80% Humidity)
     standard_temp = 28.0
