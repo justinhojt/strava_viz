@@ -1,6 +1,7 @@
 import pandas as pd
 import requests
 import logging
+import config
 import gzip
 import time
 import os
@@ -181,9 +182,9 @@ def main():
                     localized_date = raw_date.tz_localize('UTC').tz_convert(tz_name).tz_localize(None)
             else:
                 if raw_date.tz is not None:
-                    localized_date = raw_date.tz_convert('Asia/Singapore').tz_localize(None)
+                    localized_date = raw_date.tz_convert(config.TIMEZONE_TARGET).tz_localize(None)
                 else:
-                    localized_date = raw_date + pd.Timedelta(hours=8)
+                    localized_date = raw_date + pd.Timedelta(hours=config.TIMEZONE_OFFSET_HOURS)
                 
             # Cast timestamp explicitly to str to bypass PyArrow string dtype requirements
             df.at[index, 'Activity Date'] = str(localized_date)
