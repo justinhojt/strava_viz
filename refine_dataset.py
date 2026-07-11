@@ -56,13 +56,16 @@ def get_weather_with_timeout(session, lat, lon, activity_timestamp, retries=3):
     
     for attempt in range(retries):
         try:
-            # Use session instead of requests, and increase timeout to 15s
             response = session.get(url, params=params, timeout=15)
             
             if response.status_code == 429:
-                tqdm.write(' ⚠️ API Rate Limit Hit! Sleeping for 60 seconds...')
-                time.sleep(60)
-                return get_weather_with_timeout(session, lat, lon, activity_timestamp, retries)
+                if attempt < retries - 1:
+                    tqdm.write(' ⚠️ API Rate Limit Hit! Sleeping for 60 seconds...')
+                    time.sleep(60)
+                    continue
+                else:
+                    tqdm.write(f'   ❌ Still rate-limited after {retries} attempts for {date_str}.')
+                    break
                 
             response.raise_for_status()
             data = response.json()
