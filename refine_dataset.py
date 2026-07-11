@@ -23,13 +23,14 @@ def clean_csv(file_path):
         raise FileNotFoundError(f'Could not find activities CSV at {file_path}')
         
     df = pd.read_csv(file_path)
+
+    # Drop columns with no file name/all identical values
     df = df.dropna(subset=['Filename'])
-    
-    # Drop columns with all identical values
     df = df.loc[:, df.nunique() > 1]
 
-    df = df.drop(columns=['Distance'])
-    df = df.rename(columns={'Distance.1': 'Distance'})
+    # Export data has 2 distance columns, first one has inconsistent units, second one standardizes to meters (which we keep)
+    df = df.drop(columns=['Distance'])                      # Drop first distance column
+    df = df.rename(columns={'Distance.1': 'Distance'})      # Rename the second distance column so it doesnt get flagged as a duplicate
     
     # Drop duplicate columns
     df = df.drop(columns=[*[col for col in df.columns if '.1' in col]], errors='ignore')
@@ -73,12 +74,12 @@ def get_weather_with_timeout(session, lat, lon, activity_timestamp, retries=3):
             
         except requests.exceptions.Timeout:
             if attempt < retries - 1:
-                tqdm.write(f"   ⏳ Read timeout on attempt {attempt + 1}. Retrying in 2 seconds...")
+                tqdm.write(f'   ⏳ Read timeout on attempt {attempt + 1}. Retrying in 2 seconds...')
                 time.sleep(2)
             else:
-                tqdm.write(f"   ❌ API Timeout failed after {retries} attempts for {date_str}.")
+                tqdm.write(f'   ❌ API Timeout failed after {retries} attempts for {date_str}.')
         except Exception as e:
-            tqdm.write(f"   ❌ Weather API Fetch Failed for {date_str}: {e}")
+            tqdm.write(f'   ❌ Weather API Fetch Failed for {date_str}: {e}')
             break
             
     return {'temp': None, 'humidity': None, 'wind': None}
@@ -139,7 +140,7 @@ def main():
     # Initialize the timezone finder
     tzf = TimezoneFinder()
 
-    print(f"🌍 Processing {df.shape[0]} total activities and compiling weather strictly for runs...")
+    print(f'🌍 Processing {df.shape[0]} total activities and compiling weather strictly for runs...')
     
     # Spin up persistent connection session
     with requests.Session() as session:
@@ -162,7 +163,6 @@ def main():
                     
                 df.at[index, 'workout_style'] = style
             
-            # --- Coordinates Extraction (Runs on everything to get timezone) ---
             lat, lon = extract_start_coords(filename)
                 
             # Find the local timezone
