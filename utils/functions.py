@@ -57,12 +57,14 @@ def parse_granular(df):
                     time_series_df = parse_gpx(target_filename)
                 elif target_filename.endswith('.fit') or target_filename.endswith('.fit.gz'):
                     time_series_df = parse_fit(target_filename)
+                else:
+                    raise ValueError(f'Unsupported file format: {target_filename}')
                 
+                file_parsed_successfully = True
                 trimp_score = get_trimp_for_row(row, time_series_df)
                 
             except Exception as e:
                 trimp_score = get_trimp_for_row(row, None)
-
         if trimp_score > 0 or file_parsed_successfully:
             workout_records.append({
                 'Date': activity_date,
