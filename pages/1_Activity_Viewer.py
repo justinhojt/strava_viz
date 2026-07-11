@@ -42,6 +42,7 @@ with st.spinner('Parsing data...'):
         time_series_df = parse_fit(target_filename) 
     else:
         st.error('Unsupported file format.')
+        st.stop()
 
 if time_series_df.empty:
     st.warning('This specific activity has a file entry but contains no coordinate data streams.')
