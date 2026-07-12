@@ -28,7 +28,7 @@ def plot_aero(df):
         strokeWidth=1.5, 
         opacity=0.7
     ).encode(
-        y=alt.Y('aero_ratio:Q', title='Ratio (Speed/Heart Rate)', scale=alt.Scale(zero=False)),
+        y=alt.Y('aero_ratio:Q', title='Ratio (Grade-adjusted Pace/Heart Rate Reserve)', scale=alt.Scale(zero=False)),
         tooltip=[alt.Tooltip('graph_date:T', title='Date', format='%Y-%m-%d'), 'aero_ratio:Q']
     )
 
