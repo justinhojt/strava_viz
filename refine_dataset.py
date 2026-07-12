@@ -137,6 +137,7 @@ def main():
     df['relative_humidity_2m'] = None
     df['wind_speed_10m'] = None
     df['workout_style'] = 'Unknown'
+    df['local_tz'] = config.TIMEZONE_TARGET
     
     # Cast column to object type to provide fallback protection against PyArrow
     df['Activity Date'] = df['Activity Date'].astype(object)
@@ -177,6 +178,7 @@ def main():
             raw_date = pd.to_datetime(row['Activity Date'])
             
             if tz_name:
+                df.at[index, 'local_tz'] = tz_name
                 if raw_date.tz is not None:
                     localized_date = raw_date.tz_convert(tz_name).tz_localize(None)
                 else:
