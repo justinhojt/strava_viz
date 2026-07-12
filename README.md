@@ -20,7 +20,7 @@ Drill into second-by-second data for any individual session. Parses `.gpx` and `
 ### 🫀 Aerobic Efficiency Trends
 Isolates steady-state runs (≥15 min moving time) and plots an efficiency ratio (grade-adjusted pace over average heart rate) with a 42-day rolling trend line, so you can see cardiovascular adaptation independent of day-to-day pacing choices.
 
-- **True Fitness (ML-adjusted view):** once you have 20+ steady-state runs with matched weather data, a multiple linear regression model learns your personal heat and humidity penalties (bpm increase per °C / per % humidity) and normalizes every run's heart rate to a standard 28°C / 80% humidity baseline, so adverse weather conditions do not mask genuine fitness gains.
+- **True Fitness (ML-adjusted view):** once you have 50+ steady-state runs with matched weather data, a multiple linear regression model learns your personal heat and humidity penalties (bpm increase per °C / per % humidity) and normalizes every run's heart rate to a standard 28°C / 80% humidity baseline, so adverse weather conditions do not mask genuine fitness gains.
 - **Note:** the efficiency ratio's directionality (higher = fitter) assumes the underlying "pace" field increases with speed. If your export's pace column instead decreases as you get faster (i.e. is a true time-per-distance pace), the trend line's interpretation should be flipped accordingly.
 
 ### 📊 Fitness, Fatigue & Form
