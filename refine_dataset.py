@@ -29,11 +29,11 @@ def clean_csv(file_path):
     df = df.dropna(subset=['Filename'])
     df = df.loc[:, df.nunique() > 1]
 
-    # Export data has 2 distance columns, first one has inconsistent units, second one standardizes to meters (which we keep)
-    df = df.drop(columns=['Distance'])                      # Drop first distance column
-    df = df.rename(columns={'Distance.1': 'Distance'})      # Rename the second distance column so it doesnt get flagged as a duplicate
+    # Strava export data has 2 distance columns, first one has inconsistent units, second one standardizes to meters (which we keep)
+    df = df.drop(columns=['Distance'])                    # Drop first distance column
+    df = df.rename(columns={'Distance.1': 'Distance'})    # Rename the second distance column so it doesnt get flagged as a duplicate
     
-    # Drop duplicate columns
+    # Drop remaining duplicate columns
     df = df.drop(columns=[*[col for col in df.columns if '.1' in col]], errors='ignore')
         
     return df
@@ -132,17 +132,14 @@ def main():
     
     activity_type_col = 'Activity Type' if 'Activity Type' in df.columns else 'type'
         
-    # Initialize new columns for the whole dataset
     df['temperature_2m'] = None
     df['relative_humidity_2m'] = None
     df['wind_speed_10m'] = None
     df['workout_style'] = 'Unknown'
     df['local_tz'] = config.TIMEZONE_TARGET
     
-    # Cast column to object type to provide fallback protection against PyArrow
-    df['Activity Date'] = df['Activity Date'].astype(object)
+    df['Activity Date'] = df['Activity Date'].astype(object)    # Cast column to object type to provide fallback protection against PyArrow
     
-    # Initialize the timezone finder
     tzf = TimezoneFinder()
     
     # Spin up persistent connection session
@@ -151,7 +148,6 @@ def main():
             filename = row['Filename']
             is_run = str(row.get(activity_type_col, '')).lower() == 'run'
             
-            # --- Workout Style Engine (Runs Only) ---
             if is_run:
                 avg_speed = row.get('Average Speed')
                 moving_time = row.get('Moving Time')
@@ -174,9 +170,9 @@ def main():
             else:
                 tz_name = None
             
-            # Convert the timestamp dynamically
             raw_date = pd.to_datetime(row['Activity Date'])
-            
+
+            # Convert to local time
             if tz_name:
                 df.at[index, 'local_tz'] = tz_name
                 if raw_date.tz is not None:
@@ -189,8 +185,7 @@ def main():
                 else:
                     localized_date = raw_date + pd.Timedelta(hours=config.TIMEZONE_OFFSET_HOURS)
                 
-            # Cast timestamp explicitly to str to bypass PyArrow string dtype requirements
-            df.at[index, 'Activity Date'] = str(localized_date)
+            df.at[index, 'Activity Date'] = str(localized_date)    # Cast timestamp to str to bypass PyArrow string dtype requirements
             
             # Fetch weather data for runs with gps coordinates
             if is_run and lat is not None and lon is not None:
@@ -200,8 +195,7 @@ def main():
                 df.at[index, 'relative_humidity_2m'] = weather['humidity']
                 df.at[index, 'wind_speed_10m'] = weather['wind']
                 
-                # Respect rate limits
-                time.sleep(0.1)
+                time.sleep(0.1)   # Respect rate limits
         
     df.to_csv(OUTPUT_PATH, index=False)
     print(f'\nSuccess! Dataset safely saved to {OUTPUT_PATH}')
