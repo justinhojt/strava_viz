@@ -5,14 +5,15 @@ import config
 
 from utils.data_loader import parse_gpx, parse_fit
 
-# Calculates cumulative TRIMP score time-series data
+# Calculates cumulative TRIMP score using time-series data
 def calc_trimps(df, hr_max=config.DEFAULT_HR_MAX, hr_rest=config.DEFAULT_HR_REST, gender=config.DEFAULT_GENDER):
     if df.empty or 'heart_rate' not in df or 'timestamp' not in df:
         return 0.0
- 
+
+    # Calculates the time elapsed between consecutive heart rate readings in minutes
     delta_t_minutes = pd.to_datetime(df['timestamp']).diff().dt.total_seconds().fillna(1.0) / 60.0
     
-    hr = pd.to_numeric(df['heart_rate'], errors='coerce').ffill().bfill()
+    hr = pd.to_numeric(df['heart_rate'], errors='coerce').ffill().bfill()  # Ensures no NaN values
     delta_hr = (hr - hr_rest) / (hr_max - hr_rest)
     delta_hr = delta_hr.clip(0.0, 1.0)
     
@@ -50,7 +51,8 @@ def parse_granular(df):
         
         trimp_score = 0
         file_parsed_successfully = False
-        
+
+        # If activity file exists, parse it and calculate TRIMP score
         if not pd.isna(target_filename): 
             try:
                 if target_filename.endswith('.gpx') or target_filename.endswith('.gpx.gz'):
@@ -66,7 +68,7 @@ def parse_granular(df):
             except Exception as e:
                 st.warning(f'⚠️ Failed to parse {target_filename}: {e}')
                 trimp_score = get_trimp_for_row(row, None)
-                
+        
         if trimp_score > 0 or file_parsed_successfully:
             workout_records.append({
                 'Date': activity_date,
@@ -97,8 +99,8 @@ def parse_granular(df):
     trimps = daily_stress.reindex(full_range, fill_value=0).reset_index()
     trimps.rename(columns={'index': 'Date'}, inplace=True)
     
-    trimps['CTL'] = trimps['trimps'].ewm(alpha=1/42, adjust=False).mean()
-    trimps['ATL'] = trimps['trimps'].ewm(alpha=1/7, adjust=False).mean()
+    trimps['CTL'] = trimps['trimps'].ewm(alpha=1/42, adjust=False).mean()    # 42 day exponentially weighted moving average
+    trimps['ATL'] = trimps['trimps'].ewm(alpha=1/7, adjust=False).mean()     # 7 day exponentially weighted moving average
     trimps['TSB'] = trimps['CTL'].shift(1) - trimps['ATL'].shift(1)
     trimps['TSB'] = trimps['TSB'].fillna(0)
     
