@@ -9,10 +9,10 @@ import io
 
 csv = config.ACTIVITIES_CSV
 
-def process_timestamps(df):
+def process_timestamps(df, local_tz=config.TIMEZONE_TARGET):
     if not df.empty:
         df['timestamp'] = pd.to_datetime(df['timestamp'], utc=True)
-        df['timestamp'] = df['timestamp'].dt.tz_convert('Asia/Singapore').dt.tz_localize(None)
+        df['timestamp'] = df['timestamp'].dt.tz_convert(local_tz).dt.tz_localize(None)
         df['graph_timestamp'] = df['timestamp'].dt.strftime('%Y-%m-%dT%H:%M:%S')
     return df
 
@@ -26,7 +26,7 @@ def parse_csv():
     return df
 
 @st.cache_data
-def parse_gpx(gpx_filename):
+def parse_gpx(gpx_filename, local_tz=config.TIMEZONE_TARGET):
     gpx_file = os.path.join('data', gpx_filename)
     
     if not os.path.exists(gpx_file):
@@ -56,10 +56,10 @@ def parse_gpx(gpx_filename):
                     'heart_rate': hr
                 })
                 
-    return process_timestamps(pd.DataFrame(track_data))
+    return process_timestamps(pd.DataFrame(track_data), local_tz)
 
 @st.cache_data
-def parse_fit(fit_filename):
+def parse_fit(fit_filename, local_tz=config.TIMEZONE_TARGET):
     fit_file = os.path.join('data', fit_filename)
     
     if not os.path.exists(fit_file):
@@ -90,4 +90,4 @@ def parse_fit(fit_filename):
                 'heart_rate': values.get('heart_rate')
             })
                 
-    return process_timestamps(pd.DataFrame(track_data))
+    return process_timestamps(pd.DataFrame(track_data), local_tz)
