@@ -28,7 +28,7 @@ steady_runs['aero_ratio'] = steady_runs['Average Grade Adjusted Pace'] / steady_
 ml_df = steady_runs.dropna(subset=['Average Grade Adjusted Pace', 'Average Heart Rate', 'temperature_2m', 'relative_humidity_2m']).copy()
 
 # Initialize ML state variables
-has_enough_data = len(ml_df) >= 20
+has_enough_data = len(ml_df) >= 50
 model_trained = False
 coef_temp = 0.0
 coef_hum = 0.0
@@ -65,7 +65,7 @@ use_ml = False
 if model_trained:
     use_ml = st.checkbox('🔮 **Show Weather-Adjusted True Fitness** (Normalized to Singapore Baseline 28°C / 80% Humidity)', value=False)
 elif len(steady_runs) > 0:
-    st.info(f'Keep running! You need at least 20 steady-state runs with weather data to unlock ML True Fitness tracking. (Currently have {len(ml_df)})')
+    st.info(f'Keep running! You need at least 50 steady-state runs with weather data to unlock ML True Fitness tracking. (Currently have {len(ml_df)})')
 
 # Determine which data to plot based on the user's toggle
 if use_ml and model_trained:
