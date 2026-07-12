@@ -9,6 +9,7 @@ import io
 
 csv = config.ACTIVITIES_CSV
 
+# Converts granular timestamps to local timezone
 def process_timestamps(df, local_tz=config.TIMEZONE_TARGET):
     if not df.empty:
         df['timestamp'] = pd.to_datetime(df['timestamp'], utc=True)
@@ -16,6 +17,7 @@ def process_timestamps(df, local_tz=config.TIMEZONE_TARGET):
         df['graph_timestamp'] = df['timestamp'].dt.strftime('%Y-%m-%dT%H:%M:%S')
     return df
 
+# Parse CSV and convert dates to datetime object
 @st.cache_data
 def parse_csv():
     if not os.path.exists(csv):
@@ -25,6 +27,7 @@ def parse_csv():
     df['Activity Date'] = pd.to_datetime(df['Activity Date'], format='mixed')
     return df
 
+# Parse gpx/gpx.gz files and convert granular timestamps to local timezone
 @st.cache_data
 def parse_gpx(gpx_filename, local_tz=config.TIMEZONE_TARGET):
     gpx_file = os.path.join('data', gpx_filename)
@@ -58,6 +61,7 @@ def parse_gpx(gpx_filename, local_tz=config.TIMEZONE_TARGET):
                 
     return process_timestamps(pd.DataFrame(track_data), local_tz)
 
+# Parse fit/fit.gz files and convert granular timestamps to local timezone
 @st.cache_data
 def parse_fit(fit_filename, local_tz=config.TIMEZONE_TARGET):
     fit_file = os.path.join('data', fit_filename)
