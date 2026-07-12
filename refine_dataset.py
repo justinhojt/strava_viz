@@ -153,7 +153,9 @@ def main():
                 moving_time = row.get('Moving Time')
                 elapsed_time = row.get('Elapsed Time')
                 
-                if pd.isna(avg_speed) or avg_speed == 0 or not elapsed_time:
+                if (pd.isna(avg_speed) or avg_speed == 0 
+                        or pd.isna(elapsed_time) or elapsed_time == 0 
+                        or pd.isna(moving_time)):
                     style = 'Unknown'
                 elif (moving_time / elapsed_time) < 0.7:
                     style = 'Interval'
