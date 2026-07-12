@@ -52,6 +52,8 @@ if has_enough_data:
     coefs = dict(zip(X.columns, model.coef_))
     coef_temp = coefs['temperature_2m']
     coef_hum = coefs['relative_humidity_2m']
+    coef_temp_bpm = coef_temp * (hr_max - hr_rest)
+    coef_hum_bpm = coef_hum * (hr_max - hr_rest)
     
     # Define standard environmental baseline (28°C and 80% Humidity)
     standard_temp = 28.0
@@ -103,11 +105,11 @@ if model_trained:
     col1, col2 = st.columns(2)
     with col1:
         st.metric(label='🌡️ Heat Penalty (per 1°C)', 
-                  value=f'{coef_temp:+.2f} bpm',
+                  value=f'{coef_temp_bpm:+.2f} bpm',
                   delta='Heart Rate Impact', delta_color='inverse')
     with col2:
         st.metric(label='💧 Humidity Penalty (per 1%)', 
-                  value=f'{coef_hum:+.2f} bpm',
+                  value=f'{coef_hum_bpm:+.2f} bpm',
                   delta='Heart Rate Impact', delta_color='inverse')
         
     st.caption('*Metrics indicate how much heart rate increases to maintain the same pace as weather worsens.*')
