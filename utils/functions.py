@@ -13,7 +13,7 @@ def calc_trimps(df, hr_max=config.DEFAULT_HR_MAX, hr_rest=config.DEFAULT_HR_REST
     # Calculates the time elapsed between consecutive heart rate readings in minutes
     delta_t_minutes = pd.to_datetime(df['timestamp']).diff().dt.total_seconds().fillna(1.0) / 60.0
     
-    hr = pd.to_numeric(df['heart_rate'], errors='coerce').ffill().bfill()  # Ensures no NaN values
+    hr = pd.to_numeric(df['heart_rate'], errors='coerce').ffill().bfill()    # Ensures no NaN values
     delta_hr = (hr - hr_rest) / (hr_max - hr_rest)
     delta_hr = delta_hr.clip(0.0, 1.0)
     
