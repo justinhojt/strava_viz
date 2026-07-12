@@ -37,7 +37,7 @@ steady_runs['aero_ratio'] = steady_runs['Average Grade Adjusted Pace'] / steady_
 ml_df = steady_runs.dropna(subset=['Average Grade Adjusted Pace', 'hrr', 'temperature_2m', 'relative_humidity_2m']).copy()
 
 # Initialize ML state variables
-has_enough_data = len(ml_df) >= 20
+has_enough_data = len(ml_df) >= 50
 model_trained = False
 coef_temp = 0.0
 coef_hum = 0.0
