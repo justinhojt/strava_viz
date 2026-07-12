@@ -143,8 +143,6 @@ def main():
     
     # Initialize the timezone finder
     tzf = TimezoneFinder()
-
-    print(f'🌍 Processing {df.shape[0]} total activities and compiling weather strictly for runs...')
     
     # Spin up persistent connection session
     with requests.Session() as session:
@@ -204,7 +202,7 @@ def main():
                 time.sleep(0.1)
         
     df.to_csv(OUTPUT_PATH, index=False)
-    print(f'\nSuccess! Full multi-sport dataset safely saved to {OUTPUT_PATH}')
+    print(f'\nSuccess! Dataset safely saved to {OUTPUT_PATH}')
 
 if __name__ == '__main__':
     main()
