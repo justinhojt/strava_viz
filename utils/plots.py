@@ -113,11 +113,10 @@ def plot_tsb_zones(df, selected_date=None):
 
 # Plots activity breakdown donut chart
 def plot_donut(df):
-    # Group data for the donut chart
     breakdown = df['Activity Type'].value_counts().reset_index()
     breakdown.columns = ['Activity', 'Count']
     
-    # Dynamically align the palette with the activities present in the current dataframe using config
+    # Align colours with the activities present in the current dataframe
     present_activities = breakdown['Activity'].tolist()
     chart_range = [config.ACTIVITY_COLORS.get(act, config.ACTIVITY_COLORS['Default']) for act in present_activities]
     
