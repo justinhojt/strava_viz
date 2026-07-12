@@ -3,6 +3,7 @@ import streamlit as st
 
 from utils.data_loader import parse_csv
 from utils.plots import plot_aero
+import config
 
 # Fetch the shared dataset from session state if available, else load it in
 if 'summary_df' in st.session_state:
@@ -21,21 +22,29 @@ steady_runs = steady_runs[(steady_runs['Average Grade Adjusted Pace'] > 0) &
                           (steady_runs['Average Heart Rate'] > 0) & 
                           (steady_runs['Moving Time'] >= 900)]
 
-# Calculate raw efficiency
-steady_runs['aero_ratio'] = steady_runs['Average Grade Adjusted Pace'] / steady_runs['Average Heart Rate']
+# Heart Rate Reserve (HRR) corrects for resting HR offset so effort = 0 maps to denominator = 0,
+# instead of dividing directly by raw avg_hr which has a nonzero floor at rest
+hr_rest = config.DEFAULT_HR_REST
+hr_max = config.DEFAULT_HR_MAX
+
+steady_runs['hrr'] = (steady_runs['Average Heart Rate'] - hr_rest) / (hr_max - hr_rest)
+steady_runs = steady_runs[steady_runs['hrr'] > 0]
+
+# Calculate raw efficiency using %HRR instead of raw average heart rate
+steady_runs['aero_ratio'] = steady_runs['Average Grade Adjusted Pace'] / steady_runs['hrr']
 
 # Filter out runs missing weather data for the ML model
-ml_df = steady_runs.dropna(subset=['Average Grade Adjusted Pace', 'Average Heart Rate', 'temperature_2m', 'relative_humidity_2m']).copy()
+ml_df = steady_runs.dropna(subset=['Average Grade Adjusted Pace', 'hrr', 'temperature_2m', 'relative_humidity_2m']).copy()
 
 # Initialize ML state variables
-has_enough_data = len(ml_df) >= 50
+has_enough_data = len(ml_df) >= 20
 model_trained = False
 coef_temp = 0.0
 coef_hum = 0.0
 
 if has_enough_data:
     X = ml_df[['Average Grade Adjusted Pace', 'temperature_2m', 'relative_humidity_2m']]
-    y = ml_df['Average Heart Rate']
+    y = ml_df['hrr']
     
     model = LinearRegression()
     model.fit(X, y)
@@ -53,11 +62,11 @@ if has_enough_data:
     X_standard['temperature_2m'] = standard_temp
     X_standard['relative_humidity_2m'] = standard_hum
     
-    # Predict hypothetical HR in standard conditions
-    ml_df['adjusted_hr'] = model.predict(X_standard)
+    # Predict hypothetical %HRR in standard conditions
+    ml_df['adjusted_hrr'] = model.predict(X_standard)
     
-    # Recalculate efficiency using the normalized HR
-    ml_df['adjusted_aero_ratio'] = ml_df['Average Grade Adjusted Pace'] / ml_df['adjusted_hr']
+    # Recalculate efficiency using the normalized %HRR
+    ml_df['adjusted_aero_ratio'] = ml_df['Average Grade Adjusted Pace'] / ml_df['adjusted_hrr']
     model_trained = True
 
 # Only show the ML toggle if we actually have enough data to train the model safely
