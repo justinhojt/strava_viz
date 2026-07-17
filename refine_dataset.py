@@ -38,18 +38,21 @@ def clean_csv(file_path):
         
     return df
 
-# Fetches weather based on the exact hour of the localized timestamp
-def get_weather_with_timeout(session, lat, lon, activity_timestamp, retries=3):
+# Fetches weather averaged across every hour the activity actually spans,
+# weighted by the fraction of the run that occurred in each hour
+def get_weather_with_timeout(session, lat, lon, activity_start, duration_seconds, retries=3):
     url = 'https://archive-api.open-meteo.com/v1/archive'
     
-    date_str = activity_timestamp.strftime('%Y-%m-%d')
-    hour_index = activity_timestamp.hour
+    activity_end = activity_start + pd.Timedelta(seconds=duration_seconds)
+    
+    start_date_str = activity_start.strftime('%Y-%m-%d')
+    end_date_str = activity_end.strftime('%Y-%m-%d')    # may differ if run crosses midnight
     
     params = {
         'latitude': lat,
         'longitude': lon,
-        'start_date': date_str,
-        'end_date': date_str,
+        'start_date': start_date_str,
+        'end_date': end_date_str,
         'hourly': ['temperature_2m', 'relative_humidity_2m', 'wind_speed_10m'],
         'timezone': 'auto'
     }
@@ -64,26 +67,55 @@ def get_weather_with_timeout(session, lat, lon, activity_timestamp, retries=3):
                     time.sleep(60)
                     continue
                 else:
-                    tqdm.write(f'   ❌ Still rate-limited after {retries} attempts for {date_str}.')
+                    tqdm.write(f'   ❌ Still rate-limited after {retries} attempts for {start_date_str}.')
                     break
                 
             response.raise_for_status()
             data = response.json()
             
-            return {
-                'temp': data['hourly']['temperature_2m'][hour_index],
-                'humidity': data['hourly']['relative_humidity_2m'][hour_index],
-                'wind': data['hourly']['wind_speed_10m'][hour_index]
-            }
+            hourly_times = pd.to_datetime(data['hourly']['time'])
+            temps = data['hourly']['temperature_2m']
+            humidities = data['hourly']['relative_humidity_2m']
+            winds = data['hourly']['wind_speed_10m']
+            
+            # Weight each hour by how much of the run overlapped it
+            weighted_temp, weighted_hum, weighted_wind, total_weight = 0.0, 0.0, 0.0, 0.0
+            
+            for i, hour_start in enumerate(hourly_times):
+                hour_end = hour_start + pd.Timedelta(hours=1)
+                overlap_start = max(activity_start, hour_start)
+                overlap_end = min(activity_end, hour_end)
+                overlap_seconds = max(0, (overlap_end - overlap_start).total_seconds())
+                
+                if overlap_seconds > 0 and temps[i] is not None:
+                    weighted_temp += temps[i] * overlap_seconds
+                    weighted_hum += humidities[i] * overlap_seconds
+                    weighted_wind += winds[i] * overlap_seconds
+                    total_weight += overlap_seconds
+            
+            if total_weight > 0:
+                return {
+                    'temp': weighted_temp / total_weight,
+                    'humidity': weighted_hum / total_weight,
+                    'wind': weighted_wind / total_weight
+                }
+            else:
+                # Fallback: nearest single hour if overlap weighting somehow fails
+                hour_index = activity_start.hour
+                return {
+                    'temp': temps[hour_index],
+                    'humidity': humidities[hour_index],
+                    'wind': winds[hour_index]
+                }
             
         except requests.exceptions.Timeout:
             if attempt < retries - 1:
                 tqdm.write(f'   ⏳ Read timeout on attempt {attempt + 1}. Retrying in 2 seconds...')
                 time.sleep(2)
             else:
-                tqdm.write(f'   ❌ API Timeout failed after {retries} attempts for {date_str}.')
+                tqdm.write(f'   ❌ API Timeout failed after {retries} attempts for {start_date_str}.')
         except Exception as e:
-            tqdm.write(f'   ❌ Weather API Fetch Failed for {date_str}: {e}')
+            tqdm.write(f'   ❌ Weather API Fetch Failed for {start_date_str}: {e}')
             break
             
     return {'temp': None, 'humidity': None, 'wind': None}
