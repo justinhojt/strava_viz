@@ -105,3 +105,15 @@ def parse_granular(df):
     trimps['TSB'] = trimps['TSB'].fillna(0)
     
     return trimps
+
+# Computes heat index (Rothfusz regression) to collapse temp + humidity into a single
+# physiologically-meaningful, non-collinear feature that encodes their interaction
+def compute_heat_index(temp_c, rh):
+    temp_f = temp_c * 9 / 5 + 32
+    hi_f = (
+        -42.379 + 2.049 * temp_f + 10.143 * rh - 0.225 * temp_f * rh
+        - 6.838e-3 * temp_f**2 - 5.482e-2 * rh**2
+        + 1.229e-2 * temp_f**2 * rh + 8.528e-4 * temp_f * rh**2
+        - 1.99e-6 * temp_f**2 * rh**2
+    )
+    return (hi_f - 32) * 5 / 9
