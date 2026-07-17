@@ -20,7 +20,7 @@ Drill into second-by-second data for any individual session. Parses `.gpx` and `
 ### 🫀 Aerobic Efficiency Trends
 Isolates steady-state runs (≥15 min moving time) and plots an efficiency ratio (grade-adjusted pace over average heart rate) with a 42-day rolling trend line, so you can see cardiovascular adaptation independent of day-to-day pacing choices.
 
-- **True Fitness (ML-adjusted view):** once you have 50+ steady-state runs with matched weather data, a multiple linear regression model learns your personal heat and humidity penalties (bpm increase per °C / per % humidity) and normalizes every run's heart rate to a standard 28°C / 80% humidity baseline, so adverse weather conditions do not mask genuine fitness gains.
+- **True Fitness (ML-adjusted view):** once you have 50+ steady-state runs with matched weather data, a linear regression model learns your personal heat stress penalty (bpm increase per 1° of heat index) and normalizes every run's heart rate to a standard 28°C / 80% humidity baseline, so adverse weather conditions do not mask genuine fitness gains. Temperature and humidity are combined into a single heat index feature (Rothfusz regression) rather than modeled as two separate variables, since they tend to be collinear in consistently warm/humid climates and their physiological effect on heart rate is multiplicative, not additive.
 - **Note:** the efficiency ratio's directionality (higher = fitter) assumes the underlying "pace" field increases with speed. If your export's pace column instead decreases as you get faster (i.e. is a true time-per-distance pace), the trend line's interpretation should be flipped accordingly.
 
 ### 📊 Fitness, Fatigue & Form
@@ -41,7 +41,7 @@ The dashboard reads from a pre-processed CSV (`activities_refined.csv`), built o
 
 1. **Clean** the raw `activities.csv` — drops rows with no linked activity file, removes constant/duplicate columns.
 2. **Localize timestamps** — extracts the first GPS coordinate from each activity file (without loading the whole file) to resolve the activity's true local timezone, falling back to a fixed offset when no GPS data exists.
-3. **Fetch historical weather** — for runs with GPS data, queries the Open-Meteo archive API for the exact hour's temperature, humidity, and wind speed.
+3. **Fetch historical weather** — for runs with GPS data, queries the Open-Meteo archive API and computes a duration-weighted average of temperature, humidity, and wind speed across every hour the run actually spanned (rather than a single hourly snapshot at the start time), so multi-hour runs crossing an hour boundary get accurately blended conditions.
 4. **Classify workout style** — runs are tagged `Steady State` or `Interval` based on the ratio of moving time to elapsed time.
 
 Re-run `refine_dataset.py` whenever you add a new Strava export.
