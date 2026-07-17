@@ -2,6 +2,7 @@ from sklearn.linear_model import LinearRegression
 import streamlit as st
 
 from utils.data_loader import parse_csv
+from utils.functions import compute_heat_index
 from utils.plots import plot_aero
 import config
 
@@ -36,33 +37,32 @@ steady_runs['aero_ratio'] = steady_runs['Average Grade Adjusted Pace'] / steady_
 # Filter out runs missing weather data for the ML model
 ml_df = steady_runs.dropna(subset=['Average Grade Adjusted Pace', 'hrr', 'temperature_2m', 'relative_humidity_2m']).copy()
 
+ml_df['heat_index'] = compute_heat_index(ml_df['temperature_2m'], ml_df['relative_humidity_2m'])
+
 # Initialize ML state variables
 has_enough_data = len(ml_df) >= 50
 model_trained = False
-coef_temp = 0.0
-coef_hum = 0.0
+coef_heat = 0.0
 
 if has_enough_data:
-    X = ml_df[['Average Grade Adjusted Pace', 'temperature_2m', 'relative_humidity_2m']]
+    X = ml_df[['Average Grade Adjusted Pace', 'heat_index']]
     y = ml_df['hrr']
     
     model = LinearRegression()
     model.fit(X, y)
     
     coefs = dict(zip(X.columns, model.coef_))
-    coef_temp = coefs['temperature_2m']
-    coef_hum = coefs['relative_humidity_2m']
-    coef_temp_bpm = coef_temp * (hr_max - hr_rest)
-    coef_hum_bpm = coef_hum * (hr_max - hr_rest)
+    coef_heat = coefs['heat_index']
+    coef_heat_bpm = coef_heat * (hr_max - hr_rest)
     
     # Define standard environmental baseline (28°C and 80% Humidity)
     standard_temp = 28.0
     standard_hum = 80.0
+    standard_heat_index = compute_heat_index(standard_temp, standard_hum)
     
-    # Create a hypothetical feature set: actual pace, but standard weather
+    # Create a hypothetical feature set: actual pace, but standard heat index
     X_standard = X.copy()
-    X_standard['temperature_2m'] = standard_temp
-    X_standard['relative_humidity_2m'] = standard_hum
+    X_standard['heat_index'] = standard_heat_index
     
     # Predict hypothetical %HRR in standard conditions
     ml_df['adjusted_hrr'] = model.predict(X_standard)
@@ -97,22 +97,16 @@ if not run_chart_data.empty:
 else:
     st.warning('⚠️ No valid running rows containing both Heart Rate and Speed data were found to plot.')
 
-# Personal environmental penalties
+# Personal environmental penalty
 if model_trained:
     st.subheader('🧬 Personal Environmental Profile')
-    st.write('Using multiple linear regression, we can analyse how a specific body reacts to heat and humidity.')
+    st.write('Using linear regression against heat index (temperature + humidity combined), we can analyse how a specific body reacts to overall heat stress.')
     
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric(label='🌡️ Heat Penalty (per 1°C)', 
-                  value=f'{coef_temp_bpm:+.2f} bpm',
-                  delta='Heart Rate Impact', delta_color='inverse')
-    with col2:
-        st.metric(label='💧 Humidity Penalty (per 1%)', 
-                  value=f'{coef_hum_bpm:+.2f} bpm',
-                  delta='Heart Rate Impact', delta_color='inverse')
+    st.metric(label='🌡️ Heat Stress Penalty (per 1° Heat Index)', 
+              value=f'{coef_heat_bpm:+.2f} bpm',
+              delta='Heart Rate Impact', delta_color='inverse')
         
-    st.caption('*Metrics indicate how much heart rate increases to maintain the same pace as weather worsens.*')
+    st.caption('*Heat index combines temperature and humidity into a single "feels like" value, since humidity\'s physiological cost scales with heat rather than adding independently. Metric indicates how much heart rate increases to maintain the same pace as heat stress worsens.*')
 
 # Methodology Expander
 with st.expander('🔬 View Aerobic Efficiency Methodology'):
@@ -135,7 +129,7 @@ with st.expander('🔬 View Aerobic Efficiency Methodology'):
     ### 🔮 True Fitness (Weather Normalization)
     If you live in an environment with distinct seasons or high heat, your raw efficiency will artificially drop in the summer due to cardiac drift, masking your actual fitness gains.
     
-    When **True Fitness** is enabled, a machine learning model isolates your pace and calculates what your heart rate *would have been* if the run occurred in a typical 28°C environment at 80% humidity.
+    When **True Fitness** is enabled, a machine learning model isolates your pace and calculates what your heart rate *would have been* if the run occurred at a standard heat index equivalent to 28°C at 80% humidity — combining temperature and humidity into one "feels like" value rather than treating them as independent factors.
     
     ---
     
