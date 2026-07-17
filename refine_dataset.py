@@ -223,7 +223,8 @@ def main():
             
             # Fetch weather data for runs with gps coordinates
             if is_run and lat is not None and lon is not None:
-                weather = get_weather_with_timeout(session, lat, lon, localized_date)
+                duration_seconds = row.get('Elapsed Time', row.get('Moving Time', 0))
+                weather = get_weather_with_timeout(session, lat, lon, localized_date, duration_seconds)
                 
                 df.at[index, 'temperature_2m'] = weather['temp']
                 df.at[index, 'relative_humidity_2m'] = weather['humidity']
