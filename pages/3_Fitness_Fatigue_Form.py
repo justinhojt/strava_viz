@@ -1,9 +1,10 @@
 import streamlit as st
 import pandas as pd
 
-from utils.data_loader import parse_csv
-from utils.functions import parse_granular
 from utils.plots import plot_fitness_fatigue, plot_tsb_zones
+from utils.functions import parse_granular
+from utils.data_loader import parse_csv
+import config
 
 # Fetch the shared dataset from session state if available, else load it in
 if 'summary_df' in st.session_state:
