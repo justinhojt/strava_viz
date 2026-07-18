@@ -29,7 +29,7 @@ hr_rest = config.DEFAULT_HR_REST
 hr_max = config.DEFAULT_HR_MAX
 
 steady_runs['hrr'] = (steady_runs['Average Heart Rate'] - hr_rest) / (hr_max - hr_rest)
-steady_runs = steady_runs[steady_runs['hrr'] > 0]
+steady_runs = steady_runs[steady_runs['hrr'] > 0.05]    # Removes outliers where avg HR during activity is only slightly above rest, likely due to sensor error 
 
 # Calculate raw efficiency using %HRR instead of raw average heart rate
 steady_runs['aero_ratio'] = steady_runs['Average Grade Adjusted Pace'] / steady_runs['hrr']
