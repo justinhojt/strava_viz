@@ -1,10 +1,10 @@
 import streamlit as st
 import pandas as pd
-import config
 
 from utils.data_loader import parse_csv, parse_gpx, parse_fit
 from utils.functions import get_trimp_for_row
 from utils.plots import plot_hr_zones, plot_hr_series, plot_ele_series
+import config
 
 # Fetch the shared dataset from session state if available, else load it in
 if 'summary_df' in st.session_state:
