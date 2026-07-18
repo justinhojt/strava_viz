@@ -51,6 +51,9 @@ if has_enough_data:
     model = LinearRegression()
     model.fit(X, y)
     
+    r_squared = model.score(X, y)
+    n_samples = len(ml_df)
+    
     coefs = dict(zip(X.columns, model.coef_))
     coef_heat = coefs['heat_index']
     coef_heat_bpm = coef_heat * (hr_max - hr_rest)
@@ -102,12 +105,17 @@ if model_trained:
     st.subheader('🧬 Personal Environmental Profile')
     st.write('Using linear regression against heat index (temperature + humidity combined), we can analyse how a specific body reacts to overall heat stress.')
     
-    st.metric(label='🌡️ Heat Stress Penalty (per 1° Heat Index)', 
+    prof_col1, prof_col2, prof_col3 = st.columns(3)
+    
+    prof_col1.metric(label='🌡️ Heat Stress Penalty (per 1° Heat Index)', 
               value=f'{coef_heat_bpm:+.2f} bpm',
               delta='Heart Rate Impact', delta_color='inverse')
+    
+    prof_col2.metric(label='📊 Model Fit (R²)', value=f'{r_squared:.2f}')
+    prof_col3.metric(label='🔢 Runs Used', value=f'{n_samples}')
         
-    st.caption('*Heat index combines temperature and humidity into a single "feels like" value, since humidity\'s physiological cost scales with heat rather than adding independently. Metric indicates how much heart rate increases to maintain the same pace as heat stress worsens.*')
-
+    st.caption('*Heat index combines temperature and humidity into a single "feels like" value, since humidity\'s physiological cost scales with heat rather than adding independently. Metric indicates how much heart rate increases to maintain the same pace as heat stress worsens. R² shows how much of the heart-rate variance the model explains — closer to 1 means the two features (pace, heat index) are more reliably driving the prediction.*')
+    
 # Methodology Expander
 with st.expander('🔬 View Aerobic Efficiency Methodology'):
     st.markdown("""
