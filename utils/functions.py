@@ -99,8 +99,8 @@ def parse_granular(df):
     trimps = daily_stress.reindex(full_range, fill_value=0).reset_index()
     trimps.rename(columns={'index': 'Date'}, inplace=True)
     
-    trimps['CTL'] = trimps['trimps'].ewm(alpha=1/42, adjust=False).mean()    # 42 day exponentially weighted moving average
-    trimps['ATL'] = trimps['trimps'].ewm(alpha=1/7, adjust=False).mean()     # 7 day exponentially weighted moving average
+    trimps['CTL'] = trimps['trimps'].ewm(alpha=1/CTL_DAY_SPAN, adjust=False).mean()    # 42 day exponentially weighted moving average
+    trimps['ATL'] = trimps['trimps'].ewm(alpha=1/ATL_DAY_SPAN, adjust=False).mean()     # 7 day exponentially weighted moving average
     trimps['TSB'] = trimps['CTL'].shift(1) - trimps['ATL'].shift(1)
     trimps['TSB'] = trimps['TSB'].fillna(0)
     
