@@ -30,8 +30,15 @@ def clean_csv(file_path):
     df = df.loc[:, df.nunique() > 1]
 
     # Strava export data has 2 distance columns, first one has inconsistent units, second one standardizes to meters (which we keep)
-    df = df.drop(columns=['Distance'])                    # Drop first distance column
-    df = df.rename(columns={'Distance.1': 'Distance'})    # Rename the second distance column so it doesnt get flagged as a duplicate
+    if 'Distance.1' in df.columns:
+        df = df.drop(columns=['Distance'])                    # Drop first distance column
+        df = df.rename(columns={'Distance.1': 'Distance'})    # Rename the second distance column so it doesnt get flagged as a duplicate
+    elif 'Distance' not in df.columns:
+        raise KeyError(
+            "Expected a 'Distance' column in the Strava export, but none was found. "
+            "The export schema may have changed."
+        )
+    # else: only one Distance column present, already assumed to be in meters — keep as-is
     
     # Drop remaining duplicate columns
     df = df.drop(columns=[*[col for col in df.columns if '.1' in col]], errors='ignore')
