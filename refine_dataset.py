@@ -35,11 +35,9 @@ def clean_csv(file_path):
         df = df.rename(columns={'Distance.1': 'Distance'})    # Rename the second distance column so it doesnt get flagged as a duplicate
     elif 'Distance' not in df.columns:
         raise KeyError(
-            "Expected a 'Distance' column in the Strava export, but none was found. "
-            "The export schema may have changed."
+            'Expected a "Distance" column in the Strava export, but none was found.'
         )
-    # else: only one Distance column present, already assumed to be in meters — keep as-is
-    
+        
     # Drop remaining duplicate columns
     df = df.drop(columns=[*[col for col in df.columns if '.1' in col]], errors='ignore')
         
