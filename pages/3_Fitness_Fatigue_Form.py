@@ -41,11 +41,11 @@ if not matched_row.empty:
     col1.metric('Fitness (CTL)', f'{ctl:.2f}')
     col2.metric('Fatigue (ATL)', f'{atl:.2f}')
     
-    if tsb < -30:
+    if tsb < config.TSB_OVERTRAINING_UPPER:
         status, color = 'Overtraining Risk', 'inverse'
-    elif -30 <= tsb < -10:
+    elif config.TSB_OVERTRAINING_UPPER <= tsb < config.TSB_OPTIMAL_UPPER:
         status, color = 'Optimal Training', 'normal'
-    elif -10 <= tsb <= 0 :
+    elif config.TSB_OPTIMAL_UPPER <= tsb <= config.TSB_MAINTENANCE_UPPER:
         status, color = 'Maintenance Zone', 'normal'
     else:
         status, color = 'Fresh / Recovery', 'normal'
