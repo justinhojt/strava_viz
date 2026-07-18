@@ -110,8 +110,8 @@ with top_right:
         act_max_hr = config.DEFAULT_HR_MAX
             
         # Calculate standard personalized zones based on % of max HR
-        bins = [0, act_max_hr * 0.60, act_max_hr * 0.70, act_max_hr * 0.80, act_max_hr * 0.90, 300]
-        labels = ['Z1 Recovery', 'Z2 Aerobic', 'Z3 Tempo', 'Z4 Threshold', 'Z5 Anaerobic']
+        bins = [b * act_max_hr for b in config.HR_ZONE_PCT_BOUNDARIES]
+        labels = config.HR_ZONE_LABELS
         
         # Map each second of data to a zone
         time_series_df['HR_Zone'] = pd.cut(time_series_df['heart_rate'], bins=bins, labels=labels)
