@@ -40,7 +40,7 @@ ml_df = steady_runs.dropna(subset=['Average Grade Adjusted Pace', 'hrr', 'temper
 ml_df['heat_index'] = compute_heat_index(ml_df['temperature_2m'], ml_df['relative_humidity_2m'])
 
 # Initialize ML state variables
-has_enough_data = len(ml_df) >= 50
+has_enough_data = (len(ml_df) >= config.ML_MIN_SAMPLES)
 model_trained = False
 coef_heat = 0.0
 
