@@ -21,6 +21,7 @@ ACTIVITY_COLORS = {
     'Walk': '#ee9f28',             
     'Swim': '#f9dcb0',             
     'Workout': '#e17602',
+    'Weight Training': '#e17602',
     'Default': '#808080'         
 }
 
