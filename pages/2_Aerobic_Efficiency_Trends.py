@@ -77,7 +77,7 @@ if has_enough_data:
 # Only show the ML toggle if we actually have enough data to train the model safely
 use_ml = False
 if model_trained:
-    use_ml = st.checkbox('🔮 **Show Weather-Adjusted True Fitness** (Normalized to Singapore Baseline 28°C / 80% Humidity)', value=False)
+    use_ml = use_ml = st.checkbox(f'🔮 **Show Weather-Adjusted True Fitness** (Normalized to Singapore Baseline {config.ML_BASELINE_TEMP_C:.0f}°C / {config.ML_BASELINE_HUMIDITY:.0f}% Humidity)', value=False)
 elif len(steady_runs) > 0:
     st.info(f'Keep running! You need at least {config.ML_MIN_SAMPLES} steady-state runs with weather data to unlock ML True Fitness tracking. (Currently have {len(ml_df)})')
 
