@@ -59,8 +59,8 @@ if has_enough_data:
     coef_heat_bpm = coef_heat * (hr_max - hr_rest)
     
     # Define standard environmental baseline (28°C and 80% Humidity)
-    standard_temp = 28.0
-    standard_hum = 80.0
+    standard_temp = config.ML_BASELINE_TEMP_C
+    standard_hum = config.ML_BASELINE_HUMIDITY
     standard_heat_index = compute_heat_index(standard_temp, standard_hum)
     
     # Create a hypothetical feature set: actual pace, but standard heat index
