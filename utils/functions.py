@@ -108,17 +108,19 @@ def parse_granular(df):
 
 # Computes heat index (Rothfusz regression) to collapse temp + humidity into a single
 # physiologically-meaningful, non-collinear feature that encodes their interaction
-#
-# Note: the Rothfusz polynomial is an empirical fit only validated for heat_index >= ~27°C.
-# Below that range (e.g. cool pre-dawn runs) it can extrapolate poorly. We don't guard against
-# this here since it only biases a minority of cooler-weather rows, but treat heat_index values
-# for sub-27°C runs with some skepticism.
 def compute_heat_index(temp_c, rh):
     temp_f = temp_c * 9 / 5 + 32
-    hi_f = (
+    
+    # Simple formula, valid across the full range but most accurate <80°F (26.7°C)
+    hi_simple = 0.5 * (temp_f + 61.0 + (temp_f - 68.0) * 1.2 + rh * 0.094)
+    
+    # Rothfusz regression, only valid/accurate >=80°F (26.7°C)
+    hi_rothfusz = (
         -42.379 + 2.049 * temp_f + 10.143 * rh - 0.225 * temp_f * rh
         - 6.838e-3 * temp_f**2 - 5.482e-2 * rh**2
         + 1.22874e-3 * temp_f**2 * rh + 8.528e-4 * temp_f * rh**2
         - 1.99e-6 * temp_f**2 * rh**2
     )
+    
+    hi_f = np.where((temp_f + hi_simple) / 2 >= 80, hi_rothfusz, hi_simple)
     return (hi_f - 32) * 5 / 9
