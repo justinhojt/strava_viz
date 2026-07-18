@@ -1,8 +1,8 @@
 from sklearn.linear_model import LinearRegression
 import streamlit as st
 
-from utils.data_loader import parse_csv
 from utils.functions import compute_heat_index
+from utils.data_loader import parse_csv
 from utils.plots import plot_aero
 import config
 
