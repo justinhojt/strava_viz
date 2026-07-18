@@ -78,10 +78,10 @@ def plot_tsb_zones(df, selected_date=None):
     min_tsb = float(min(df['TSB'].min(), -35) - 10)
 
     zone_data = pd.DataFrame([
-        {'y1': 0, 'y2': max_tsb, 'color': config.ZONE_COLORS['Freshness']},        
-        {'y1': -10, 'y2': 0, 'color': config.ZONE_COLORS['Maintenance']},        
-        {'y1': -30, 'y2': -10, 'color': config.ZONE_COLORS['Optimal_Training']},   
-        {'y1': min_tsb, 'y2': -30, 'color': config.ZONE_COLORS['Overtraining']}     
+        {'y1': config.TSB_MAINTENANCE_UPPER, 'y2': max_tsb, 'color': config.ZONE_COLORS['Freshness']},        
+        {'y1': config.TSB_OPTIMAL_UPPER, 'y2': config.TSB_MAINTENANCE_UPPER, 'color': config.ZONE_COLORS['Maintenance']},        
+        {'y1': config.TSB_OVERTRAINING_UPPER, 'y2': config.TSB_OPTIMAL_UPPER, 'color': config.ZONE_COLORS['Optimal_Training']},   
+        {'y1': min_tsb, 'y2': config.TSB_OVERTRAINING_UPPER, 'color': config.ZONE_COLORS['Overtraining']}     
     ])
 
     zones = alt.Chart(zone_data).mark_rect(opacity=0.25).encode(
